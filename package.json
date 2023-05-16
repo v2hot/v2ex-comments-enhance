@@ -1,18 +1,18 @@
 {
-  "name": "my-extension",
-  "displayName": "My-Extension",
-  "displayName:zh-CN": "我的扩展",
-  "version": "0.1.0",
-  "description": "try to take over the world!",
-  "description:zh-CN": "让世界更美好！",
-  "author": "You",
-  "namespace": "https://github.com/utags/browser-extension-starter",
-  "icon": "https://www.tampermonkey.net/favicon.ico",
+  "name": "v2ex.rep",
+  "displayName": "V2EX.REP - 专注提升 V2EX 主题回复浏览体验",
+  "displayName:zh-CN": "V2EX.REP - 专注提升 V2EX 主题回复浏览体验",
+  "version": "0.0.1",
+  "description": "专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。",
+  "description:zh-CN": "专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。",
+  "author": "Pipecraft",
+  "namespace": "https://github.com/v2hot/v2ex.rep",
+  "icon": "https://www.v2ex.com/favicon.ico",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/utags/browser-extension-starter/issues"
+    "url": "https://github.com/v2hot/v2ex.rep/issues"
   },
-  "homepage": "https://github.com/utags/browser-extension-starter#readme",
+  "homepage": "https://github.com/v2hot/v2ex.rep#readme",
   "scripts": {
     "p": "prettier --write .",
     "lint": "run-s lint:*",
