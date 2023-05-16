@@ -1,7 +1,9 @@
 import { $, $$, addEventListener } from "browser-extension-utils"
 import type { PlasmoCSConfig } from "plasmo"
 
+import { alwaysShowThankButton } from "./modules/always-show-thank-button"
 import { fixReplyFloorNumbers } from "./modules/fix-reply-floor-numbers"
+import { quickSendThank } from "./modules/quick-send-thank"
 import { replyWithFloorNumber } from "./modules/reply-with-floor-number"
 
 export const config: PlasmoCSConfig = {
@@ -20,6 +22,8 @@ async function main() {
     const replyElements = $$('.cell[id^="r_"]')
     for (const replyElement of replyElements) {
       replyWithFloorNumber(replyElement)
+      quickSendThank(replyElement)
+      alwaysShowThankButton(replyElement)
     }
 
     const matched = /\/t\/(\d+)(?:.+\bp=(\d+))?/.exec(location.href) || []
