@@ -10,7 +10,7 @@
 // @icon                 {icon}
 // @author               {author}
 // @license              {license}
-// @match                https://*/*
-// @match                http://*/*
+// @match                https://*.v2ex.com/*
+// @run-at               document-end
 // ==/UserScript==
 //
