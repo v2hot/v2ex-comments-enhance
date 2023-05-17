@@ -1,8 +1,11 @@
-import { $, $$, addEventListener } from "browser-extension-utils"
+import { $, $$, addEventListener, addStyle } from "browser-extension-utils"
+import styleText from "data-text:./content.scss"
 import type { PlasmoCSConfig } from "plasmo"
 
+import { alwaysShowHideButton } from "./modules/always-show-hide-button"
 import { alwaysShowThankButton } from "./modules/always-show-thank-button"
 import { fixReplyFloorNumbers } from "./modules/fix-reply-floor-numbers"
+import { quickHideReply } from "./modules/quick-hide-reply"
 import { quickSendThank } from "./modules/quick-send-thank"
 import { replyWithFloorNumber } from "./modules/reply-with-floor-number"
 
@@ -18,12 +21,16 @@ async function main() {
     return
   }
 
+  addStyle(styleText)
+
   if (/\/t\/\d+/.test(location.href)) {
     const replyElements = $$('.cell[id^="r_"]')
     for (const replyElement of replyElements) {
       replyWithFloorNumber(replyElement)
       quickSendThank(replyElement)
+      quickHideReply(replyElement)
       alwaysShowThankButton(replyElement)
+      alwaysShowHideButton(replyElement)
     }
 
     const matched = /\/t\/(\d+)(?:.+\bp=(\d+))?/.exec(location.href) || []
