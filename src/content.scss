@@ -1,0 +1,12 @@
+a.emoji_button {
+  opacity: 100%;
+  visibility: visible;
+}
+
+a.emoji_button + a.emoji_button {
+  margin-left: 14px;
+}
+
+a.emoji_button:hover {
+  opacity: 70%;
+}
