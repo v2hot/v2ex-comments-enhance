@@ -14,19 +14,21 @@
 
 - 设置功能，每个功能可单独开或关
 
-![screenshots](assets/v2ex.rep-screenshots-01.png)
+![screenshots](https://raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-01.png)
 
-- 修复有被 block 的用户时错位的楼层号
+- 修复有被 block 的用户时错位的楼层号，控制台可看到被屏蔽的楼层与内容
 
-![screenshots](assets/v2ex.rep-screenshots-02.png)
+![screenshots](https://raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-02.png)
+
+![screenshots](https://raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-05.png)
 
 - 回复时自动带上楼层号
 
-![screenshots](assets/v2ex.rep-screenshots-03.png)
+![screenshots](https://raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-03.png)
 
 - 一直显示感谢按钮/回复按钮
 
-![screenshots](assets/v2ex.rep-screenshots-04.png)
+![screenshots](https://raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-04.png)
 
 ## 其他
 
