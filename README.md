@@ -1,4 +1,43 @@
-# Browser Extension Starter and Userscript Starter
+# V2EX.REP - 专注提升 V2EX 主题回复浏览体验
+
+专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。
+
+## 主要功能
+
+- ✅ 修复有被 block 的用户时错位的楼层号
+- ✅ 回复时自动带上楼层号
+- ✅ 一直显示感谢按钮 🙏
+- ✅ 一直显示隐藏回复按钮 🙈
+- ✅ 快速发送感谢/快速隐藏回复（no confirm）
+
+## 页面截屏
+
+- 设置功能，每个功能可单独开或关
+
+![screenshots](assets/v2ex.rep-screenshots-01.png)
+
+- 修复有被 block 的用户时错位的楼层号
+
+![screenshots](assets/v2ex.rep-screenshots-02.png)
+
+- 回复时自动带上楼层号
+
+![screenshots](assets/v2ex.rep-screenshots-03.png)
+
+- 一直显示感谢按钮/回复按钮
+
+![screenshots](assets/v2ex.rep-screenshots-04.png)
+
+## Installation
+
+- Chrome Extension: [Manual Installation](manual-installation.md)
+- Edge Extension: [Manual Installation](manual-installation.md)
+- Firefox Addon: [Manual Installation](manual-installation.md)
+- Userscript: [https://greasyfork.org/scripts/463552-v2ex-min](https://greasyfork.org/scripts/463552-v2ex-min)
+
+## Development
+
+This extension/userscript is built from [Browser Extension Starter and Userscript Starter](https://github.com/utags/browser-extension-starter)
 
 ## Features
 
