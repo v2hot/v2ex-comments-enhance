@@ -16,9 +16,11 @@
 
 ![screenshots](assets/v2ex.rep-screenshots-01.png)
 
-- 修复有被 block 的用户时错位的楼层号
+- 修复有被 block 的用户时错位的楼层号，控制台可看到被屏蔽的楼层与内容
 
 ![screenshots](assets/v2ex.rep-screenshots-02.png)
+
+![screenshots](assets/v2ex.rep-screenshots-05.png)
 
 - 回复时自动带上楼层号
 
@@ -33,7 +35,7 @@
 - Chrome Extension: [Manual Installation](manual-installation.md)
 - Edge Extension: [Manual Installation](manual-installation.md)
 - Firefox Addon: [Manual Installation](manual-installation.md)
-- Userscript: [https://greasyfork.org/scripts/463552-v2ex-min](https://greasyfork.org/scripts/463552-v2ex-min)
+- Userscript: [https://greasyfork.org/scripts/466589-v2ex-rep](https://greasyfork.org/scripts/466589-v2ex-rep)
 
 ## Development
 
