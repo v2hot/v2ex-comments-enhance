@@ -8,6 +8,7 @@ import {
   addElement,
   addEventListener,
   addStyle,
+  doc,
   removeEventListener,
 } from "browser-extension-utils"
 import styleText from "data-text:./style.scss"
@@ -99,7 +100,6 @@ async function updateOptions() {
 function createSettingsElement() {
   let settingsLayer = getSettingsElement()
   if (!settingsLayer) {
-    addStyle(getSettingsStyle())
     settingsLayer = addElement(document.body, "div", {
       id: settingsElementId,
     })
@@ -186,6 +186,22 @@ function createSettingsElement() {
   return settingsLayer
 }
 
+function addSideMenu(options) {
+  const menu =
+    $("#browser_extension_side_menu") ||
+    addElement(doc.body, "div", {
+      id: "browser_extension_side_menu",
+      "data-version": 1,
+    })
+  addElement(menu, "button", {
+    type: "button",
+    title: options.title ? "设置 - " + options.title : "设置",
+    onclick() {
+      setTimeout(showSettings, 1)
+    },
+  })
+}
+
 export async function showSettings() {
   const settingsLayer = createSettingsElement()
   await updateOptions()
@@ -206,4 +222,6 @@ export const initSettings = async (options) => {
   })
 
   settings = await getSettings()
+  addStyle(getSettingsStyle())
+  addSideMenu(options)
 }
