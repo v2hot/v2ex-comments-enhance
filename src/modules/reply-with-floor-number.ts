@@ -4,8 +4,11 @@ export const replyWithFloorNumber = (replyElement: HTMLElement) => {
   const replyButton = $('a[onclick^="replyOne"]', replyElement)
   const numberElement = $("span.no", replyElement)
   if (replyButton && numberElement) {
-    const number = numberElement.textContent
+    // eslint-disable-next-line no-script-url
+    setAttribute(replyButton, "href", "javascript:;")
+
     const onclick = getAttribute(replyButton, "onclick") || ""
+    const number = numberElement.textContent
     if (number) {
       setAttribute(
         replyButton,
@@ -15,9 +18,9 @@ export const replyWithFloorNumber = (replyElement: HTMLElement) => {
           `replyOne('$1 #${number}')`
         )
       )
+      // To re-bind click event
+      // eslint-disable-next-line no-self-assign
+      replyButton.outerHTML = replyButton.outerHTML
     }
-
-    // eslint-disable-next-line no-script-url
-    setAttribute(replyButton, "href", "javascript:;")
   }
 }
