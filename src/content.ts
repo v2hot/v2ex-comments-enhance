@@ -67,20 +67,20 @@ async function process() {
         replyWithFloorNumber(replyElement)
       }
 
-      if (getSettingsValue("quickSendThank")) {
-        quickSendThank(replyElement)
-      }
-
-      if (getSettingsValue("quickHideReply")) {
-        quickHideReply(replyElement)
-      }
-
       if (getSettingsValue("alwaysShowThankButton")) {
         alwaysShowThankButton(replyElement)
       }
 
       if (getSettingsValue("alwaysShowHideButton")) {
         alwaysShowHideButton(replyElement)
+      }
+
+      if (getSettingsValue("quickSendThank")) {
+        quickSendThank(replyElement)
+      }
+
+      if (getSettingsValue("quickHideReply")) {
+        quickHideReply(replyElement)
       }
     }
 
