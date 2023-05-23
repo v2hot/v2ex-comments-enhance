@@ -1,13 +1,13 @@
-a.emoji_button {
+a.icon_button {
   opacity: 100%;
   visibility: visible;
   margin-right: 14px;
 }
 
-a.emoji_button:last-child {
+a.icon_button:last-child {
   margin-right: 0;
 }
 
-a.emoji_button:hover {
-  opacity: 70%;
+a.icon_button svg {
+  vertical-align: text-top;
 }
