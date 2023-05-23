@@ -102,7 +102,7 @@ async function process() {
     const topicId = matched[1]
     const page = Number.parseInt(matched[2], 10) || 1
 
-    const replyCount = $$("span.no").length
+    const replyCount = $$(".box > .cell span.no").length
     const displayNumber =
       Number.parseInt(
         (/(\d+)\s条回复/.exec($(".box .cell .gray")?.textContent || "") ||
