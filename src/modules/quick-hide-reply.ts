@@ -11,5 +11,7 @@ export const quickHideReply = (replyElement: HTMLElement) => {
     )
     // eslint-disable-next-line no-script-url
     setAttribute(hideButton, "href", "javascript:;")
+    // eslint-disable-next-line no-self-assign
+    hideButton.outerHTML = hideButton.outerHTML
   }
 }

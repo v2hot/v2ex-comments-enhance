@@ -1,5 +1,5 @@
 a.icon_button {
-  opacity: 100%;
+  opacity: 1 !important;
   visibility: visible;
   margin-right: 14px;
 }
@@ -11,3 +11,24 @@ a.icon_button:last-child {
 a.icon_button svg {
   vertical-align: text-top;
 }
+
+/* fix v2ex polish start */
+body .v2p-controls {
+  opacity: 1;
+}
+
+body .v2p-controls > a.icon_button {
+  margin-right: 0;
+}
+
+body .v2p-controls div a {
+  margin-right: 15px;
+}
+body .v2p-controls div a:last-child {
+  margin-right: 0;
+}
+
+body .v2p-controls a[onclick^="replyOne"] {
+  opacity: 1 !important;
+}
+/* fix v2ex polish end */
