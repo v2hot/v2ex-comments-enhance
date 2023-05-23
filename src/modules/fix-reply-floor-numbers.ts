@@ -22,11 +22,8 @@ const updateReplyElements = (
   for (let i = 0; i < length; i++) {
     const reply = replies[i + offset]
     const id = reply.id
-    const element = replyElements[index]
-    const elementId = element
-      ? Number.parseInt(element.id.replace("r_", ""), 10)
-      : -1
-    if (id !== elementId) {
+    const element = $("#r_" + id)
+    if (!element) {
       console.info(
         `[V2EX 回复增强] 屏蔽或隐藏的回复: #${
           index + offset + elementOffset + 1
@@ -38,23 +35,40 @@ const updateReplyElements = (
       continue
     }
 
-    const numberElement = $("span.no", element)
-    if (numberElement && elementOffset > 0) {
-      numberElement.textContent = String(index + offset + elementOffset + 1)
+    element.found = true
+    if (elementOffset > 0) {
+      const numberElement = $("span.no", element)
+      if (numberElement) {
+        numberElement.textContent = String(index + offset + elementOffset + 1)
+      }
     }
 
     index++
   }
 
-  for (let i = index; i < replyElements.length; i++) {
-    const element = replyElements[i]
-    const numberElement = $("span.no", element)
-    if (numberElement && elementOffset > 0) {
-      numberElement.textContent = String(i + offset + elementOffset + 1)
-    }
-  }
-
   if (elementOffset > 0) {
+    const v2exPolishModel = $(".v2p-model-mask")
+    // 如果 API 返回的数据不是最新，实际页面的回复数会比 API 里的多。更新多的部分
+    for (const element of replyElements) {
+      if (element.found) {
+        continue
+      }
+
+      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+      if (v2exPolishModel && v2exPolishModel.contains(element)) {
+        continue
+      }
+
+      const numberElement = $("span.no", element)
+      if (numberElement) {
+        const oldNumber = Number.parseInt(numberElement.textContent || "", 10)
+        if (oldNumber) {
+          numberElement.textContent = String(oldNumber + elementOffset)
+        }
+      }
+    }
+
+    // 触发更新事件
     window.dispatchEvent(new Event("floorNumberUpdated"))
   }
 }
