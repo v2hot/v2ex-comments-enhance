@@ -105,7 +105,8 @@ async function process() {
     const replyCount = $$("span.no").length
     const displayNumber =
       Number.parseInt(
-        (/(\d+)\s条回复/.exec($(".fr + .gray").textContent || "") || [])[1],
+        (/(\d+)\s条回复/.exec($(".box .cell .gray")?.textContent || "") ||
+          [])[1],
         10
       ) || 0
 
@@ -134,15 +135,15 @@ async function main() {
       Pipecraft
     </a></p>`,
     settingsTable,
-    onValueChange() {
-      process()
+    async onValueChange() {
+      await process()
     },
   })
   registerMenuCommands()
 
   addStyle(styleText)
 
-  process()
+  await process()
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises, unicorn/prefer-top-level-await
