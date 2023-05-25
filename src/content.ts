@@ -19,6 +19,7 @@ import { fixReplyFloorNumbers } from "./modules/fix-reply-floor-numbers"
 import { quickHideReply } from "./modules/quick-hide-reply"
 import { quickSendThank } from "./modules/quick-send-thank"
 import { replyWithFloorNumber } from "./modules/reply-with-floor-number"
+import { showTopReplies } from "./modules/show-top-replies"
 
 export const config: PlasmoCSConfig = {
   matches: ["https://*.v2ex.com/*"],
@@ -33,6 +34,10 @@ const settingsTable = {
   },
   replyWithFloorNumber: {
     title: "回复时带上楼层号",
+    defaultValue: true,
+  },
+  showTopReplies: {
+    title: "显示热门回复",
     defaultValue: true,
   },
   quickSendThank: {
@@ -84,6 +89,8 @@ async function process() {
       }
     }
 
+    showTopReplies(getSettingsValue("showTopReplies"))
+
     addEventListener(window, "floorNumberUpdated", () => {
       fixedReplyFloorNumbers = true
       if (getSettingsValue("replyWithFloorNumber")) {
@@ -92,6 +99,8 @@ async function process() {
           replyWithFloorNumber(replyElement)
         }
       }
+
+      showTopReplies(getSettingsValue("showTopReplies"))
     })
 
     if (!getSettingsValue("fixReplyFloorNumbers") || fixedReplyFloorNumbers) {

@@ -1,14 +1,15 @@
 import { $, getAttribute, setAttribute } from "browser-extension-utils"
 
+import { getFloorNumber } from "../utils"
+
 export const replyWithFloorNumber = (replyElement: HTMLElement) => {
   const replyButton = $('a[onclick^="replyOne"]', replyElement)
-  const numberElement = $("span.no", replyElement)
-  if (replyButton && numberElement) {
+  if (replyButton) {
     // eslint-disable-next-line no-script-url
     setAttribute(replyButton, "href", "javascript:;")
 
     const onclick = getAttribute(replyButton, "onclick") || ""
-    const number = numberElement.textContent
+    const number = getFloorNumber(replyElement)
     if (number) {
       setAttribute(
         replyButton,

@@ -1,5 +1,7 @@
 import { $, $$ } from "browser-extension-utils"
 
+import { getFloorNumberElement } from "../utils"
+
 const getTopicReplies = async (topicId: string) => {
   const url = `${location.protocol}//${location.host}/api/replies/show.json?topic_id=${topicId}`
 
@@ -37,7 +39,7 @@ const updateReplyElements = (
 
     element.found = true
     if (elementOffset > 0) {
-      const numberElement = $("span.no", element)
+      const numberElement = getFloorNumberElement(element)
       if (numberElement) {
         numberElement.textContent = String(index + offset + elementOffset + 1)
       }
@@ -59,7 +61,7 @@ const updateReplyElements = (
         continue
       }
 
-      const numberElement = $("span.no", element)
+      const numberElement = getFloorNumberElement(element)
       if (numberElement) {
         const oldNumber = Number.parseInt(numberElement.textContent || "", 10)
         if (oldNumber) {
