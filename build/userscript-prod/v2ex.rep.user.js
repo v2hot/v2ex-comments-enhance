@@ -4,9 +4,9 @@
 // @namespace            https://github.com/v2hot/v2ex.rep
 // @homepageURL          https://github.com/v2hot/v2ex.rep#readme
 // @supportURL           https://github.com/v2hot/v2ex.rep/issues
-// @version              0.0.2
-// @description          专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
-// @description:zh-CN    专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
+// @version              0.0.3
+// @description          专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
+// @description:zh-CN    专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
 // @icon                 https://www.v2ex.com/favicon.ico
 // @author               Pipecraft
 // @license              MIT
@@ -175,7 +175,7 @@
     GM.registerMenuCommand(name, callback, accessKey)
   }
   var content_default =
-    "a.icon_button{opacity:1 !important;visibility:visible;margin-right:14px}a.icon_button:last-child{margin-right:0}a.icon_button svg{vertical-align:text-top}body .v2p-controls{opacity:1}body .v2p-controls>a.icon_button{margin-right:0}body .v2p-controls div a{margin-right:15px}body .v2p-controls div a:last-child{margin-right:0}body .v2p-controls a[onclick^=replyOne]{opacity:1 !important}"
+    "a.icon_button{opacity:1 !important;visibility:visible;margin-right:14px}a.icon_button:last-child{margin-right:0}a.icon_button svg{vertical-align:text-top}body .v2p-controls{opacity:1}body .v2p-controls>a.icon_button{margin-right:0}body .v2p-controls div a{margin-right:15px}body .v2p-controls div a:last-child{margin-right:0}body .v2p-controls a[onclick^=replyOne]{opacity:1 !important}.sticky_rightbar #Rightbar{position:sticky;top:0;max-height:100vh;overflow-y:hidden;overflow-x:hidden;--sb-track-color: #232e3300;--sb-thumb-color: #33334480;--sb-size: 2px;scrollbar-color:var(--sb-thumb-color) var(--sb-track-color)}.sticky_rightbar #Rightbar:hover{overflow-y:overlay}.sticky_rightbar #Rightbar::-webkit-scrollbar{width:var(--sb-size)}.sticky_rightbar #Rightbar::-webkit-scrollbar-track{background:var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar-thumb{background:var(--sb-thumb-color)}.sticky_rightbar #Rightbar .v2p-tool-box{position:unset}"
   var listeners = {}
   var getValue = async (key) => {
     const value = await GM.getValue(key)
@@ -450,6 +450,14 @@
       }
     }
   }
+  var getFloorNumberElement = (replyElement) => $("span.no", replyElement)
+  var getFloorNumber = (replyElement) => {
+    const numberElement = getFloorNumberElement(replyElement)
+    if (numberElement) {
+      return Number.parseInt(numberElement.textContent || "", 10) || void 0
+    }
+    return void 0
+  }
   var getTopicReplies = async (topicId) => {
     const url = `${location.protocol}//${location.host}/api/replies/show.json?topic_id=${topicId}`
     const response = await fetch(url)
@@ -483,7 +491,7 @@
       }
       element.found = true
       if (elementOffset > 0) {
-        const numberElement = $("span.no", element)
+        const numberElement = getFloorNumberElement(element)
         if (numberElement) {
           numberElement.textContent = String(index + offset + elementOffset + 1)
         }
@@ -491,11 +499,15 @@
       index++
     }
     if (elementOffset > 0) {
+      const v2exPolishModel = $(".v2p-model-mask")
       for (const element of replyElements) {
         if (element.found) {
           continue
         }
-        const numberElement = $("span.no", element)
+        if (v2exPolishModel && v2exPolishModel.contains(element)) {
+          continue
+        }
+        const numberElement = getFloorNumberElement(element)
         if (numberElement) {
           const oldNumber = Number.parseInt(numberElement.textContent || "", 10)
           if (oldNumber) {
@@ -557,11 +569,10 @@
   }
   var replyWithFloorNumber = (replyElement) => {
     const replyButton = $('a[onclick^="replyOne"]', replyElement)
-    const numberElement = $("span.no", replyElement)
-    if (replyButton && numberElement) {
+    if (replyButton) {
       setAttribute(replyButton, "href", "javascript:;")
       const onclick = getAttribute(replyButton, "onclick") || ""
-      const number = numberElement.textContent
+      const number = getFloorNumber(replyElement)
       if (number) {
         setAttribute(
           replyButton,
@@ -572,6 +583,101 @@
           )
         )
         replyButton.outerHTML = replyButton.outerHTML
+      }
+    }
+  }
+  var showTopReplies = (toggle) => {
+    var _a, _b
+    const element = $("#top_replies")
+    if (element) {
+      const sep20 = element.previousElementSibling
+      if (sep20 == null ? void 0 : sep20.classList.contains("sep20")) {
+        sep20.remove()
+      }
+      element.remove()
+    }
+    if (!toggle) {
+      ;(_a = $("#Wrapper")) == null
+        ? void 0
+        : _a.classList.remove("sticky_rightbar")
+      return
+    }
+    ;(_b = $("#Wrapper")) == null ? void 0 : _b.classList.add("sticky_rightbar")
+    const v2exPolishModel = $(".v2p-model-mask")
+    const replyElements = $$('.box .cell[id^="r_"]')
+      .filter((reply) => {
+        var _a2
+        if (v2exPolishModel && v2exPolishModel.contains(reply)) {
+          return false
+        }
+        const heartElement = $('img[alt="\u2764\uFE0F"],.v2p-icon-heart', reply)
+        if (heartElement) {
+          const childReplies = $$('.cell[id^="r_"]', reply)
+          for (const child of childReplies) {
+            if (child.contains(heartElement)) {
+              return false
+            }
+          }
+          const thanked = Number.parseInt(
+            ((_a2 = heartElement.nextSibling) == null
+              ? void 0
+              : _a2.textContent) || "0",
+            10
+          )
+          if (thanked > 0) {
+            reply.thanked = thanked
+            return true
+          }
+        }
+        return false
+      })
+      .sort((a, b) => {
+        if (b.thanked === a.thanked) {
+          const floorNumberA = getFloorNumber(a) || 0
+          const floorNumberB = getFloorNumber(b) || 0
+          return floorNumberA - floorNumberB
+        }
+        return b.thanked - a.thanked
+      })
+    if (replyElements.length > 0) {
+      const box = createElement("div", {
+        class: "box",
+        id: "top_replies",
+        innerHTML: `<div class="cell"><div class="fr"></div><span class="fade">\u5F53\u524D\u9875\u70ED\u95E8\u56DE\u590D</span></div>`,
+      })
+      for (const element2 of replyElements) {
+        const cloned = element2.cloneNode(true)
+        cloned.id = "top_" + element2.id
+        const floorNumber = $(".no", cloned)
+        const toolbox = $(".fr", cloned)
+        if (toolbox && floorNumber) {
+          const floorNumber2 = createElement("a", {
+            class: "no",
+            textContent: floorNumber.textContent,
+          })
+          addEventListener(floorNumber2, "click", () => {
+            element2.scrollIntoView({ block: "start" })
+          })
+          toolbox.innerHTML = ""
+          toolbox.append(floorNumber2)
+        }
+        const ago = $(".ago", cloned)
+        if (ago) {
+          ago.before(createElement("br"))
+        }
+        const cells = $$(".cell", cloned)
+        for (const cell of cells) {
+          cell.remove()
+        }
+        box.append(cloned)
+      }
+      const appendPosition = $("#Rightbar .box")
+      const sep20 = createElement("div", {
+        class: "sep20",
+      })
+      if (appendPosition) {
+        appendPosition.after(box)
+        appendPosition.after(sep20)
       }
     }
   }
@@ -586,6 +692,10 @@
     },
     replyWithFloorNumber: {
       title: "\u56DE\u590D\u65F6\u5E26\u4E0A\u697C\u5C42\u53F7",
+      defaultValue: true,
+    },
+    showTopReplies: {
+      title: "\u663E\u793A\u70ED\u95E8\u56DE\u590D",
       defaultValue: true,
     },
     quickSendThank: {
@@ -630,6 +740,7 @@
           quickHideReply(replyElement)
         }
       }
+      showTopReplies(getSettingsValue("showTopReplies"))
       addEventListener(window, "floorNumberUpdated", () => {
         fixedReplyFloorNumbers = true
         if (getSettingsValue("replyWithFloorNumber")) {
@@ -638,6 +749,7 @@
             replyWithFloorNumber(replyElement)
           }
         }
+        showTopReplies(getSettingsValue("showTopReplies"))
       })
       if (!getSettingsValue("fixReplyFloorNumbers") || fixedReplyFloorNumbers) {
         return
