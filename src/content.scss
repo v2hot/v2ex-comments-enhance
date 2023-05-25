@@ -32,3 +32,37 @@ body .v2p-controls a[onclick^="replyOne"] {
   opacity: 1 !important;
 }
 /* fix v2ex polish end */
+.sticky_rightbar {
+  #Rightbar {
+    position: sticky;
+    top: 0;
+    max-height: 100vh;
+    overflow-y: hidden;
+    overflow-x: hidden;
+    --sb-track-color: #232e3300;
+    --sb-thumb-color: #33334480;
+    --sb-size: 2px;
+
+    scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+  }
+
+  #Rightbar:hover {
+    overflow-y: overlay;
+  }
+
+  #Rightbar::-webkit-scrollbar {
+    width: var(--sb-size);
+  }
+
+  #Rightbar::-webkit-scrollbar-track {
+    background: var(--sb-track-color);
+  }
+
+  #Rightbar::-webkit-scrollbar-thumb {
+    background: var(--sb-thumb-color);
+  }
+
+  #Rightbar .v2p-tool-box {
+    position: unset;
+  }
+}
