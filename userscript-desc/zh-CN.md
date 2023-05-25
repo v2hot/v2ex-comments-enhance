@@ -6,9 +6,12 @@
 
 - ✅ 修复有被 block 的用户时错位的楼层号
 - ✅ 回复时自动带上楼层号
+- ✅ 显示热门回复
 - ✅ 一直显示感谢按钮 🙏
 - ✅ 一直显示隐藏回复按钮 🙈
 - ✅ 快速发送感谢/快速隐藏回复（no confirm）
+
+> ⚠️ 兼容 V2EX Plus, V2EX Polish 等浏览器扩展/脚本。
 
 ## 页面截屏
 
@@ -20,11 +23,13 @@
 
 ![screenshots](https://raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-02.png)
 
-![screenshots](https://raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-05.png)
-
 - 回复时自动带上楼层号
 
 ![screenshots](https://raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-03.png)
+
+- 显示热门回复，点击楼层数，可直达该回复
+
+![screenshots](https://raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-05.png)
 
 - 一直显示感谢按钮/回复按钮
 
@@ -52,6 +57,8 @@
 
 ## Release Notes
 
+- 0.0.3 2023.05.25
+  - 显示热门回复
 - 0.0.2 2023.05.23
   - 修改 v2ex polish 扩展/脚本兼容性问题
   - Change emoji to icon
