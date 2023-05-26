@@ -1,6 +1,6 @@
 import { $, $$, addEventListener, createElement } from "browser-extension-utils"
 
-import { getFloorNumber } from "../utils"
+import { getFloorNumber, getReplyElements } from "../utils"
 
 export const showTopReplies = (toggle) => {
   const element = $("#top_replies")
@@ -21,7 +21,7 @@ export const showTopReplies = (toggle) => {
   $("#Wrapper")?.classList.add("sticky_rightbar")
 
   const v2exPolishModel = $(".v2p-model-mask")
-  const replyElements = $$('.box .cell[id^="r_"]')
+  const replyElements = getReplyElements()
     .filter((reply) => {
       // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
       if (v2exPolishModel && v2exPolishModel.contains(reply)) {
