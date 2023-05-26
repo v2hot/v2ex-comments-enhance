@@ -1,6 +1,11 @@
 #browser_extension_settings {
   --browser-extension-settings-background-color: #f3f3f3;
   --browser-extension-settings-text-color: #444444;
+  --browser-extension-settings-link-color: #217dfc;
+  --sb-track-color: #00000000;
+  --sb-thumb-color: #33334480;
+  --sb-size: 2px;
+
   position: fixed;
   top: 10px;
   right: 30px;
@@ -8,6 +13,9 @@
   max-height: 90%;
   overflow-y: auto;
   overflow-x: hidden;
+  scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+  /* for Firefox */
+  scrollbar-width: thin;
   display: none;
   box-sizing: border-box;
   padding: 10px 15px;
@@ -18,6 +26,20 @@
   -webkit-box-shadow: 0px 10px 39px 10px rgba(62, 66, 66, 0.22);
   -moz-box-shadow: 0px 10px 39px 10px rgba(62, 66, 66, 0.22);
   box-shadow: 0px 10px 39px 10px rgba(62, 66, 66, 0.22) !important;
+
+  &::-webkit-scrollbar {
+    width: var(--sb-size);
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--sb-track-color);
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--sb-thumb-color);
+    border-radius: 10px;
+  }
 
   h2 {
     text-align: center;
@@ -38,7 +60,7 @@
   }
 
   footer a {
-    color: #217dfc;
+    color: var(--browser-extension-settings-link-color) !important;
     text-decoration: none;
     padding: 0;
   }
@@ -63,7 +85,7 @@
     font-size: 14px;
     border-top: 1px solid #cccccc;
     padding: 6px 0 6px 0;
-    color: #217dfc;
+    color: var(--browser-extension-settings-link-color);
     cursor: pointer;
   }
 
