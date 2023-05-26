@@ -1,4 +1,6 @@
-import { $ } from "browser-extension-utils"
+import { $, $$ } from "browser-extension-utils"
+
+export const getReplyElements = () => $$('.box .cell[id^="r_"]')
 
 export const getFloorNumberElement = (replyElement: HTMLElement) =>
   $("span.no", replyElement)
