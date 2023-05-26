@@ -37,17 +37,19 @@ body .v2p-controls a[onclick^="replyOne"] {
     position: sticky;
     top: 0;
     max-height: 100vh;
-    overflow-y: hidden;
+    overflow-y: auto;
     overflow-x: hidden;
-    --sb-track-color: #232e3300;
+    --sb-track-color: #00000000;
     --sb-thumb-color: #33334480;
     --sb-size: 2px;
 
-    scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+    scrollbar-color: #00000000 #00000000;
+    /* for Firefox */
+    scrollbar-width: thin;
   }
 
   #Rightbar:hover {
-    overflow-y: overlay;
+    scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
   }
 
   #Rightbar::-webkit-scrollbar {
@@ -55,10 +57,18 @@ body .v2p-controls a[onclick^="replyOne"] {
   }
 
   #Rightbar::-webkit-scrollbar-track {
+    background: #00000000;
+    border-radius: 10px;
+  }
+  #Rightbar:hover::-webkit-scrollbar-track {
     background: var(--sb-track-color);
   }
 
   #Rightbar::-webkit-scrollbar-thumb {
+    background: #00000000;
+    border-radius: 10px;
+  }
+  #Rightbar:hover::-webkit-scrollbar-thumb {
     background: var(--sb-thumb-color);
   }
 
