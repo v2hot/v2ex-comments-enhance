@@ -7,6 +7,7 @@
 - ✅ 修复有被 block 的用户时错位的楼层号
 - ✅ 回复时自动带上楼层号
 - ✅ 显示热门回复
+- ✅ 查看指定用户在当前主题下的所有回复 （暂不兼容 V2EX Polish）
 - ✅ 一直显示感谢按钮 🙏
 - ✅ 一直显示隐藏回复按钮 🙈
 - ✅ 快速发送感谢/快速隐藏回复（no confirm）
@@ -30,6 +31,12 @@
 - 显示热门回复，点击楼层数，可直达该回复
 
 ![screenshots](https://raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-05.png)
+
+- 鼠标移至用户名，查看该用户在当前主题下的所有回复
+
+![screenshots](https://raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-06.png)
+
+![screenshots](https://raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-07.png)
 
 - 一直显示感谢按钮/回复按钮
 
@@ -57,6 +64,8 @@ Compatible with the following userscript managers
 
 ## Release Notes
 
+- 0.0.4 2023.05.30
+  - 查看指定用户在当前主题下的所有回复
 - 0.0.3 2023.05.25
   - 显示热门回复
 - 0.0.2 2023.05.23
