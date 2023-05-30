@@ -9,6 +9,10 @@ export const replyWithFloorNumber = (replyElement: HTMLElement) => {
     setAttribute(replyButton, "href", "javascript:;")
 
     const onclick = getAttribute(replyButton, "onclick") || ""
+    if (onclick.includes("#")) {
+      return
+    }
+
     const number = getFloorNumber(replyElement)
     if (number) {
       setAttribute(

@@ -3,7 +3,9 @@ import {
   $$,
   addEventListener,
   addStyle,
+  doc,
   registerMenuCommand,
+  throttle,
 } from "browser-extension-utils"
 import styleText from "data-text:./content.scss"
 import type { PlasmoCSConfig } from "plasmo"
@@ -15,11 +17,13 @@ import {
 } from "./components/settings"
 import { alwaysShowHideButton } from "./modules/always-show-hide-button"
 import { alwaysShowThankButton } from "./modules/always-show-thank-button"
+import { filterRepliesByUser } from "./modules/filter-repies-by-user"
 import { fixReplyFloorNumbers } from "./modules/fix-reply-floor-numbers"
 import { quickHideReply } from "./modules/quick-hide-reply"
 import { quickSendThank } from "./modules/quick-send-thank"
 import { replyWithFloorNumber } from "./modules/reply-with-floor-number"
 import { showTopReplies } from "./modules/show-top-replies"
+import { getReplyElements } from "./utils"
 
 export const config: PlasmoCSConfig = {
   matches: ["https://*.v2ex.com/*"],
@@ -38,6 +42,11 @@ const settingsTable = {
   },
   showTopReplies: {
     title: "显示热门回复",
+    defaultValue: true,
+  },
+  filterRepliesByUser: {
+    title: "查看指定用户在当前主题下的所有回复",
+    description: "鼠标移至用户名，会显示该用户在当前主题下的所有回复",
     defaultValue: true,
   },
   quickSendThank: {
@@ -66,7 +75,7 @@ let fixedReplyFloorNumbers = false
 
 async function process() {
   if (/\/t\/\d+/.test(location.href)) {
-    const replyElements = $$('.cell[id^="r_"]')
+    const replyElements = getReplyElements()
     for (const replyElement of replyElements) {
       if (getSettingsValue("replyWithFloorNumber")) {
         replyWithFloorNumber(replyElement)
@@ -91,16 +100,20 @@ async function process() {
 
     showTopReplies(getSettingsValue("showTopReplies"))
 
+    filterRepliesByUser(getSettingsValue("filterRepliesByUser"))
+
     addEventListener(window, "floorNumberUpdated", () => {
       fixedReplyFloorNumbers = true
       if (getSettingsValue("replyWithFloorNumber")) {
-        const replyElements = $$('.cell[id^="r_"]')
+        const replyElements = getReplyElements()
         for (const replyElement of replyElements) {
           replyWithFloorNumber(replyElement)
         }
       }
 
       showTopReplies(getSettingsValue("showTopReplies"))
+
+      filterRepliesByUser(getSettingsValue("filterRepliesByUser"))
     })
 
     if (!getSettingsValue("fixReplyFloorNumbers") || fixedReplyFloorNumbers) {
@@ -153,6 +166,24 @@ async function main() {
   addStyle(styleText)
 
   await process()
+
+  const scanNodes = throttle(() => {
+    console.error(
+      "mutation - scanAndConvertChildNodes, scanAnchors",
+      Date.now()
+    )
+    process()
+  }, 500)
+
+  const observer = new MutationObserver((mutationsList) => {
+    console.error("mutation", Date.now(), mutationsList)
+    scanNodes()
+  })
+
+  observer.observe($("#Main") || doc, {
+    childList: true,
+    subtree: true,
+  })
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises, unicorn/prefer-top-level-await
