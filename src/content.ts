@@ -168,15 +168,11 @@ async function main() {
   await process()
 
   const scanNodes = throttle(() => {
-    console.error(
-      "mutation - scanAndConvertChildNodes, scanAnchors",
-      Date.now()
-    )
     process()
   }, 500)
 
   const observer = new MutationObserver((mutationsList) => {
-    console.error("mutation", Date.now(), mutationsList)
+    // console.error("mutation", Date.now(), mutationsList)
     scanNodes()
   })
 
