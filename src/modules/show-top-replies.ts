@@ -53,8 +53,8 @@ export const showTopReplies = (toggle) => {
     })
     .sort((a, b) => {
       if (b.thanked === a.thanked) {
-        const floorNumberA = getFloorNumber(a) || 0
-        const floorNumberB = getFloorNumber(b) || 0
+        const floorNumberA = getFloorNumber(a)
+        const floorNumberB = getFloorNumber(b)
         return floorNumberA - floorNumberB
       }
 
