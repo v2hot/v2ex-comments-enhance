@@ -4,7 +4,7 @@
 // @namespace            https://github.com/v2hot/v2ex.rep
 // @homepageURL          https://github.com/v2hot/v2ex.rep#readme
 // @supportURL           https://github.com/v2hot/v2ex.rep/issues
-// @version              0.0.4
+// @version              0.0.5
 // @description          专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 查看指定用户在当前主题下的所有回复；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
 // @description:zh-CN    专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 查看指定用户在当前主题下的所有回复；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
 // @icon                 https://www.v2ex.com/favicon.ico
@@ -194,7 +194,7 @@
     GM.registerMenuCommand(name, callback, accessKey)
   }
   var content_default =
-    'a.icon_button{opacity:1 !important;visibility:visible;margin-right:14px}a.icon_button:last-child{margin-right:0}a.icon_button svg{vertical-align:text-top}body .v2p-controls{opacity:1}body .v2p-controls>a.icon_button{margin-right:0}body .v2p-controls div a{margin-right:15px}body .v2p-controls div a:last-child{margin-right:0}body .v2p-controls a[onclick^=replyOne]{opacity:1 !important}.sticky_rightbar #Rightbar{position:sticky;top:0;max-height:100vh;overflow-y:auto;overflow-x:hidden;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;scrollbar-color:rgba(0,0,0,0) rgba(0,0,0,0);scrollbar-width:thin}.sticky_rightbar #Rightbar:hover{scrollbar-color:var(--sb-thumb-color) var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar{width:var(--sb-size)}.sticky_rightbar #Rightbar::-webkit-scrollbar-track{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-track{background:var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar-thumb{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-thumb{background:var(--sb-thumb-color)}.sticky_rightbar #Rightbar .v2p-tool-box{position:unset}#Main{position:relative}#Main .related_replies_container .related_replies{position:absolute;width:100%;-webkit-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);-moz-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);box-shadow:0px 10px 39px 10px rgba(62,66,66,.22) !important}#Main .related_replies_container #related_replies::before{content:"";display:block;width:100%;height:10000px;position:absolute;margin-top:-10000px;background-color:#334;opacity:50%}#Main .related_replies_container #related_replies2::after{content:"";display:block;width:100%;height:10000px;position:absolute;background-color:#334;opacity:50%}a.no{background-color:rgba(0,0,0,0);color:#1484cd;border:1px solid #1484cd;border-radius:3px}'
+    'a.icon_button{opacity:1 !important;visibility:visible;margin-right:14px}a.icon_button:last-child{margin-right:0}a.icon_button svg{vertical-align:text-top}body .v2p-controls{opacity:1}body .v2p-controls>a.icon_button{margin-right:0}body .v2p-controls div a{margin-right:15px}body .v2p-controls div a:last-child{margin-right:0}body .v2p-controls a[onclick^=replyOne]{opacity:1 !important}.sticky_rightbar #Rightbar{position:sticky;top:0;max-height:100vh;overflow-y:auto;overflow-x:hidden;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;scrollbar-color:rgba(0,0,0,0) rgba(0,0,0,0);scrollbar-width:thin}.sticky_rightbar #Rightbar:hover{scrollbar-color:var(--sb-thumb-color) var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar{width:var(--sb-size)}.sticky_rightbar #Rightbar::-webkit-scrollbar-track{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-track{background:var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar-thumb{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-thumb{background:var(--sb-thumb-color)}.sticky_rightbar #Rightbar .v2p-tool-box{position:unset}#Main{position:relative}#Main .related_replies_container .related_replies{position:absolute;width:100%;-webkit-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);-moz-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);box-shadow:0px 10px 39px 10px rgba(62,66,66,.22) !important}#Main .related_replies_container .related_replies_before::before{content:"";display:block;width:100%;height:10000px;position:absolute;margin-top:-10000px;background-color:#334;opacity:50%}#Main .related_replies_container .related_replies_after::after{content:"";display:block;width:100%;height:10000px;position:absolute;background-color:#334;opacity:50%}#Main .related_replies_container.no_replies .related_replies_before::before,#Main .related_replies_container.no_replies .related_replies_after::after{display:none}a.no{background-color:rgba(0,0,0,0);color:#1484cd;border:1px solid #1484cd;border-radius:3px}'
   var listeners = {}
   var getValue = async (key) => {
     const value = await GM.getValue(key)
@@ -516,12 +516,10 @@
       class: "related_replies_container",
     })
     const box = addElement2(container, "div", {
-      class: "box related_replies",
-      id: "related_replies",
+      class: "box related_replies related_replies_before",
     })
     const box2 = addElement2(container, "div", {
-      class: "box related_replies",
-      id: "related_replies2",
+      class: "box related_replies related_replies_after",
     })
     box.innerHTML = ""
     box2.innerHTML = ""
@@ -548,11 +546,11 @@
         class: "cell",
         innerHTML: `<span class="fade">\u672C\u9875\u9762\u6CA1\u6709\u5176\u4ED6\u56DE\u590D</span>`,
       })
+      container.classList.add("no_replies")
       addEventListener(
         referElement,
         "mouseout",
         () => {
-          console.error("remove")
           container.remove()
         },
         { once: true }
@@ -576,7 +574,6 @@
         : replyElement.offsetTop
       const height = box.offsetHeight || box.clientHeight
       const height2 = replyElement.offsetHeight || replyElement.clientHeight
-      console.log(offsetTop, replyElement)
       setStyle(box, { top: offsetTop - height + "px" })
       setStyle(box2, { top: offsetTop + height2 + "px" })
     } else if (afterCount > 0) {
@@ -610,7 +607,6 @@
       }
       const memberId = (/member\/(\w+)/.exec(memberLink.href) || [])[1]
       if (memberIds.includes(memberId)) {
-        console.log(replyElement)
         const cloned = replyElement.cloneNode(true)
         cloned.id = "related_" + replyElement.id
         const floorNumber = $(".no", cloned)
@@ -641,10 +637,8 @@
     }
     const memberLink = event.target
     timeoutId = setTimeout(() => {
-      console.log(memberLink)
       const memberId = (/member\/(\w+)/.exec(memberLink.href) || [])[1]
       if (memberId) {
-        console.log(memberId)
         const replies = filterRepliesPostedByMember([memberId])
         showModalReplies(replies, memberLink)
       }
@@ -1088,14 +1082,9 @@
     addStyle2(content_default)
     await process2()
     const scanNodes = throttle(() => {
-      console.error(
-        "mutation - scanAndConvertChildNodes, scanAnchors",
-        Date.now()
-      )
       process2()
     }, 500)
     const observer = new MutationObserver((mutationsList) => {
-      console.error("mutation", Date.now(), mutationsList)
       scanNodes()
     })
     observer.observe($("#Main") || doc, {
