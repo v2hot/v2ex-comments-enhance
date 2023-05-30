@@ -4,6 +4,10 @@ export const quickHideReply = (replyElement: HTMLElement) => {
   const hideButton = $('a[onclick*="ignoreReply"]', replyElement)
   if (hideButton) {
     const onclick = getAttribute(hideButton, "onclick")
+    if (!onclick.includes("confirm")) {
+      return
+    }
+
     setAttribute(
       hideButton,
       "onclick",
