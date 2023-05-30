@@ -10,6 +10,10 @@ export const quickSendThank = (replyElement: HTMLElement) => {
   if (thankButton) {
     const replyId = replyElement.id.replace("r_", "")
     const onclick = getAttribute(thankButton, "onclick")
+    if (!onclick.includes("confirm")) {
+      return
+    }
+
     setAttribute(
       thankButton,
       "onclick",
