@@ -3,15 +3,19 @@ import {
   $$,
   addElement,
   addEventListener,
-  createElement,
   doc,
   removeEventListener,
   setStyle,
 } from "browser-extension-utils"
 
-import { getFloorNumber, getReplyElements, getReplyId } from "../utils"
+import {
+  cloneReplyElement,
+  getFloorNumber,
+  getReplyElements,
+  getReplyId,
+} from "../utils"
 
-let timeoutId
+let timeoutId: number | undefined
 
 const showModalReplies = (
   replies: HTMLElement[],
@@ -152,26 +156,8 @@ const filterRepliesPostedByMember = (memberIds: string[]) => {
     const memberId = (/member\/(\w+)/.exec(memberLink.href) || [])[1]
     if (memberIds.includes(memberId)) {
       // console.log(replyElement)
-      const cloned = replyElement.cloneNode(true) as HTMLElement
-
+      const cloned = cloneReplyElement(replyElement)
       cloned.id = "related_" + replyElement.id
-      const floorNumber = $(".no", cloned)
-      const toolbox = $(".fr", cloned)
-      if (toolbox && floorNumber) {
-        const floorNumber2 = createElement("a", {
-          class: "no",
-          textContent: floorNumber.textContent,
-        })
-        addEventListener(floorNumber2, "click", (event) => {
-          closeModal()
-          replyElement.scrollIntoView({ block: "start" })
-          event.preventDefault()
-          event.stopPropagation()
-        })
-        toolbox.innerHTML = ""
-        toolbox.append(floorNumber2)
-      }
-
       replies.push(cloned)
     }
   }
