@@ -88,7 +88,7 @@ body .v2p-controls a[onclick^="replyOne"] {
       -moz-box-shadow: 0px 10px 39px 10px rgba(62, 66, 66, 0.22);
       box-shadow: 0px 10px 39px 10px rgba(62, 66, 66, 0.22) !important;
     }
-    #related_replies::before {
+    .related_replies_before::before {
       content: "";
       display: block;
       width: 100%;
@@ -98,7 +98,7 @@ body .v2p-controls a[onclick^="replyOne"] {
       background-color: #333344;
       opacity: 50%;
     }
-    #related_replies2::after {
+    .related_replies_after::after {
       content: "";
       display: block;
       width: 100%;
@@ -106,6 +106,13 @@ body .v2p-controls a[onclick^="replyOne"] {
       position: absolute;
       background-color: #333344;
       opacity: 50%;
+    }
+
+    &.no_replies {
+      .related_replies_before::before,
+      .related_replies_after::after {
+        display: none;
+      }
     }
   }
 }
