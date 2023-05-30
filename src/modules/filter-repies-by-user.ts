@@ -46,19 +46,13 @@ const showModalReplies = (
     class: "related_replies_container",
   })
 
-  const box =
-    // $("#related_replies") ||
-    addElement(container, "div", {
-      class: "box related_replies",
-      id: "related_replies",
-    })
+  const box = addElement(container, "div", {
+    class: "box related_replies related_replies_before",
+  })
 
-  const box2 =
-    // $("#related_replies2") ||
-    addElement(container, "div", {
-      class: "box related_replies",
-      id: "related_replies2",
-    })
+  const box2 = addElement(container, "div", {
+    class: "box related_replies related_replies_after",
+  })
 
   box.innerHTML = "" // `<div class="cell"><div class="fr"></div><span class="fade">关联回复</span></div>`
   box2.innerHTML = ""
@@ -89,11 +83,11 @@ const showModalReplies = (
       class: "cell",
       innerHTML: `<span class="fade">本页面没有其他回复</span>`,
     })
+    container.classList.add("no_replies")
     addEventListener(
       referElement,
       "mouseout",
       () => {
-        console.error("remove")
         container.remove()
       },
       { once: true }
@@ -120,7 +114,7 @@ const showModalReplies = (
       : replyElement.offsetTop
     const height = box.offsetHeight || box.clientHeight
     const height2 = replyElement.offsetHeight || replyElement.clientHeight
-    console.log(offsetTop, replyElement)
+    // console.log(offsetTop, replyElement)
     setStyle(box, { top: offsetTop - height + "px" })
     setStyle(box2, { top: offsetTop + height2 + "px" })
   } else if (afterCount > 0) {
@@ -157,7 +151,7 @@ const filterRepliesPostedByMember = (memberIds: string[]) => {
 
     const memberId = (/member\/(\w+)/.exec(memberLink.href) || [])[1]
     if (memberIds.includes(memberId)) {
-      console.log(replyElement)
+      // console.log(replyElement)
       const cloned = replyElement.cloneNode(true) as HTMLElement
 
       cloned.id = "related_" + replyElement.id
@@ -193,10 +187,10 @@ const onMouseOver = (event) => {
 
   const memberLink = event.target
   timeoutId = setTimeout(() => {
-    console.log(memberLink)
+    // console.log(memberLink)
     const memberId = (/member\/(\w+)/.exec(memberLink.href) || [])[1]
     if (memberId) {
-      console.log(memberId)
+      // console.log(memberId)
       const replies = filterRepliesPostedByMember([memberId])
       showModalReplies(replies, memberLink)
     }
