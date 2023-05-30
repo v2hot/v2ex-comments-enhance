@@ -1,6 +1,6 @@
-import { $, $$, addEventListener, createElement } from "browser-extension-utils"
+import { $, $$, createElement } from "browser-extension-utils"
 
-import { getFloorNumber, getReplyElements } from "../utils"
+import { cloneReplyElement, getFloorNumber, getReplyElements } from "../utils"
 
 export const showTopReplies = (toggle) => {
   const element = $("#top_replies")
@@ -71,33 +71,13 @@ export const showTopReplies = (toggle) => {
     })
 
     for (const element of replyElements) {
-      const cloned = element.cloneNode(true)
+      const cloned = cloneReplyElement(element)
       cloned.id = "top_" + element.id
-      const floorNumber = $(".no", cloned)
-      const toolbox = $(".fr", cloned)
-      if (toolbox && floorNumber) {
-        const floorNumber2 = createElement("a", {
-          class: "no",
-          textContent: floorNumber.textContent,
-        })
-        addEventListener(floorNumber2, "click", () => {
-          element.scrollIntoView({ block: "start" })
-        })
-        toolbox.innerHTML = ""
-        toolbox.append(floorNumber2)
-      }
 
       const ago = $(".ago", cloned)
       if (ago) {
         ago.before(createElement("br"))
       }
-
-      /* fix v2ex polish start */
-      const cells = $$(".cell", cloned)
-      for (const cell of cells) {
-        cell.remove()
-      }
-      /* fix v2ex polish end */
 
       box.append(cloned)
     }
