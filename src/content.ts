@@ -103,38 +103,8 @@ async function process() {
 
     filterRepliesByUser(getSettingsValue("filterRepliesByUser"))
 
-    addEventListener(window, "floorNumberUpdated", () => {
-      fixedReplyFloorNumbers = true
-      if (getSettingsValue("replyWithFloorNumber")) {
-        const replyElements = getReplyElements()
-        for (const replyElement of replyElements) {
-          replyWithFloorNumber(replyElement)
-        }
-      }
-
-      showTopReplies(getSettingsValue("showTopReplies"))
-
-      filterRepliesByUser(getSettingsValue("filterRepliesByUser"))
-    })
-
-    if (!getSettingsValue("fixReplyFloorNumbers") || fixedReplyFloorNumbers) {
-      return
-    }
-
-    const matched = /\/t\/(\d+)(?:.+\bp=(\d+))?/.exec(location.href) || []
-    const topicId = matched[1]
-    const page = Number.parseInt(matched[2], 10) || 1
-
-    const replyCount = $$(".box > .cell span.no").length
-    const displayNumber =
-      Number.parseInt(
-        (/(\d+)\s条回复/.exec($(".box .cell .gray")?.textContent || "") ||
-          [])[1],
-        10
-      ) || 0
-
-    if (topicId && displayNumber > replyCount) {
-      await fixReplyFloorNumbers(topicId, page)
+    if (getSettingsValue("fixReplyFloorNumbers") && !fixedReplyFloorNumbers) {
+      await fixReplyFloorNumbers()
     }
   }
 }
@@ -165,6 +135,20 @@ async function main() {
   registerMenuCommands()
 
   addStyle(styleText)
+
+  addEventListener(window, "floorNumberUpdated", () => {
+    fixedReplyFloorNumbers = true
+    if (getSettingsValue("replyWithFloorNumber")) {
+      const replyElements = getReplyElements()
+      for (const replyElement of replyElements) {
+        replyWithFloorNumber(replyElement)
+      }
+    }
+
+    showTopReplies(getSettingsValue("showTopReplies"))
+
+    filterRepliesByUser(getSettingsValue("filterRepliesByUser"))
+  })
 
   await process()
 
