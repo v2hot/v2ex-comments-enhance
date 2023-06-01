@@ -1,9 +1,12 @@
 import {
   $,
   $$,
+  actionHref,
+  addClass,
   addElement,
   addEventListener,
   doc,
+  getOffsetPosition,
   removeEventListener,
   setStyle,
 } from "browser-extension-utils"
@@ -13,20 +16,19 @@ import {
   getFloorNumber,
   getReplyElements,
   getReplyId,
+  sortReplyElementsByFloorNumberCompareFn,
 } from "../utils"
 
 let timeoutId: number | undefined
 
 const showModalReplies = (
   replies: HTMLElement[],
-  referElement: HTMLElement | undefined
+  referElement: HTMLElement,
+  memberId: string,
+  type?: string
 ) => {
   const main = $("#Main")
   if (!main) {
-    return
-  }
-
-  if (!referElement) {
     return
   }
 
@@ -61,10 +63,35 @@ const showModalReplies = (
   box.innerHTML = "" // `<div class="cell"><div class="fr"></div><span class="fade">关联回复</span></div>`
   box2.innerHTML = ""
 
+  const tabs = addElement(box, "div", {
+    class: "box tabs inner",
+  })
+
+  addElement(tabs, "a", {
+    class: !type || type === "all" ? "tab_current" : "tab",
+    href: actionHref,
+    textContent: "全部回复",
+    onclick() {
+      // closeModal(true)
+      showRelatedReplies(referElement, memberId)
+    },
+  })
+  addElement(tabs, "a", {
+    class: type === "posted" ? "tab_current" : "tab",
+    href: actionHref,
+    textContent: `仅 ${memberId} 发表的回复`,
+    onclick() {
+      // closeModal(true)
+      showRelatedReplies(referElement, memberId, "posted")
+    },
+  })
+
   const replyId = replyElement ? getReplyId(replyElement) : undefined
   const floorNumber = replyElement ? getFloorNumber(replyElement) : 0
   let beforeCount = 0
   let afterCount = 0
+
+  replies.sort(sortReplyElementsByFloorNumberCompareFn)
 
   for (const reply of replies) {
     const replyId2 = getReplyId(reply)
@@ -87,15 +114,19 @@ const showModalReplies = (
       class: "cell",
       innerHTML: `<span class="fade">本页面没有其他回复</span>`,
     })
-    container.classList.add("no_replies")
-    addEventListener(
-      referElement,
-      "mouseout",
-      () => {
-        container.remove()
-      },
-      { once: true }
-    )
+    if (!type || type === "all") {
+      tabs.remove()
+      addClass(container, "no_replies")
+
+      addEventListener(
+        referElement,
+        "mouseout",
+        () => {
+          container.remove()
+        },
+        { once: true }
+      )
+    }
   }
 
   if (beforeCount === 0 && afterCount > 0) {
@@ -113,27 +144,28 @@ const showModalReplies = (
   }
 
   if (replyElement) {
-    const offsetTop = relatedBox
-      ? relatedBox.offsetTop + replyElement.offsetTop
-      : replyElement.offsetTop
+    const offsetTop = getOffsetPosition(replyElement, main).top
     const height = box.offsetHeight || box.clientHeight
     const height2 = replyElement.offsetHeight || replyElement.clientHeight
     // console.log(offsetTop, replyElement)
     setStyle(box, { top: offsetTop - height + "px" })
     setStyle(box2, { top: offsetTop + height2 + "px" })
   } else if (afterCount > 0) {
+    box2.firstChild?.before(tabs)
     const headerElement = referElement?.closest("#Main .header") as
       | HTMLElement
       | undefined
     if (headerElement) {
-      const offsetTop = headerElement.offsetTop
+      // 主题内容部分用户链接
+      const offsetTop = getOffsetPosition(headerElement, main).top
       const height2 = headerElement.offsetHeight || headerElement.clientHeight
       setStyle(box2, { top: offsetTop + height2 + "px" })
       box.remove()
     } else {
+      // 右侧栏用户链接
       const firstReply = $('.box .cell[id^="r_"]')
       const offsetTop = firstReply
-        ? Math.max(firstReply.offsetTop, window.scrollY)
+        ? Math.max(getOffsetPosition(firstReply, main).top, window.scrollY)
         : window.scrollY
       setStyle(box, { top: offsetTop + "px" })
       setStyle(box2, { top: offsetTop + "px" })
@@ -165,6 +197,44 @@ const filterRepliesPostedByMember = (memberIds: string[]) => {
   return replies
 }
 
+const filterRepliesByPosterOrMentioned = (memberId: string) => {
+  const replies: HTMLElement[] = []
+  const replyElements = getReplyElements()
+  for (const replyElement of replyElements) {
+    const memberLink = $(`a[href^="/member/${memberId}"]`, replyElement)
+    if (!memberLink) {
+      continue
+    }
+
+    // console.log(replyElement)
+    const cloned = cloneReplyElement(replyElement)
+
+    // fix v2ex polish start
+    const memberLink2 = $(`a[href^="/member/${memberId}"]`, cloned)
+    if (!memberLink2) {
+      continue
+    }
+    // fix v2ex polish end
+
+    cloned.id = "related_" + replyElement.id
+    replies.push(cloned)
+  }
+
+  return replies
+}
+
+const showRelatedReplies = (
+  memberLink: HTMLElement,
+  memberId: string,
+  type?: string
+) => {
+  const replies =
+    type === "posted"
+      ? filterRepliesPostedByMember([memberId])
+      : filterRepliesByPosterOrMentioned(memberId)
+  showModalReplies(replies, memberLink, memberId, type)
+}
+
 const onMouseOver = (event) => {
   if (timeoutId) {
     clearTimeout(timeoutId)
@@ -177,10 +247,9 @@ const onMouseOver = (event) => {
     const memberId = (/member\/(\w+)/.exec(memberLink.href) || [])[1]
     if (memberId) {
       // console.log(memberId)
-      const replies = filterRepliesPostedByMember([memberId])
-      showModalReplies(replies, memberLink)
+      showRelatedReplies(memberLink, memberId)
     }
-  }, 100)
+  }, 500)
 }
 
 const onMouseOut = () => {
@@ -213,7 +282,7 @@ const onDocumentClick = (event) => {
     return
   }
 
-  const relatedRepliesBox = target.closest(".related_replies")
+  const relatedRepliesBox = target.closest(".related_replies_container")
   if (relatedRepliesBox) {
     closeModal(true)
     return
