@@ -1,12 +1,16 @@
-import { $, getAttribute, setAttribute } from "browser-extension-utils"
+import {
+  $,
+  actionHref,
+  getAttribute,
+  setAttribute,
+} from "browser-extension-utils"
 
 import { getFloorNumber } from "../utils"
 
 export const replyWithFloorNumber = (replyElement: HTMLElement) => {
   const replyButton = $('a[onclick^="replyOne"]', replyElement)
   if (replyButton) {
-    // eslint-disable-next-line no-script-url
-    setAttribute(replyButton, "href", "javascript:;")
+    setAttribute(replyButton, "href", actionHref)
 
     const onclick = getAttribute(replyButton, "onclick") || ""
     if (onclick.includes("#")) {
