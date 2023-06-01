@@ -4,9 +4,9 @@
 // @namespace            https://github.com/v2hot/v2ex.rep
 // @homepageURL          https://github.com/v2hot/v2ex.rep#readme
 // @supportURL           https://github.com/v2hot/v2ex.rep/issues
-// @version              0.0.5
-// @description          专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 查看指定用户在当前主题下的所有回复；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
-// @description:zh-CN    专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 查看指定用户在当前主题下的所有回复；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
+// @version              0.0.6
+// @description          专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
+// @description:zh-CN    专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
 // @icon                 https://www.v2ex.com/favicon.ico
 // @author               Pipecraft
 // @license              MIT
@@ -116,6 +116,24 @@
       setAttribute(element, name, orgValue + " " + value)
     }
   }
+  var addClass = (element, className) => {
+    if (!element) {
+      return
+    }
+    element.classList.add(className)
+  }
+  var removeClass = (element, className) => {
+    if (!element) {
+      return
+    }
+    element.classList.remove(className)
+  }
+  var hasClass = (element, className) => {
+    if (!element) {
+      return false
+    }
+    return element.classList.contains(className)
+  }
   var setStyle = (element, values, overwrite) => {
     if (!element) {
       return
@@ -157,6 +175,17 @@
     Object.hasOwn = (instance, prop) =>
       Object.prototype.hasOwnProperty.call(instance, prop)
   }
+  var actionHref = "javascript:;"
+  var getOffsetPosition = (element, referElement) => {
+    const position = { top: 0, left: 0 }
+    referElement = referElement || doc.body
+    while (element && element !== referElement) {
+      position.top += element.offsetTop
+      position.left += element.offsetLeft
+      element = element.offsetParent
+    }
+    return position
+  }
   var addElement2 =
     typeof GM_addElement === "function"
       ? (parentNode, tagName, attributes) => {
@@ -194,7 +223,7 @@
     GM.registerMenuCommand(name, callback, accessKey)
   }
   var content_default =
-    'a.icon_button{opacity:1 !important;visibility:visible;margin-right:14px}a.icon_button:last-child{margin-right:0}a.icon_button svg{vertical-align:text-top}body .v2p-controls{opacity:1}body .v2p-controls>a.icon_button{margin-right:0}body .v2p-controls div a{margin-right:15px}body .v2p-controls div a:last-child{margin-right:0}body .v2p-controls a[onclick^=replyOne]{opacity:1 !important}.sticky_rightbar #Rightbar{position:sticky;top:0;max-height:100vh;overflow-y:auto;overflow-x:hidden;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;scrollbar-color:rgba(0,0,0,0) rgba(0,0,0,0);scrollbar-width:thin}.sticky_rightbar #Rightbar:hover{scrollbar-color:var(--sb-thumb-color) var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar{width:var(--sb-size)}.sticky_rightbar #Rightbar::-webkit-scrollbar-track{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-track{background:var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar-thumb{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-thumb{background:var(--sb-thumb-color)}.sticky_rightbar #Rightbar .v2p-tool-box{position:unset}#Main{position:relative}#Main .related_replies_container .related_replies{position:absolute;width:100%;-webkit-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);-moz-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);box-shadow:0px 10px 39px 10px rgba(62,66,66,.22) !important}#Main .related_replies_container .related_replies_before::before{content:"";display:block;width:100%;height:10000px;position:absolute;margin-top:-10000px;background-color:#334;opacity:50%}#Main .related_replies_container .related_replies_after::after{content:"";display:block;width:100%;height:10000px;position:absolute;background-color:#334;opacity:50%}#Main .related_replies_container.no_replies .related_replies_before::before,#Main .related_replies_container.no_replies .related_replies_after::after{display:none}a.no{background-color:rgba(0,0,0,0);color:#1484cd;border:1px solid #1484cd;border-radius:3px}'
+    'a.icon_button{opacity:1 !important;visibility:visible;margin-right:14px}a.icon_button:last-child{margin-right:0}a.icon_button svg{vertical-align:text-top}body .v2p-controls{opacity:1}body .v2p-controls>a.icon_button{margin-right:0}body .v2p-controls div a{margin-right:15px}body .v2p-controls div a:last-child{margin-right:0}body .v2p-controls a[onclick^=replyOne]{opacity:1 !important}.sticky_rightbar #Rightbar{position:sticky;top:0;max-height:100vh;overflow-y:auto;overflow-x:hidden;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;scrollbar-color:rgba(0,0,0,0) rgba(0,0,0,0);scrollbar-width:thin}.sticky_rightbar #Rightbar:hover{scrollbar-color:var(--sb-thumb-color) var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar{width:var(--sb-size)}.sticky_rightbar #Rightbar::-webkit-scrollbar-track{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-track{background:var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar-thumb{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-thumb{background:var(--sb-thumb-color)}.sticky_rightbar #Rightbar .v2p-tool-box{position:unset}#Main{position:relative}#Main .related_replies_container .related_replies{position:absolute;z-index:10000;width:100%;-webkit-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);-moz-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);box-shadow:0px 10px 39px 10px rgba(62,66,66,.22) !important}#Main .related_replies_container .related_replies_before::before{content:"";display:block;width:100%;height:10000px;position:absolute;margin-top:-10000px;background-color:#334;opacity:50%}#Main .related_replies_container .related_replies_after::after{content:"";display:block;width:100%;height:10000px;position:absolute;background-color:#334;opacity:50%}#Main .related_replies_container.no_replies .related_replies_before::before,#Main .related_replies_container.no_replies .related_replies_after::after{display:none}#Main .related_replies_container .tabs{position:sticky;top:0;display:flex;justify-content:center}#Main .related_replies_container .tabs a{cursor:pointer}a.no{background-color:rgba(0,0,0,0) !important;color:#1484cd !important;border:1px solid #1484cd;border-radius:3px !important;opacity:1 !important}'
   var listeners = {}
   var getValue = async (key) => {
     const value = await GM.getValue(key)
@@ -449,7 +478,7 @@
   }
   var alwaysShowHideButton = (replyElement) => {
     const hideButton = $('a[onclick*="ignoreReply"]', replyElement)
-    if (hideButton && !hideButton.classList.contains("icon_button")) {
+    if (hideButton && !hasClass(hideButton, "icon_button")) {
       addAttribute(hideButton, "class", "icon_button")
       if (!$(".v2p-controls", replyElement)) {
         hideButton.innerHTML = `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.3536 2.35355C13.5488 2.15829 13.5488 1.84171 13.3536 1.64645C13.1583 1.45118 12.8417 1.45118 12.6464 1.64645L10.6828 3.61012C9.70652 3.21671 8.63759 3 7.5 3C4.30786 3 1.65639 4.70638 0.0760002 7.23501C-0.0253338 7.39715 -0.0253334 7.60288 0.0760014 7.76501C0.902945 9.08812 2.02314 10.1861 3.36061 10.9323L1.64645 12.6464C1.45118 12.8417 1.45118 13.1583 1.64645 13.3536C1.84171 13.5488 2.15829 13.5488 2.35355 13.3536L4.31723 11.3899C5.29348 11.7833 6.36241 12 7.5 12C10.6921 12 13.3436 10.2936 14.924 7.76501C15.0253 7.60288 15.0253 7.39715 14.924 7.23501C14.0971 5.9119 12.9769 4.81391 11.6394 4.06771L13.3536 2.35355ZM9.90428 4.38861C9.15332 4.1361 8.34759 4 7.5 4C4.80285 4 2.52952 5.37816 1.09622 7.50001C1.87284 8.6497 2.89609 9.58106 4.09974 10.1931L9.90428 4.38861ZM5.09572 10.6114L10.9003 4.80685C12.1039 5.41894 13.1272 6.35031 13.9038 7.50001C12.4705 9.62183 10.1971 11 7.5 11C6.65241 11 5.84668 10.8639 5.09572 10.6114Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`
@@ -462,7 +491,7 @@
   }
   var alwaysShowThankButton = (replyElement) => {
     const thankButton = $('a[onclick*="thankReply"]', replyElement)
-    if (thankButton && !thankButton.classList.contains("icon_button")) {
+    if (thankButton && !hasClass(thankButton, "icon_button")) {
       addAttribute(thankButton, "class", "icon_button")
       if (!$(".v2p-controls", replyElement)) {
         thankButton.innerHTML = `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.89346 2.35248C3.49195 2.35248 2.35248 3.49359 2.35248 4.90532C2.35248 6.38164 3.20954 7.9168 4.37255 9.33522C5.39396 10.581 6.59464 11.6702 7.50002 12.4778C8.4054 11.6702 9.60608 10.581 10.6275 9.33522C11.7905 7.9168 12.6476 6.38164 12.6476 4.90532C12.6476 3.49359 11.5081 2.35248 10.1066 2.35248C9.27059 2.35248 8.81894 2.64323 8.5397 2.95843C8.27877 3.25295 8.14623 3.58566 8.02501 3.88993C8.00391 3.9429 7.98315 3.99501 7.96211 4.04591C7.88482 4.23294 7.7024 4.35494 7.50002 4.35494C7.29765 4.35494 7.11523 4.23295 7.03793 4.04592C7.01689 3.99501 6.99612 3.94289 6.97502 3.8899C6.8538 3.58564 6.72126 3.25294 6.46034 2.95843C6.18109 2.64323 5.72945 2.35248 4.89346 2.35248ZM1.35248 4.90532C1.35248 2.94498 2.936 1.35248 4.89346 1.35248C6.0084 1.35248 6.73504 1.76049 7.20884 2.2953C7.32062 2.42147 7.41686 2.55382 7.50002 2.68545C7.58318 2.55382 7.67941 2.42147 7.79119 2.2953C8.265 1.76049 8.99164 1.35248 10.1066 1.35248C12.064 1.35248 13.6476 2.94498 13.6476 4.90532C13.6476 6.74041 12.6013 8.50508 11.4008 9.96927C10.2636 11.3562 8.92194 12.5508 8.00601 13.3664C7.94645 13.4194 7.88869 13.4709 7.83291 13.5206C7.64324 13.6899 7.3568 13.6899 7.16713 13.5206C7.11135 13.4709 7.05359 13.4194 6.99403 13.3664C6.0781 12.5508 4.73641 11.3562 3.59926 9.96927C2.39872 8.50508 1.35248 6.74041 1.35248 4.90532Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`
@@ -472,7 +501,13 @@
   var getReplyElements = () => {
     const firstReply = $('.box .cell[id^="r_"]')
     if (firstReply == null ? void 0 : firstReply.parentElement) {
-      return $$('.cell[id^="r_"]', firstReply.parentElement)
+      const v2exPolishModel = $(".v2p-model-mask")
+      return $$('.cell[id^="r_"]', firstReply.parentElement).filter((reply) => {
+        if (v2exPolishModel && v2exPolishModel.contains(reply)) {
+          return false
+        }
+        return true
+      })
     }
     return []
   }
@@ -487,13 +522,36 @@
     }
     return 0
   }
+  var cloneReplyElement = (replyElement) => {
+    const cloned = replyElement.cloneNode(true)
+    const floorNumber = $(".no", cloned)
+    const toolbox = $(".fr", cloned)
+    if (toolbox && floorNumber) {
+      const floorNumber2 = createElement("a", {
+        class: "no",
+        textContent: floorNumber.textContent,
+      })
+      addEventListener(floorNumber2, "click", (event) => {
+        replyElement.scrollIntoView({ block: "start" })
+        event.preventDefault()
+        event.stopPropagation()
+      })
+      toolbox.innerHTML = ""
+      toolbox.append(floorNumber2)
+    }
+    const cells = $$(".cell,.v2p-topic-reply-ref", cloned)
+    for (const cell of cells) {
+      cell.remove()
+    }
+    return cloned
+  }
+  var sortReplyElementsByFloorNumberCompareFn = (a, b) =>
+    getFloorNumber(a) - getFloorNumber(b)
   var timeoutId
-  var showModalReplies = (replies, referElement) => {
+  var showModalReplies = (replies, referElement, memberId, type) => {
+    var _a
     const main2 = $("#Main")
     if (!main2) {
-      return
-    }
-    if (!referElement) {
       return
     }
     const replyElement = referElement.closest("#Main .cell")
@@ -523,10 +581,30 @@
     })
     box.innerHTML = ""
     box2.innerHTML = ""
+    const tabs = addElement2(box, "div", {
+      class: "box tabs inner",
+    })
+    addElement2(tabs, "a", {
+      class: !type || type === "all" ? "tab_current" : "tab",
+      href: actionHref,
+      textContent: "\u5168\u90E8\u56DE\u590D",
+      onclick() {
+        showRelatedReplies(referElement, memberId)
+      },
+    })
+    addElement2(tabs, "a", {
+      class: type === "posted" ? "tab_current" : "tab",
+      href: actionHref,
+      textContent: `\u4EC5 ${memberId} \u53D1\u8868\u7684\u56DE\u590D`,
+      onclick() {
+        showRelatedReplies(referElement, memberId, "posted")
+      },
+    })
     const replyId = replyElement ? getReplyId(replyElement) : void 0
     const floorNumber = replyElement ? getFloorNumber(replyElement) : 0
     let beforeCount = 0
     let afterCount = 0
+    replies.sort(sortReplyElementsByFloorNumberCompareFn)
     for (const reply of replies) {
       const replyId2 = getReplyId(reply)
       const floorNumber2 = getFloorNumber(reply)
@@ -546,15 +624,18 @@
         class: "cell",
         innerHTML: `<span class="fade">\u672C\u9875\u9762\u6CA1\u6709\u5176\u4ED6\u56DE\u590D</span>`,
       })
-      container.classList.add("no_replies")
-      addEventListener(
-        referElement,
-        "mouseout",
-        () => {
-          container.remove()
-        },
-        { once: true }
-      )
+      if (!type || type === "all") {
+        tabs.remove()
+        addClass(container, "no_replies")
+        addEventListener(
+          referElement,
+          "mouseout",
+          () => {
+            container.remove()
+          },
+          { once: true }
+        )
+      }
     }
     if (beforeCount === 0 && afterCount > 0) {
       addElement2(box, "div", {
@@ -569,25 +650,24 @@
       })
     }
     if (replyElement) {
-      const offsetTop = relatedBox
-        ? relatedBox.offsetTop + replyElement.offsetTop
-        : replyElement.offsetTop
+      const offsetTop = getOffsetPosition(replyElement, main2).top
       const height = box.offsetHeight || box.clientHeight
       const height2 = replyElement.offsetHeight || replyElement.clientHeight
       setStyle(box, { top: offsetTop - height + "px" })
       setStyle(box2, { top: offsetTop + height2 + "px" })
     } else if (afterCount > 0) {
+      ;(_a = box2.firstChild) == null ? void 0 : _a.before(tabs)
       const headerElement =
         referElement == null ? void 0 : referElement.closest("#Main .header")
       if (headerElement) {
-        const offsetTop = headerElement.offsetTop
+        const offsetTop = getOffsetPosition(headerElement, main2).top
         const height2 = headerElement.offsetHeight || headerElement.clientHeight
         setStyle(box2, { top: offsetTop + height2 + "px" })
         box.remove()
       } else {
         const firstReply = $('.box .cell[id^="r_"]')
         const offsetTop = firstReply
-          ? Math.max(firstReply.offsetTop, window.scrollY)
+          ? Math.max(getOffsetPosition(firstReply, main2).top, window.scrollY)
           : window.scrollY
         setStyle(box, { top: offsetTop + "px" })
         setStyle(box2, { top: offsetTop + "px" })
@@ -607,28 +687,37 @@
       }
       const memberId = (/member\/(\w+)/.exec(memberLink.href) || [])[1]
       if (memberIds.includes(memberId)) {
-        const cloned = replyElement.cloneNode(true)
+        const cloned = cloneReplyElement(replyElement)
         cloned.id = "related_" + replyElement.id
-        const floorNumber = $(".no", cloned)
-        const toolbox = $(".fr", cloned)
-        if (toolbox && floorNumber) {
-          const floorNumber2 = createElement("a", {
-            class: "no",
-            textContent: floorNumber.textContent,
-          })
-          addEventListener(floorNumber2, "click", (event) => {
-            closeModal()
-            replyElement.scrollIntoView({ block: "start" })
-            event.preventDefault()
-            event.stopPropagation()
-          })
-          toolbox.innerHTML = ""
-          toolbox.append(floorNumber2)
-        }
         replies.push(cloned)
       }
     }
     return replies
+  }
+  var filterRepliesByPosterOrMentioned = (memberId) => {
+    const replies = []
+    const replyElements = getReplyElements()
+    for (const replyElement of replyElements) {
+      const memberLink = $(`a[href^="/member/${memberId}"]`, replyElement)
+      if (!memberLink) {
+        continue
+      }
+      const cloned = cloneReplyElement(replyElement)
+      const memberLink2 = $(`a[href^="/member/${memberId}"]`, cloned)
+      if (!memberLink2) {
+        continue
+      }
+      cloned.id = "related_" + replyElement.id
+      replies.push(cloned)
+    }
+    return replies
+  }
+  var showRelatedReplies = (memberLink, memberId, type) => {
+    const replies =
+      type === "posted"
+        ? filterRepliesPostedByMember([memberId])
+        : filterRepliesByPosterOrMentioned(memberId)
+    showModalReplies(replies, memberLink, memberId, type)
   }
   var onMouseOver = (event) => {
     if (timeoutId) {
@@ -639,10 +728,9 @@
     timeoutId = setTimeout(() => {
       const memberId = (/member\/(\w+)/.exec(memberLink.href) || [])[1]
       if (memberId) {
-        const replies = filterRepliesPostedByMember([memberId])
-        showModalReplies(replies, memberLink)
+        showRelatedReplies(memberLink, memberId)
       }
-    }, 100)
+    }, 500)
   }
   var onMouseOut = () => {
     if (timeoutId) {
@@ -675,7 +763,7 @@
     ) {
       return
     }
-    const relatedRepliesBox = target.closest(".related_replies")
+    const relatedRepliesBox = target.closest(".related_replies_container")
     if (relatedRepliesBox) {
       closeModal(true)
       return
@@ -766,12 +854,8 @@
     }
     if (floorNumberOffset > 0) {
       const replyElements = getReplyElements()
-      const v2exPolishModel = $(".v2p-model-mask")
       for (const element of replyElements) {
         if (element.found) {
-          continue
-        }
-        if (v2exPolishModel && v2exPolishModel.contains(element)) {
           continue
         }
         const numberElement = getFloorNumberElement(element)
@@ -803,12 +887,11 @@
         "onclick",
         onclick.replace(/.*(ignoreReply\(.+\)).*/, "$1")
       )
-      setAttribute(hideButton, "href", "javascript:;")
+      setAttribute(hideButton, "href", actionHref)
       hideButton.outerHTML = hideButton.outerHTML
     }
   }
   var quickSendThank = (replyElement) => {
-    var _a
     const thankButton = $('a[onclick*="thankReply"]', replyElement)
     if (thankButton) {
       const replyId = replyElement.id.replace("r_", "")
@@ -821,12 +904,8 @@
         "onclick",
         onclick.replace(/.*(thankReply\(.+\)).*/, "$1")
       )
-      setAttribute(thankButton, "href", "javascript:;")
-      if (
-        (_a = thankButton.parentElement) == null
-          ? void 0
-          : _a.classList.contains("v2p-controls")
-      ) {
+      setAttribute(thankButton, "href", actionHref)
+      if (hasClass(thankButton.parentElement, "v2p-controls")) {
         const div = createElement("div", {
           id: "thank_area_" + replyId,
         })
@@ -843,7 +922,7 @@
   var replyWithFloorNumber = (replyElement) => {
     const replyButton = $('a[onclick^="replyOne"]', replyElement)
     if (replyButton) {
-      setAttribute(replyButton, "href", "javascript:;")
+      setAttribute(replyButton, "href", actionHref)
       const onclick = getAttribute(replyButton, "onclick") || ""
       if (onclick.includes("#")) {
         return
@@ -863,29 +942,22 @@
     }
   }
   var showTopReplies = (toggle) => {
-    var _a, _b
     const element = $("#top_replies")
     if (element) {
       const sep20 = element.previousElementSibling
-      if (sep20 == null ? void 0 : sep20.classList.contains("sep20")) {
+      if (hasClass(sep20, "sep20")) {
         sep20.remove()
       }
       element.remove()
     }
     if (!toggle) {
-      ;(_a = $("#Wrapper")) == null
-        ? void 0
-        : _a.classList.remove("sticky_rightbar")
+      removeClass($("#Wrapper"), "sticky_rightbar")
       return
     }
-    ;(_b = $("#Wrapper")) == null ? void 0 : _b.classList.add("sticky_rightbar")
-    const v2exPolishModel = $(".v2p-model-mask")
+    addClass($("#Wrapper"), "sticky_rightbar")
     const replyElements = getReplyElements()
       .filter((reply) => {
-        var _a2
-        if (v2exPolishModel && v2exPolishModel.contains(reply)) {
-          return false
-        }
+        var _a
         const heartElement = $('img[alt="\u2764\uFE0F"],.v2p-icon-heart', reply)
         if (heartElement) {
           const childReplies = $$('.cell[id^="r_"]', reply)
@@ -895,9 +967,9 @@
             }
           }
           const thanked = Number.parseInt(
-            ((_a2 = heartElement.nextSibling) == null
+            ((_a = heartElement.nextSibling) == null
               ? void 0
-              : _a2.textContent) || "0",
+              : _a.textContent) || "0",
             10
           )
           if (thanked > 0) {
@@ -907,14 +979,11 @@
         }
         return false
       })
-      .sort((a, b) => {
-        if (b.thanked === a.thanked) {
-          const floorNumberA = getFloorNumber(a)
-          const floorNumberB = getFloorNumber(b)
-          return floorNumberA - floorNumberB
-        }
-        return b.thanked - a.thanked
-      })
+      .sort((a, b) =>
+        b.thanked === a.thanked
+          ? sortReplyElementsByFloorNumberCompareFn(a, b)
+          : b.thanked - a.thanked
+      )
     if (replyElements.length > 0) {
       const box = createElement("div", {
         class: "box",
@@ -922,28 +991,11 @@
         innerHTML: `<div class="cell"><div class="fr"></div><span class="fade">\u5F53\u524D\u9875\u70ED\u95E8\u56DE\u590D</span></div>`,
       })
       for (const element2 of replyElements) {
-        const cloned = element2.cloneNode(true)
+        const cloned = cloneReplyElement(element2)
         cloned.id = "top_" + element2.id
-        const floorNumber = $(".no", cloned)
-        const toolbox = $(".fr", cloned)
-        if (toolbox && floorNumber) {
-          const floorNumber2 = createElement("a", {
-            class: "no",
-            textContent: floorNumber.textContent,
-          })
-          addEventListener(floorNumber2, "click", () => {
-            element2.scrollIntoView({ block: "start" })
-          })
-          toolbox.innerHTML = ""
-          toolbox.append(floorNumber2)
-        }
         const ago = $(".ago", cloned)
         if (ago) {
           ago.before(createElement("br"))
-        }
-        const cells = $$(".cell", cloned)
-        for (const cell of cells) {
-          cell.remove()
         }
         box.append(cloned)
       }
@@ -976,9 +1028,9 @@
     },
     filterRepliesByUser: {
       title:
-        "\u67E5\u770B\u6307\u5B9A\u7528\u6237\u5728\u5F53\u524D\u4E3B\u9898\u4E0B\u7684\u6240\u6709\u56DE\u590D",
+        "\u67E5\u770B\u7528\u6237\u5728\u5F53\u524D\u4E3B\u9898\u4E0B\u7684\u6240\u6709\u56DE\u590D\u4E0E\u88AB\u63D0\u53CA\u7684\u56DE\u590D",
       description:
-        "\u9F20\u6807\u79FB\u81F3\u7528\u6237\u540D\uFF0C\u4F1A\u663E\u793A\u8BE5\u7528\u6237\u5728\u5F53\u524D\u4E3B\u9898\u4E0B\u7684\u6240\u6709\u56DE\u590D",
+        "\u9F20\u6807\u79FB\u81F3\u7528\u6237\u540D\uFF0C\u4F1A\u663E\u793A\u8BE5\u7528\u6237\u5728\u5F53\u524D\u4E3B\u9898\u4E0B\u7684\u6240\u6709\u56DE\u590D\u4E0E\u88AB\u63D0\u53CA\u7684\u56DE\u590D",
       defaultValue: true,
     },
     quickSendThank: {
