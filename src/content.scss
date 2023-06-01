@@ -83,6 +83,7 @@ body .v2p-controls a[onclick^="replyOne"] {
   .related_replies_container {
     .related_replies {
       position: absolute;
+      z-index: 10000;
       width: 100%;
       -webkit-box-shadow: 0px 10px 39px 10px rgba(62, 66, 66, 0.22);
       -moz-box-shadow: 0px 10px 39px 10px rgba(62, 66, 66, 0.22);
@@ -114,12 +115,25 @@ body .v2p-controls a[onclick^="replyOne"] {
         display: none;
       }
     }
+
+    .tabs {
+      position: sticky;
+      top: 0;
+      display: flex;
+      justify-content: center;
+
+      a {
+        cursor: pointer;
+      }
+    }
   }
 }
 
 a.no {
-  background-color: transparent;
-  color: #1484cd;
+  background-color: transparent !important;
+  color: #1484cd !important;
   border: 1px solid #1484cd;
-  border-radius: 3px;
+  border-radius: 3px !important;
+  /* fix v2ex polish */
+  opacity: 1 !important;
 }

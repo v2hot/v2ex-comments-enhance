@@ -1,12 +1,23 @@
-import { $, $$, createElement } from "browser-extension-utils"
+import {
+  $,
+  $$,
+  addClass,
+  createElement,
+  hasClass,
+  removeClass,
+} from "browser-extension-utils"
 
-import { cloneReplyElement, getFloorNumber, getReplyElements } from "../utils"
+import {
+  cloneReplyElement,
+  getReplyElements,
+  sortReplyElementsByFloorNumberCompareFn,
+} from "../utils"
 
 export const showTopReplies = (toggle) => {
   const element = $("#top_replies")
   if (element) {
     const sep20 = element.previousElementSibling
-    if (sep20?.classList.contains("sep20")) {
+    if (hasClass(sep20, "sep20")) {
       sep20.remove()
     }
 
@@ -14,20 +25,14 @@ export const showTopReplies = (toggle) => {
   }
 
   if (!toggle) {
-    $("#Wrapper")?.classList.remove("sticky_rightbar")
+    removeClass($("#Wrapper"), "sticky_rightbar")
     return
   }
 
-  $("#Wrapper")?.classList.add("sticky_rightbar")
+  addClass($("#Wrapper"), "sticky_rightbar")
 
-  const v2exPolishModel = $(".v2p-model-mask")
   const replyElements = getReplyElements()
     .filter((reply) => {
-      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-      if (v2exPolishModel && v2exPolishModel.contains(reply)) {
-        return false
-      }
-
       /* v2ex polish: .v2p-icon-heart */
       const heartElement = $('img[alt="❤️"],.v2p-icon-heart', reply)
       if (heartElement) {
@@ -51,15 +56,11 @@ export const showTopReplies = (toggle) => {
 
       return false
     })
-    .sort((a, b) => {
-      if (b.thanked === a.thanked) {
-        const floorNumberA = getFloorNumber(a)
-        const floorNumberB = getFloorNumber(b)
-        return floorNumberA - floorNumberB
-      }
-
-      return b.thanked - a.thanked
-    })
+    .sort((a, b) =>
+      b.thanked === a.thanked
+        ? sortReplyElementsByFloorNumberCompareFn(a, b)
+        : b.thanked - a.thanked
+    )
   // .slice(0, 10)
 
   if (replyElements.length > 0) {

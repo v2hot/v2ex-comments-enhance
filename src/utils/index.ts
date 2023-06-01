@@ -1,10 +1,24 @@
-import { $, $$, addEventListener, createElement } from "browser-extension-utils"
+import {
+  $,
+  $$,
+  addEventListener,
+  createElement,
+  doc,
+} from "browser-extension-utils"
 
 // 从含有第一个评论的 box div 查询
 export const getReplyElements = () => {
   const firstReply = $('.box .cell[id^="r_"]')
   if (firstReply?.parentElement) {
-    return $$('.cell[id^="r_"]', firstReply.parentElement)
+    const v2exPolishModel = $(".v2p-model-mask")
+    return $$('.cell[id^="r_"]', firstReply.parentElement).filter((reply) => {
+      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+      if (v2exPolishModel && v2exPolishModel.contains(reply)) {
+        return false
+      }
+
+      return true
+    })
   }
 
   return []
@@ -45,7 +59,7 @@ export const cloneReplyElement = (replyElement: HTMLElement) => {
   }
 
   /* fix v2ex polish start */
-  const cells = $$(".cell", cloned)
+  const cells = $$(".cell,.v2p-topic-reply-ref", cloned)
   for (const cell of cells) {
     cell.remove()
   }
@@ -53,3 +67,8 @@ export const cloneReplyElement = (replyElement: HTMLElement) => {
 
   return cloned
 }
+
+export const sortReplyElementsByFloorNumberCompareFn = (
+  a: HTMLElement,
+  b: HTMLElement
+) => getFloorNumber(a) - getFloorNumber(b)

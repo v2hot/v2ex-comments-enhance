@@ -44,15 +44,9 @@ const updateReplyElements = (
 
   if (floorNumberOffset > 0) {
     const replyElements = getReplyElements()
-    const v2exPolishModel = $(".v2p-model-mask")
     // 如果 API 返回的数据不是最新，实际页面的回复数会比 API 里的多。更新多的部分
     for (const element of replyElements) {
       if (element.found) {
-        continue
-      }
-
-      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-      if (v2exPolishModel && v2exPolishModel.contains(element)) {
         continue
       }
 
