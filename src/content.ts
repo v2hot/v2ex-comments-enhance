@@ -15,6 +15,7 @@ import {
   initSettings,
   showSettings,
 } from "./components/settings"
+import { addLinkToAvatars } from "./modules/add-link-to-avatars"
 import { alwaysShowHideButton } from "./modules/always-show-hide-button"
 import { alwaysShowThankButton } from "./modules/always-show-thank-button"
 import { filterRepliesByUser } from "./modules/filter-repies-by-user"
@@ -78,6 +79,8 @@ async function process() {
   if (/\/t\/\d+/.test(location.href)) {
     const replyElements = getReplyElements()
     for (const replyElement of replyElements) {
+      addLinkToAvatars(replyElement)
+
       if (getSettingsValue("replyWithFloorNumber")) {
         replyWithFloorNumber(replyElement)
       }
