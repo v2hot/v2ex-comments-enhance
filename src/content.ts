@@ -45,8 +45,9 @@ const settingsTable = {
     defaultValue: true,
   },
   filterRepliesByUser: {
-    title: "查看指定用户在当前主题下的所有回复",
-    description: "鼠标移至用户名，会显示该用户在当前主题下的所有回复",
+    title: "查看用户在当前主题下的所有回复与被提及的回复",
+    description:
+      "鼠标移至用户名，会显示该用户在当前主题下的所有回复与被提及的回复",
     defaultValue: true,
   },
   quickSendThank: {

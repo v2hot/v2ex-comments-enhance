@@ -1,4 +1,9 @@
-import { $, getAttribute, setAttribute } from "browser-extension-utils"
+import {
+  $,
+  actionHref,
+  getAttribute,
+  setAttribute,
+} from "browser-extension-utils"
 
 export const quickHideReply = (replyElement: HTMLElement) => {
   const hideButton = $('a[onclick*="ignoreReply"]', replyElement)
@@ -13,8 +18,7 @@ export const quickHideReply = (replyElement: HTMLElement) => {
       "onclick",
       onclick.replace(/.*(ignoreReply\(.+\)).*/, "$1")
     )
-    // eslint-disable-next-line no-script-url
-    setAttribute(hideButton, "href", "javascript:;")
+    setAttribute(hideButton, "href", actionHref)
     // eslint-disable-next-line no-self-assign
     hideButton.outerHTML = hideButton.outerHTML
   }

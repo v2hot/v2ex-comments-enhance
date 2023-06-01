@@ -1,7 +1,9 @@
 import {
   $,
+  actionHref,
   createElement,
   getAttribute,
+  hasClass,
   setAttribute,
 } from "browser-extension-utils"
 
@@ -19,11 +21,10 @@ export const quickSendThank = (replyElement: HTMLElement) => {
       "onclick",
       onclick.replace(/.*(thankReply\(.+\)).*/, "$1")
     )
-    // eslint-disable-next-line no-script-url
-    setAttribute(thankButton, "href", "javascript:;")
+    setAttribute(thankButton, "href", actionHref)
 
     /* fix v2ex polish start */
-    if (thankButton.parentElement?.classList.contains("v2p-controls")) {
+    if (hasClass(thankButton.parentElement, "v2p-controls")) {
       const div = createElement("div", {
         id: "thank_area_" + replyId,
       })
