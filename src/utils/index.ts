@@ -79,3 +79,5 @@ export const parseUrl = () => {
   const page = Number.parseInt(matched[2], 10) || 1
   return { topicId, page }
 }
+
+export const isTouchScreen = "ontouchstart" in document.documentElement

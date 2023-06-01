@@ -16,6 +16,7 @@ import {
   getFloorNumber,
   getReplyElements,
   getReplyId,
+  isTouchScreen,
   sortReplyElementsByFloorNumberCompareFn,
 } from "../utils"
 
@@ -27,15 +28,16 @@ const showModalReplies = (
   memberId: string,
   type?: string
 ) => {
-  const main = $("#Main")
+  const main = $("#Main") || $(".content")
   if (!main) {
     return
   }
 
-  const replyElement = referElement.closest("#Main .cell") as
-    | HTMLElement
-    | undefined
+  setStyle(main, "position: relative;")
 
+  const replyElement = $("#Main")
+    ? (referElement.closest("#Main .cell") as HTMLElement | undefined)
+    : (referElement.closest(".cell") as HTMLElement | undefined)
   const relatedBox = replyElement?.closest(".related_replies")
   if (replyElement && relatedBox) {
     const lastRelatedRepliesBox = $$(".related_replies_container").pop()
@@ -148,18 +150,27 @@ const showModalReplies = (
     const height = box.offsetHeight || box.clientHeight
     const height2 = replyElement.offsetHeight || replyElement.clientHeight
     // console.log(offsetTop, replyElement)
-    setStyle(box, { top: offsetTop - height + "px" })
-    setStyle(box2, { top: offsetTop + height2 + "px" })
+    setStyle(box, {
+      top: offsetTop - height + "px",
+      width: replyElement.offsetWidth + "px",
+    })
+    setStyle(box2, {
+      top: offsetTop + height2 + "px",
+      width: replyElement.offsetWidth + "px",
+    })
   } else if (afterCount > 0) {
     box2.firstChild?.before(tabs)
-    const headerElement = referElement?.closest("#Main .header") as
+    const headerElement = referElement?.closest(".header") as
       | HTMLElement
       | undefined
     if (headerElement) {
       // 主题内容部分用户链接
       const offsetTop = getOffsetPosition(headerElement, main).top
       const height2 = headerElement.offsetHeight || headerElement.clientHeight
-      setStyle(box2, { top: offsetTop + height2 + "px" })
+      setStyle(box2, {
+        top: offsetTop + height2 + "px",
+        width: headerElement.offsetWidth + "px",
+      })
       box.remove()
     } else {
       // 右侧栏用户链接
@@ -167,8 +178,14 @@ const showModalReplies = (
       const offsetTop = firstReply
         ? Math.max(getOffsetPosition(firstReply, main).top, window.scrollY)
         : window.scrollY
-      setStyle(box, { top: offsetTop + "px" })
-      setStyle(box2, { top: offsetTop + "px" })
+      setStyle(box, {
+        top: offsetTop + "px",
+        width: firstReply ? firstReply.offsetWidth + "px" : "100%",
+      })
+      setStyle(box2, {
+        top: offsetTop + "px",
+        width: firstReply ? firstReply.offsetWidth + "px" : "100%",
+      })
     }
   } else {
     box.remove()
@@ -270,6 +287,16 @@ const closeModal = (closeLast = false) => {
 
 const onDocumentClick = (event) => {
   const target = event.target
+
+  if (isTouchScreen) {
+    const memberLink = target.closest('a[href^="/member/"]')
+    if (memberLink && !$("img", memberLink)) {
+      event.preventDefault()
+      event.stopPropagation()
+      return
+    }
+  }
+
   const floorNumberElement = target.closest(".related_replies a.no")
   if (floorNumberElement) {
     closeModal()
@@ -319,6 +346,10 @@ export const filterRepliesByUser = (toogle: boolean) => {
       if (!memberLink.boundEvent) {
         addEventListener(memberLink, "mouseover", onMouseOver, true)
         addEventListener(memberLink, "mouseout", onMouseOut)
+        if (isTouchScreen) {
+          addEventListener(memberLink, "touchstart", onMouseOver, true)
+        }
+
         memberLink.boundEvent = true
       }
     }
@@ -340,6 +371,10 @@ export const filterRepliesByUser = (toogle: boolean) => {
       if (memberLink.boundEvent) {
         removeEventListener(memberLink, "mouseover", onMouseOver, true)
         removeEventListener(memberLink, "mouseout", onMouseOut)
+        if (isTouchScreen) {
+          removeEventListener(memberLink, "touchstart", onMouseOver, true)
+        }
+
         memberLink.boundEvent = false
       }
     }
