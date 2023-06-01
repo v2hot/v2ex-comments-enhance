@@ -72,3 +72,10 @@ export const sortReplyElementsByFloorNumberCompareFn = (
   a: HTMLElement,
   b: HTMLElement
 ) => getFloorNumber(a) - getFloorNumber(b)
+
+export const parseUrl = () => {
+  const matched = /\/t\/(\d+)(?:.+\bp=(\d+))?/.exec(location.href) || []
+  const topicId = matched[1]
+  const page = Number.parseInt(matched[2], 10) || 1
+  return { topicId, page }
+}
