@@ -4,7 +4,7 @@
 // @namespace            https://github.com/v2hot/v2ex.rep
 // @homepageURL          https://github.com/v2hot/v2ex.rep#readme
 // @supportURL           https://github.com/v2hot/v2ex.rep/issues
-// @version              0.0.6
+// @version              0.1.0
 // @description          专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
 // @description:zh-CN    专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
 // @icon                 https://www.v2ex.com/favicon.ico
@@ -223,7 +223,7 @@
     GM.registerMenuCommand(name, callback, accessKey)
   }
   var content_default =
-    'a.icon_button{opacity:1 !important;visibility:visible;margin-right:14px}a.icon_button:last-child{margin-right:0}a.icon_button svg{vertical-align:text-top}body .v2p-controls{opacity:1}body .v2p-controls>a.icon_button{margin-right:0}body .v2p-controls div a{margin-right:15px}body .v2p-controls div a:last-child{margin-right:0}body .v2p-controls a[onclick^=replyOne]{opacity:1 !important}.sticky_rightbar #Rightbar{position:sticky;top:0;max-height:100vh;overflow-y:auto;overflow-x:hidden;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;scrollbar-color:rgba(0,0,0,0) rgba(0,0,0,0);scrollbar-width:thin}.sticky_rightbar #Rightbar:hover{scrollbar-color:var(--sb-thumb-color) var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar{width:var(--sb-size)}.sticky_rightbar #Rightbar::-webkit-scrollbar-track{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-track{background:var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar-thumb{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-thumb{background:var(--sb-thumb-color)}.sticky_rightbar #Rightbar .v2p-tool-box{position:unset}#Main{position:relative}#Main .related_replies_container .related_replies{position:absolute;z-index:10000;width:100%;-webkit-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);-moz-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);box-shadow:0px 10px 39px 10px rgba(62,66,66,.22) !important}#Main .related_replies_container .related_replies_before::before{content:"";display:block;width:100%;height:10000px;position:absolute;margin-top:-10000px;background-color:#334;opacity:50%}#Main .related_replies_container .related_replies_after::after{content:"";display:block;width:100%;height:10000px;position:absolute;background-color:#334;opacity:50%}#Main .related_replies_container.no_replies .related_replies_before::before,#Main .related_replies_container.no_replies .related_replies_after::after{display:none}#Main .related_replies_container .tabs{position:sticky;top:0;display:flex;justify-content:center}#Main .related_replies_container .tabs a{cursor:pointer}a.no{background-color:rgba(0,0,0,0) !important;color:#1484cd !important;border:1px solid #1484cd;border-radius:3px !important;opacity:1 !important}'
+    'a.icon_button{opacity:1 !important;visibility:visible;margin-right:14px}a.icon_button:last-child{margin-right:0}a.icon_button svg{vertical-align:text-top}body .v2p-controls{opacity:1}body .v2p-controls>a.icon_button{margin-right:0}body .v2p-controls div a{margin-right:15px}body .v2p-controls div a:last-child{margin-right:0}body .v2p-controls a[onclick^=replyOne]{opacity:1 !important}.sticky_rightbar #Rightbar{position:sticky;top:0;max-height:100vh;overflow-y:auto;overflow-x:hidden;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;scrollbar-color:rgba(0,0,0,0) rgba(0,0,0,0);scrollbar-width:thin}.sticky_rightbar #Rightbar:hover{scrollbar-color:var(--sb-thumb-color) var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar{width:var(--sb-size)}.sticky_rightbar #Rightbar::-webkit-scrollbar-track{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-track{background:var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar-thumb{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-thumb{background:var(--sb-thumb-color)}.sticky_rightbar #Rightbar .v2p-tool-box{position:unset}.related_replies_container .related_replies{position:absolute;z-index:10000;width:100%;-webkit-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);-moz-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);box-shadow:0px 10px 39px 10px rgba(62,66,66,.22) !important}.related_replies_container .related_replies_before::before{content:"";display:block;width:100%;height:10000px;position:absolute;margin-top:-10000px;background-color:#334;opacity:50%}.related_replies_container .related_replies_after::after{content:"";display:block;width:100%;height:10000px;position:absolute;background-color:#334;opacity:50%}.related_replies_container.no_replies .related_replies_before::before,.related_replies_container.no_replies .related_replies_after::after{display:none}.related_replies_container .tabs{position:sticky;top:0;display:flex;justify-content:center}.related_replies_container .tabs a{cursor:pointer}a.no{background-color:rgba(0,0,0,0) !important;color:#1484cd !important;border:1px solid #1484cd;border-radius:3px !important;opacity:1 !important}'
   var listeners = {}
   var getValue = async (key) => {
     const value = await GM.getValue(key)
@@ -476,6 +476,24 @@
     addStyle2(getSettingsStyle())
     addSideMenu(options)
   }
+  var addLinkToAvatars = (referElement) => {
+    var _a
+    const memberLink = $('a[href^="/member/"]', referElement)
+    if (
+      memberLink &&
+      ((_a = memberLink.firstChild) == null ? void 0 : _a.tagName) === "IMG"
+    ) {
+      return
+    }
+    const avatar = $("img.avatar", referElement)
+    if (memberLink && avatar) {
+      const memberLink2 = createElement("a", {
+        href: getAttribute(memberLink, "href"),
+      })
+      avatar.after(memberLink2)
+      memberLink2.append(avatar)
+    }
+  }
   var alwaysShowHideButton = (replyElement) => {
     const hideButton = $('a[onclick*="ignoreReply"]', replyElement)
     if (hideButton && !hasClass(hideButton, "icon_button")) {
@@ -547,14 +565,24 @@
   }
   var sortReplyElementsByFloorNumberCompareFn = (a, b) =>
     getFloorNumber(a) - getFloorNumber(b)
+  var parseUrl = () => {
+    const matched = /\/t\/(\d+)(?:.+\bp=(\d+))?/.exec(location.href) || []
+    const topicId = matched[1]
+    const page = Number.parseInt(matched[2], 10) || 1
+    return { topicId, page }
+  }
+  var isTouchScreen = "ontouchstart" in document.documentElement
   var timeoutId
   var showModalReplies = (replies, referElement, memberId, type) => {
     var _a
-    const main2 = $("#Main")
+    const main2 = $("#Main") || $(".content")
     if (!main2) {
       return
     }
-    const replyElement = referElement.closest("#Main .cell")
+    setStyle(main2, "position: relative;")
+    const replyElement = $("#Main")
+      ? referElement.closest("#Main .cell")
+      : referElement.closest(".cell")
     const relatedBox =
       replyElement == null ? void 0 : replyElement.closest(".related_replies")
     if (replyElement && relatedBox) {
@@ -653,24 +681,39 @@
       const offsetTop = getOffsetPosition(replyElement, main2).top
       const height = box.offsetHeight || box.clientHeight
       const height2 = replyElement.offsetHeight || replyElement.clientHeight
-      setStyle(box, { top: offsetTop - height + "px" })
-      setStyle(box2, { top: offsetTop + height2 + "px" })
+      setStyle(box, {
+        top: offsetTop - height + "px",
+        width: replyElement.offsetWidth + "px",
+      })
+      setStyle(box2, {
+        top: offsetTop + height2 + "px",
+        width: replyElement.offsetWidth + "px",
+      })
     } else if (afterCount > 0) {
       ;(_a = box2.firstChild) == null ? void 0 : _a.before(tabs)
       const headerElement =
-        referElement == null ? void 0 : referElement.closest("#Main .header")
+        referElement == null ? void 0 : referElement.closest(".header")
       if (headerElement) {
         const offsetTop = getOffsetPosition(headerElement, main2).top
         const height2 = headerElement.offsetHeight || headerElement.clientHeight
-        setStyle(box2, { top: offsetTop + height2 + "px" })
+        setStyle(box2, {
+          top: offsetTop + height2 + "px",
+          width: headerElement.offsetWidth + "px",
+        })
         box.remove()
       } else {
         const firstReply = $('.box .cell[id^="r_"]')
         const offsetTop = firstReply
           ? Math.max(getOffsetPosition(firstReply, main2).top, window.scrollY)
           : window.scrollY
-        setStyle(box, { top: offsetTop + "px" })
-        setStyle(box2, { top: offsetTop + "px" })
+        setStyle(box, {
+          top: offsetTop + "px",
+          width: firstReply ? firstReply.offsetWidth + "px" : "100%",
+        })
+        setStyle(box2, {
+          top: offsetTop + "px",
+          width: firstReply ? firstReply.offsetWidth + "px" : "100%",
+        })
       }
     } else {
       box.remove()
@@ -748,6 +791,14 @@
   }
   var onDocumentClick = (event) => {
     const target = event.target
+    if (isTouchScreen) {
+      const memberLink = target.closest('a[href^="/member/"]')
+      if (memberLink && !$("img", memberLink)) {
+        event.preventDefault()
+        event.stopPropagation()
+        return
+      }
+    }
     const floorNumberElement = target.closest(".related_replies a.no")
     if (floorNumberElement) {
       closeModal()
@@ -792,6 +843,9 @@
         if (!memberLink.boundEvent) {
           addEventListener(memberLink, "mouseover", onMouseOver, true)
           addEventListener(memberLink, "mouseout", onMouseOut)
+          if (isTouchScreen) {
+            addEventListener(memberLink, "touchstart", onMouseOver, true)
+          }
           memberLink.boundEvent = true
         }
       }
@@ -810,70 +864,133 @@
         if (memberLink.boundEvent) {
           removeEventListener(memberLink, "mouseover", onMouseOver, true)
           removeEventListener(memberLink, "mouseout", onMouseOut)
+          if (isTouchScreen) {
+            removeEventListener(memberLink, "touchstart", onMouseOver, true)
+          }
           memberLink.boundEvent = false
         }
       }
     }
   }
-  var getTopicReplies = async (topicId) => {
-    const url = `${location.protocol}//${location.host}/api/replies/show.json?topic_id=${topicId}`
+  var getTopicReplies = async (topicId, replyCount) => {
+    const url = `${location.protocol}//${
+      location.host
+    }/api/replies/show.json?topic_id=${topicId}${
+      replyCount ? "&replyCount=" + replyCount : ""
+    }`
     const response = await fetch(url)
     if (response.status === 200) {
       return response.json()
     }
   }
-  var updateReplyElements = (replies, page = 1) => {
+  var updateReplyElements = (replies, replyElements, page = 1) => {
     var _a
     let floorNumberOffset = 0
+    let hideCount = 0
     const dataOffSet = (page - 1) * 100
     const length = Math.min(replies.length - (page - 1) * 100, 100)
     for (let i = 0; i < length; i++) {
+      const realFloorNumber = i + dataOffSet + 1
       const reply = replies[i + dataOffSet]
       const id = reply.id
       const element = $("#r_" + id)
       if (!element) {
         console.info(
-          `[V2EX.REP] \u5C4F\u853D\u6216\u9690\u85CF\u7684\u56DE\u590D: #${
-            i + dataOffSet + 1
-          }, \u7528\u6237 ID: ${
+          `[V2EX.REP] \u5C4F\u853D\u6216\u9690\u85CF\u7684\u56DE\u590D: #${realFloorNumber}, \u7528\u6237 ID: ${
             (_a = reply.member) == null ? void 0 : _a.username
           }, \u56DE\u590D ID: ${reply.id}, \u56DE\u590D\u5185\u5BB9: ${
             reply.content
           }`
         )
-        floorNumberOffset++
+        hideCount++
         continue
       }
       element.found = true
-      if (floorNumberOffset > 0) {
+      if (hideCount > 0) {
         const numberElement = getFloorNumberElement(element)
         if (numberElement) {
-          numberElement.textContent = String(i + dataOffSet + 1)
+          const orgNumber = Number.parseInt(
+            numberElement.dataset.orgNumber || numberElement.textContent || "",
+            10
+          )
+          if (orgNumber) {
+            numberElement.dataset.orgNumber = String(orgNumber)
+            floorNumberOffset = realFloorNumber - orgNumber
+          }
+          numberElement.textContent = String(realFloorNumber)
         }
       }
     }
+    console.info(
+      "[V2EX.REP] floorNumberOffset",
+      floorNumberOffset,
+      "hideCount",
+      hideCount
+    )
     if (floorNumberOffset > 0) {
-      const replyElements = getReplyElements()
       for (const element of replyElements) {
         if (element.found) {
           continue
         }
         const numberElement = getFloorNumberElement(element)
         if (numberElement) {
-          const oldNumber = Number.parseInt(numberElement.textContent || "", 10)
-          if (oldNumber) {
-            numberElement.textContent = String(oldNumber + floorNumberOffset)
+          const orgNumber = Number.parseInt(
+            numberElement.dataset.orgNumber || numberElement.textContent || "",
+            10
+          )
+          if (orgNumber) {
+            numberElement.dataset.orgNumber = String(orgNumber)
+            numberElement.textContent = String(orgNumber + floorNumberOffset)
           }
         }
       }
-      window.dispatchEvent(new Event("floorNumberUpdated"))
     }
+    window.dispatchEvent(new Event("floorNumberUpdated"))
   }
-  var fixReplyFloorNumbers = async (topicId, page = 1) => {
+  var isRunning = false
+  var fixReplyFloorNumbers = async () => {
+    var _a
+    if (isRunning) {
+      return
+    }
+    isRunning = true
+    const result = parseUrl()
+    const topicId = result.topicId
+    const page = result.page
+    if (!topicId) {
+      return
+    }
+    const replyElements = getReplyElements()
+    const displayNumber =
+      Number.parseInt(
+        (/(\d+)\s条回复/.exec(
+          ((_a = $(".box .cell .gray")) == null ? void 0 : _a.textContent) || ""
+        ) || [])[1],
+        10
+      ) || 0
+    if (
+      displayNumber === replyElements.length ||
+      displayNumber % 100 === replyElements.length ||
+      replyElements.length === 100
+    ) {
+      return
+    }
     const replies = await getTopicReplies(topicId)
     if (replies) {
-      updateReplyElements(replies, page)
+      updateReplyElements(replies, replyElements, page)
+      if (replies.length < displayNumber) {
+        console.info("[V2EX.REP] API data outdated, re-fetch it")
+        setTimeout(async () => {
+          isRunning = true
+          const replies2 = await getTopicReplies(topicId, displayNumber)
+          if (replies2) {
+            updateReplyElements(replies2, replyElements, page)
+          }
+          isRunning = false
+        }, 100)
+      }
     }
+    isRunning = false
   }
   var quickHideReply = (replyElement) => {
     const hideButton = $('a[onclick*="ignoreReply"]', replyElement)
@@ -1055,10 +1172,10 @@
   }
   var fixedReplyFloorNumbers = false
   async function process2() {
-    var _a
     if (/\/t\/\d+/.test(location.href)) {
       const replyElements = getReplyElements()
       for (const replyElement of replyElements) {
+        addLinkToAvatars(replyElement)
         if (getSettingsValue("replyWithFloorNumber")) {
           replyWithFloorNumber(replyElement)
         }
@@ -1077,34 +1194,8 @@
       }
       showTopReplies(getSettingsValue("showTopReplies"))
       filterRepliesByUser(getSettingsValue("filterRepliesByUser"))
-      addEventListener(window, "floorNumberUpdated", () => {
-        fixedReplyFloorNumbers = true
-        if (getSettingsValue("replyWithFloorNumber")) {
-          const replyElements2 = getReplyElements()
-          for (const replyElement of replyElements2) {
-            replyWithFloorNumber(replyElement)
-          }
-        }
-        showTopReplies(getSettingsValue("showTopReplies"))
-        filterRepliesByUser(getSettingsValue("filterRepliesByUser"))
-      })
-      if (!getSettingsValue("fixReplyFloorNumbers") || fixedReplyFloorNumbers) {
-        return
-      }
-      const matched = /\/t\/(\d+)(?:.+\bp=(\d+))?/.exec(location.href) || []
-      const topicId = matched[1]
-      const page = Number.parseInt(matched[2], 10) || 1
-      const replyCount = $$(".box > .cell span.no").length
-      const displayNumber =
-        Number.parseInt(
-          (/(\d+)\s条回复/.exec(
-            ((_a = $(".box .cell .gray")) == null ? void 0 : _a.textContent) ||
-              ""
-          ) || [])[1],
-          10
-        ) || 0
-      if (topicId && displayNumber > replyCount) {
-        await fixReplyFloorNumbers(topicId, page)
+      if (getSettingsValue("fixReplyFloorNumbers") && !fixedReplyFloorNumbers) {
+        await fixReplyFloorNumbers()
       }
     }
   }
@@ -1132,6 +1223,17 @@
     })
     registerMenuCommands()
     addStyle2(content_default)
+    addEventListener(window, "floorNumberUpdated", () => {
+      fixedReplyFloorNumbers = true
+      if (getSettingsValue("replyWithFloorNumber")) {
+        const replyElements = getReplyElements()
+        for (const replyElement of replyElements) {
+          replyWithFloorNumber(replyElement)
+        }
+      }
+      showTopReplies(getSettingsValue("showTopReplies"))
+      filterRepliesByUser(getSettingsValue("filterRepliesByUser"))
+    })
     await process2()
     const scanNodes = throttle(() => {
       process2()
