@@ -1,5 +1,7 @@
 # V2EX.REP - 专注提升 V2EX 主题回复浏览体验
 
+> REP = Reply Experience Plus, Reply Extension Plus, Reply Enjoyment Plus, Reply, Repair
+
 专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。
 
 ## Features
@@ -12,7 +14,7 @@
 - ✅ 一直显示隐藏回复按钮 🙈
 - ✅ 快速发送感谢/快速隐藏回复（no confirm）
 
-> ⚠️ 兼容 V2EX Plus, V2EX Polish 等浏览器扩展/脚本。
+> ⚠️ 兼容 V2EX Plus, V2EX Polish 等浏览器扩展/脚本。兼容手机网页版 V2EX。
 
 ## Screenshots
 
@@ -64,6 +66,10 @@ Compatible with the following userscript managers
 
 ## Release Notes
 
+- 0.1.0 2023.06.02
+  - 给用户头像加上链接
+  - 修改手机网页版兼容性问题
+  - 更新修复楼层号逻辑
 - 0.0.6 2023.06.01
   - 查看用户在当前主题下的所有回复与被提及的回复
 - 0.0.4 2023.05.30
