@@ -20,6 +20,7 @@ import { alwaysShowHideButton } from "./modules/always-show-hide-button"
 import { alwaysShowThankButton } from "./modules/always-show-thank-button"
 import { filterRepliesByUser } from "./modules/filter-repies-by-user"
 import { fixReplyFloorNumbers } from "./modules/fix-reply-floor-numbers"
+import { lazyLoadAvatars } from "./modules/lazy-load-avatars"
 import { quickHideReply } from "./modules/quick-hide-reply"
 import { quickSendThank } from "./modules/quick-send-thank"
 import { replyWithFloorNumber } from "./modules/reply-with-floor-number"
@@ -29,7 +30,7 @@ import { getReplyElements } from "./utils"
 export const config: PlasmoCSConfig = {
   matches: ["https://*.v2ex.com/*"],
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  run_at: "document_end",
+  run_at: "document_start",
 }
 
 const settingsTable = {
@@ -76,9 +77,12 @@ function registerMenuCommands() {
 let fixedReplyFloorNumbers = false
 
 async function process() {
+  const domReady =
+    doc.readyState === "interactive" || doc.readyState === "complete"
   if (/\/t\/\d+/.test(location.href)) {
     const replyElements = getReplyElements()
     for (const replyElement of replyElements) {
+      lazyLoadAvatars(replyElement)
       addLinkToAvatars(replyElement)
 
       if (getSettingsValue("replyWithFloorNumber")) {
@@ -102,11 +106,17 @@ async function process() {
       }
     }
 
-    showTopReplies(getSettingsValue("showTopReplies"))
+    if (domReady) {
+      showTopReplies(getSettingsValue("showTopReplies"))
+    }
 
     filterRepliesByUser(getSettingsValue("filterRepliesByUser"))
 
-    if (getSettingsValue("fixReplyFloorNumbers") && !fixedReplyFloorNumbers) {
+    if (
+      domReady &&
+      getSettingsValue("fixReplyFloorNumbers") &&
+      !fixedReplyFloorNumbers
+    ) {
       await fixReplyFloorNumbers()
     }
   }
@@ -144,13 +154,15 @@ async function main() {
     if (getSettingsValue("replyWithFloorNumber")) {
       const replyElements = getReplyElements()
       for (const replyElement of replyElements) {
-        replyWithFloorNumber(replyElement)
+        replyWithFloorNumber(replyElement, true)
       }
     }
 
-    showTopReplies(getSettingsValue("showTopReplies"))
+    showTopReplies(getSettingsValue("showTopReplies"), true)
+  })
 
-    filterRepliesByUser(getSettingsValue("filterRepliesByUser"))
+  addEventListener(doc, "readystatechange", async () => {
+    await process()
   })
 
   await process()

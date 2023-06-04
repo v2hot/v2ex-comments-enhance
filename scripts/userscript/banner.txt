@@ -11,6 +11,6 @@
 // @author               {author}
 // @license              {license}
 // @match                https://*.v2ex.com/*
-// @run-at               document-end
+// @run-at               document-start
 // ==/UserScript==
 //
