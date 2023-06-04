@@ -7,13 +7,16 @@ import {
 
 import { getFloorNumber } from "../utils"
 
-export const replyWithFloorNumber = (replyElement: HTMLElement) => {
+export const replyWithFloorNumber = (
+  replyElement: HTMLElement,
+  forceUpdate = false
+) => {
   const replyButton = $('a[onclick^="replyOne"]', replyElement)
   if (replyButton) {
     setAttribute(replyButton, "href", actionHref)
 
     const onclick = getAttribute(replyButton, "onclick") || ""
-    if (onclick.includes("#")) {
+    if (onclick.includes("#") && !forceUpdate) {
       return
     }
 

@@ -186,6 +186,7 @@ const showModalReplies = (
         top: offsetTop + "px",
         width: firstReply ? firstReply.offsetWidth + "px" : "100%",
       })
+      box2.scrollIntoView({ block: "nearest" })
     }
   } else {
     box.remove()
