@@ -4,14 +4,14 @@
 // @namespace            https://github.com/v2hot/v2ex.rep
 // @homepageURL          https://github.com/v2hot/v2ex.rep#readme
 // @supportURL           https://github.com/v2hot/v2ex.rep/issues
-// @version              0.1.0
+// @version              0.1.1
 // @description          专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
 // @description:zh-CN    专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
 // @icon                 https://www.v2ex.com/favicon.ico
 // @author               Pipecraft
 // @license              MIT
 // @match                https://*.v2ex.com/*
-// @run-at               document-end
+// @run-at               document-start
 // @grant                GM_addElement
 // @grant                GM_addStyle
 // @grant                GM.registerMenuCommand
@@ -476,16 +476,16 @@
     addStyle2(getSettingsStyle())
     addSideMenu(options)
   }
-  var addLinkToAvatars = (referElement) => {
+  var addLinkToAvatars = (replyElement) => {
     var _a
-    const memberLink = $('a[href^="/member/"]', referElement)
+    const memberLink = $('a[href^="/member/"]', replyElement)
     if (
       memberLink &&
       ((_a = memberLink.firstChild) == null ? void 0 : _a.tagName) === "IMG"
     ) {
       return
     }
-    const avatar = $("img.avatar", referElement)
+    const avatar = $("img.avatar", replyElement)
     if (memberLink && avatar) {
       const memberLink2 = createElement("a", {
         href: getAttribute(memberLink, "href"),
@@ -714,6 +714,7 @@
           top: offsetTop + "px",
           width: firstReply ? firstReply.offsetWidth + "px" : "100%",
         })
+        box2.scrollIntoView({ block: "nearest" })
       }
     } else {
       box.remove()
@@ -992,6 +993,24 @@
     }
     isRunning = false
   }
+  var lazyLoadAvatars = (replyElement) => {
+    const avatar = $("img.avatar", replyElement)
+    if (avatar) {
+      if (getAttribute(avatar, "loading") === "lazy") {
+        return
+      }
+      setAttribute(avatar, "loading", "lazy")
+      const src = getAttribute(avatar, "src")
+      setAttribute(
+        avatar,
+        "src",
+        "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+      )
+      setTimeout(() => {
+        setAttribute(avatar, "src", src)
+      })
+    }
+  }
   var quickHideReply = (replyElement) => {
     const hideButton = $('a[onclick*="ignoreReply"]', replyElement)
     if (hideButton) {
@@ -1036,12 +1055,12 @@
       thankButton.outerHTML = thankButton.outerHTML
     }
   }
-  var replyWithFloorNumber = (replyElement) => {
+  var replyWithFloorNumber = (replyElement, forceUpdate = false) => {
     const replyButton = $('a[onclick^="replyOne"]', replyElement)
     if (replyButton) {
       setAttribute(replyButton, "href", actionHref)
       const onclick = getAttribute(replyButton, "onclick") || ""
-      if (onclick.includes("#")) {
+      if (onclick.includes("#") && !forceUpdate) {
         return
       }
       const number = getFloorNumber(replyElement)
@@ -1058,7 +1077,8 @@
       }
     }
   }
-  var showTopReplies = (toggle) => {
+  var done = false
+  var reset = () => {
     const element = $("#top_replies")
     if (element) {
       const sep20 = element.previousElementSibling
@@ -1067,10 +1087,19 @@
       }
       element.remove()
     }
+  }
+  var showTopReplies = (toggle, forceUpdate = false) => {
     if (!toggle) {
+      reset()
       removeClass($("#Wrapper"), "sticky_rightbar")
+      done = false
       return
     }
+    if (done && !forceUpdate) {
+      return
+    }
+    done = true
+    reset()
     addClass($("#Wrapper"), "sticky_rightbar")
     const replyElements = getReplyElements()
       .filter((reply) => {
@@ -1107,9 +1136,9 @@
         id: "top_replies",
         innerHTML: `<div class="cell"><div class="fr"></div><span class="fade">\u5F53\u524D\u9875\u70ED\u95E8\u56DE\u590D</span></div>`,
       })
-      for (const element2 of replyElements) {
-        const cloned = cloneReplyElement(element2)
-        cloned.id = "top_" + element2.id
+      for (const element of replyElements) {
+        const cloned = cloneReplyElement(element)
+        cloned.id = "top_" + element.id
         const ago = $(".ago", cloned)
         if (ago) {
           ago.before(createElement("br"))
@@ -1128,7 +1157,7 @@
   }
   var config = {
     matches: ["https://*.v2ex.com/*"],
-    run_at: "document_end",
+    run_at: "document_start",
   }
   var settingsTable2 = {
     fixReplyFloorNumbers: {
@@ -1172,9 +1201,12 @@
   }
   var fixedReplyFloorNumbers = false
   async function process2() {
+    const domReady =
+      doc.readyState === "interactive" || doc.readyState === "complete"
     if (/\/t\/\d+/.test(location.href)) {
       const replyElements = getReplyElements()
       for (const replyElement of replyElements) {
+        lazyLoadAvatars(replyElement)
         addLinkToAvatars(replyElement)
         if (getSettingsValue("replyWithFloorNumber")) {
           replyWithFloorNumber(replyElement)
@@ -1192,9 +1224,15 @@
           quickHideReply(replyElement)
         }
       }
-      showTopReplies(getSettingsValue("showTopReplies"))
+      if (domReady) {
+        showTopReplies(getSettingsValue("showTopReplies"))
+      }
       filterRepliesByUser(getSettingsValue("filterRepliesByUser"))
-      if (getSettingsValue("fixReplyFloorNumbers") && !fixedReplyFloorNumbers) {
+      if (
+        domReady &&
+        getSettingsValue("fixReplyFloorNumbers") &&
+        !fixedReplyFloorNumbers
+      ) {
         await fixReplyFloorNumbers()
       }
     }
@@ -1228,11 +1266,13 @@
       if (getSettingsValue("replyWithFloorNumber")) {
         const replyElements = getReplyElements()
         for (const replyElement of replyElements) {
-          replyWithFloorNumber(replyElement)
+          replyWithFloorNumber(replyElement, true)
         }
       }
-      showTopReplies(getSettingsValue("showTopReplies"))
-      filterRepliesByUser(getSettingsValue("filterRepliesByUser"))
+      showTopReplies(getSettingsValue("showTopReplies"), true)
+    })
+    addEventListener(doc, "readystatechange", async () => {
+      await process2()
     })
     await process2()
     const scanNodes = throttle(() => {
