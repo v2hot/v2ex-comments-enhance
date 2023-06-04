@@ -13,7 +13,9 @@ import {
   sortReplyElementsByFloorNumberCompareFn,
 } from "../utils"
 
-export const showTopReplies = (toggle) => {
+let done = false
+
+const reset = () => {
   const element = $("#top_replies")
   if (element) {
     const sep20 = element.previousElementSibling
@@ -23,11 +25,23 @@ export const showTopReplies = (toggle) => {
 
     element.remove()
   }
+}
 
+export const showTopReplies = (toggle: boolean, forceUpdate = false) => {
   if (!toggle) {
+    reset()
     removeClass($("#Wrapper"), "sticky_rightbar")
+    done = false
     return
   }
+
+  if (done && !forceUpdate) {
+    return
+  }
+
+  done = true
+
+  reset()
 
   addClass($("#Wrapper"), "sticky_rightbar")
 
