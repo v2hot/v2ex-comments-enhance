@@ -25,7 +25,7 @@ export const getReplyElements = () => {
 }
 
 export const getReplyId = (replyElement: HTMLElement | undefined) =>
-  replyElement ? replyElement.id.replace(/((top|related)_)?r_/, "") : ""
+  replyElement ? replyElement.id.replace(/((top|related|cited)_)?r_/, "") : ""
 
 export const getFloorNumberElement = (replyElement: HTMLElement | undefined) =>
   replyElement ? $(".no", replyElement) : undefined
