@@ -1,21 +1,39 @@
-import { $, getAttribute, setAttribute } from "browser-extension-utils"
+import {
+  $,
+  $$,
+  addEventListener,
+  doc,
+  getAttribute,
+  setAttribute,
+  throttle,
+} from "browser-extension-utils"
+
+const restoreImgSrc = throttle(() => {
+  for (const img of $$("img[data-src]")) {
+    setAttribute(img, "src", getAttribute(img, "data-src"))
+    delete img.dataset.src
+  }
+}, 500)
 
 export const lazyLoadAvatars = (replyElement: HTMLElement) => {
   const avatar = $("img.avatar", replyElement)
   if (avatar) {
-    if (getAttribute(avatar, "loading") === "lazy") {
+    if (getAttribute(avatar, "loading") === "lazy" || avatar.complete) {
       return
     }
 
-    setAttribute(avatar, "loading", "lazy")
     const src = getAttribute(avatar, "src")
+    setAttribute(avatar, "loading", "lazy")
+    setAttribute(avatar, "data-src", src)
     setAttribute(
       avatar,
       "src",
       "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
     )
-    setTimeout(() => {
-      setAttribute(avatar, "src", src)
-    })
+    if (doc.readyState === "complete") {
+      setTimeout(restoreImgSrc)
+    } else {
+      addEventListener(window, "load", restoreImgSrc)
+    }
   }
 }
