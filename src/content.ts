@@ -52,6 +52,10 @@ const settingsTable = {
       "鼠标移至用户名，会显示该用户在当前主题下的所有回复与被提及的回复",
     defaultValue: true,
   },
+  lazyLoadAvatars: {
+    title: "懒加载用户头像图片",
+    defaultValue: false,
+  },
   quickSendThank: {
     title: "快速发送感谢",
     defaultValue: false,
@@ -82,7 +86,10 @@ async function process() {
   if (/\/t\/\d+/.test(location.href)) {
     const replyElements = getReplyElements()
     for (const replyElement of replyElements) {
-      lazyLoadAvatars(replyElement)
+      if (getSettingsValue("lazyLoadAvatars")) {
+        lazyLoadAvatars(replyElement)
+      }
+
       addLinkToAvatars(replyElement)
 
       if (getSettingsValue("replyWithFloorNumber")) {
