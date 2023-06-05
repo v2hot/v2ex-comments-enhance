@@ -164,8 +164,6 @@ async function main() {
         replyWithFloorNumber(replyElement, true)
       }
     }
-
-    showTopReplies(getSettingsValue("showTopReplies"), true)
   })
 
   addEventListener(doc, "readystatechange", async () => {

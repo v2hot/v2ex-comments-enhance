@@ -1,6 +1,11 @@
-import { $ } from "browser-extension-utils"
+import { $, $$ } from "browser-extension-utils"
 
-import { getFloorNumberElement, getReplyElements, parseUrl } from "../utils"
+import {
+  getFloorNumberElement,
+  getReplyElements,
+  getReplyId,
+  parseUrl,
+} from "../utils"
 
 const getTopicReplies = async (topicId: string, replyCount?: number) => {
   const url = `${location.protocol}//${
@@ -16,6 +21,36 @@ const getTopicReplies = async (topicId: string, replyCount?: number) => {
   }
 }
 
+const updateFloorNumber = (
+  replyElement: HTMLElement,
+  newFloorNumber: number
+) => {
+  const numberElement = getFloorNumberElement(replyElement)
+  if (numberElement) {
+    const orgNumber = Number.parseInt(
+      numberElement.dataset.orgNumber || numberElement.textContent || "",
+      10
+    )
+    if (orgNumber) {
+      numberElement.dataset.orgNumber = String(orgNumber)
+    }
+
+    numberElement.textContent = String(newFloorNumber)
+  }
+}
+
+const updateAllFloorNumberById = (id: string, newFloorNumber: number) => {
+  // 替换所有其他回复 ID 相同的回复，包括热门回复、关联回复、引用回复等
+  for (const replyElement of $$(
+    `#r_${id},
+     #top_r_${id},
+     #related_r_${id},
+     #cited_r_${id}`
+  )) {
+    updateFloorNumber(replyElement, newFloorNumber)
+  }
+}
+
 const updateReplyElements = (
   replies: Array<Record<string, unknown>>,
   replyElements: HTMLElement[],
@@ -28,7 +63,7 @@ const updateReplyElements = (
   for (let i = 0; i < length; i++) {
     const realFloorNumber = i + dataOffSet + 1
     const reply = replies[i + dataOffSet]
-    const id = reply.id
+    const id = reply.id as string
     const element = $("#r_" + id)
     if (!element) {
       console.info(
@@ -54,6 +89,8 @@ const updateReplyElements = (
 
         numberElement.textContent = String(realFloorNumber)
       }
+
+      updateAllFloorNumberById(id, realFloorNumber)
     }
   }
 
@@ -71,6 +108,7 @@ const updateReplyElements = (
         continue
       }
 
+      const id = getReplyId(element)
       const numberElement = getFloorNumberElement(element)
       if (numberElement) {
         const orgNumber = Number.parseInt(
@@ -80,6 +118,8 @@ const updateReplyElements = (
         if (orgNumber) {
           numberElement.dataset.orgNumber = String(orgNumber)
           numberElement.textContent = String(orgNumber + floorNumberOffset)
+
+          updateAllFloorNumberById(id, orgNumber + floorNumberOffset)
         }
       }
     }
