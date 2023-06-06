@@ -15,6 +15,7 @@ import {
   showSettings,
 } from "./components/settings"
 import { addLinkToAvatars } from "./modules/add-link-to-avatars"
+import { addlinkToCitedFloorNumbers } from "./modules/add-link-to-cited-floor-numbers"
 import { alwaysShowHideButton } from "./modules/always-show-hide-button"
 import { alwaysShowThankButton } from "./modules/always-show-thank-button"
 import { filterRepliesByUser } from "./modules/filter-repies-by-user"
@@ -121,6 +122,8 @@ async function process() {
         quickHideReply(replyElement)
       }
 
+      addlinkToCitedFloorNumbers(replyElement)
+
       if (getSettingsValue("showCitedReplies")) {
         showCitedReplies(replyElement)
       }
@@ -175,6 +178,7 @@ async function main() {
       const replyElements = getReplyElements()
       for (const replyElement of replyElements) {
         replyWithFloorNumber(replyElement, true)
+        showCitedReplies(replyElement, true)
       }
     }
   })

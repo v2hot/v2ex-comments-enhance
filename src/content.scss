@@ -134,6 +134,11 @@ a.no {
   opacity: 1 !important;
 }
 
+.cited_floor_number {
+  color: #1484cd !important;
+  cursor: pointer;
+}
+
 .reply_content .cell.cited_reply {
   scale: 0.85;
   opacity: 0.85;
@@ -166,7 +171,10 @@ a.no {
   }
 }
 
-.v2p-indent .cell.cited_reply {
+/* v2ex polish */
+.v2p-indent .cell.cited_reply,
+/* V2EX - 超级增强 */
+.comment .comment .cell.cited_reply {
   display: none;
 }
 
