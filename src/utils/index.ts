@@ -24,16 +24,56 @@ export const getReplyElements = () => {
   return []
 }
 
-export const getReplyId = (replyElement: HTMLElement | undefined) =>
-  replyElement ? replyElement.id.replace(/((top|related|cited)_)?r_/, "") : ""
+let cachedReplyElements: HTMLElement[]
+export const getCachedReplyElements = () => {
+  if (!cachedReplyElements) {
+    if (doc.readyState === "loading") {
+      return getReplyElements()
+    }
+
+    cachedReplyElements = getReplyElements()
+  }
+
+  return cachedReplyElements
+}
+
+export const resetCachedReplyElements = () => {
+  cachedReplyElements = undefined
+}
+
+export const getReplyId = (replyElement: HTMLElement | undefined) => {
+  if (!replyElement) {
+    return ""
+  }
+
+  let id = replyElement.dataset.id
+  if (id) {
+    return id
+  }
+
+  id = replyElement.id.replace(/((top|related|cited)_)?r_/, "")
+  replyElement.dataset.id = id
+  return id
+}
 
 export const getFloorNumberElement = (replyElement: HTMLElement | undefined) =>
   replyElement ? $(".no", replyElement) : undefined
 
 export const getFloorNumber = (replyElement: HTMLElement | undefined) => {
+  if (!replyElement) {
+    return 0
+  }
+
+  let floorNumber = Number.parseInt(replyElement.dataset.floorNumber || "", 10)
+  if (floorNumber) {
+    return floorNumber
+  }
+
   const numberElement = getFloorNumberElement(replyElement)
   if (numberElement) {
-    return Number.parseInt(numberElement.textContent || "", 10) || 0
+    floorNumber = Number.parseInt(numberElement.textContent || "", 10) || 0
+    replyElement.dataset.floorNumber = String(floorNumber)
+    return floorNumber
   }
 
   return 0

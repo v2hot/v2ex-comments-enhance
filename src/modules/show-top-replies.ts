@@ -9,7 +9,6 @@ import {
 
 import {
   cloneReplyElement,
-  getReplyElements,
   sortReplyElementsByFloorNumberCompareFn,
 } from "../utils"
 
@@ -27,7 +26,11 @@ const reset = () => {
   }
 }
 
-export const showTopReplies = (toggle: boolean, forceUpdate = false) => {
+export const showTopReplies = (
+  replyElements: HTMLElement[],
+  toggle: boolean,
+  forceUpdate = false
+) => {
   if (!toggle) {
     reset()
     removeClass($("#Wrapper"), "sticky_rightbar")
@@ -45,7 +48,7 @@ export const showTopReplies = (toggle: boolean, forceUpdate = false) => {
 
   addClass($("#Wrapper"), "sticky_rightbar")
 
-  const replyElements = getReplyElements()
+  const topReplies = replyElements
     .filter((reply) => {
       /* v2ex polish: .v2p-icon-heart */
       const heartElement = $('img[alt="❤️"],.v2p-icon-heart', reply)
@@ -77,7 +80,7 @@ export const showTopReplies = (toggle: boolean, forceUpdate = false) => {
     )
   // .slice(0, 10)
 
-  if (replyElements.length > 0) {
+  if (topReplies.length > 0) {
     const box = createElement("div", {
       class: "box",
       id: "top_replies",
@@ -85,7 +88,7 @@ export const showTopReplies = (toggle: boolean, forceUpdate = false) => {
       innerHTML: `<div class="cell"><div class="fr"></div><span class="fade">当前页热门回复</span></div>`,
     })
 
-    for (const element of replyElements) {
+    for (const element of topReplies) {
       const cloned = cloneReplyElement(element)
       cloned.id = "top_" + element.id
 
