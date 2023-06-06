@@ -25,7 +25,7 @@ import { quickSendThank } from "./modules/quick-send-thank"
 import { replyWithFloorNumber } from "./modules/reply-with-floor-number"
 import { showCitedReplies } from "./modules/show-cited-replies"
 import { showTopReplies } from "./modules/show-top-replies"
-import { getReplyElements } from "./utils"
+import { getReplyElements, resetCachedReplyElements } from "./utils"
 
 export const config: PlasmoCSConfig = {
   matches: ["https://*.v2ex.com/*"],
@@ -127,7 +127,7 @@ async function process() {
     }
 
     if (domReady) {
-      showTopReplies(getSettingsValue("showTopReplies"))
+      showTopReplies(replyElements, getSettingsValue("showTopReplies"))
     }
 
     filterRepliesByUser(getSettingsValue("filterRepliesByUser"))
@@ -137,7 +137,7 @@ async function process() {
       getSettingsValue("fixReplyFloorNumbers") &&
       !fixedReplyFloorNumbers
     ) {
-      await fixReplyFloorNumbers()
+      await fixReplyFloorNumbers(replyElements)
     }
   }
 }
@@ -180,6 +180,7 @@ async function main() {
   })
 
   addEventListener(doc, "readystatechange", async () => {
+    resetCachedReplyElements()
     await process()
   })
 

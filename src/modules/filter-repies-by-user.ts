@@ -13,8 +13,8 @@ import {
 
 import {
   cloneReplyElement,
+  getCachedReplyElements,
   getFloorNumber,
-  getReplyElements,
   getReplyId,
   isTouchScreen,
   sortReplyElementsByFloorNumberCompareFn,
@@ -198,7 +198,7 @@ const showModalReplies = (
 
 export const filterRepliesPostedByMember = (memberIds: string[]) => {
   const replies: HTMLElement[] = []
-  const replyElements = getReplyElements()
+  const replyElements = getCachedReplyElements()
   for (const replyElement of replyElements) {
     const memberLink = $('a[href^="/member/"]', replyElement)
     if (!memberLink) {
@@ -219,7 +219,7 @@ export const filterRepliesPostedByMember = (memberIds: string[]) => {
 
 const filterRepliesByPosterOrMentioned = (memberId: string) => {
   const replies: HTMLElement[] = []
-  const replyElements = getReplyElements()
+  const replyElements = getCachedReplyElements()
   for (const replyElement of replyElements) {
     const memberLink = $(`a[href^="/member/${memberId}"]`, replyElement)
     if (!memberLink) {
