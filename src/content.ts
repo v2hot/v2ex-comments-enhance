@@ -1,6 +1,5 @@
 import {
   $,
-  $$,
   addEventListener,
   addStyle,
   doc,
@@ -24,6 +23,7 @@ import { lazyLoadAvatars } from "./modules/lazy-load-avatars"
 import { quickHideReply } from "./modules/quick-hide-reply"
 import { quickSendThank } from "./modules/quick-send-thank"
 import { replyWithFloorNumber } from "./modules/reply-with-floor-number"
+import { showCitedReplies } from "./modules/show-cited-replies"
 import { showTopReplies } from "./modules/show-top-replies"
 import { getReplyElements } from "./utils"
 
@@ -44,6 +44,10 @@ const settingsTable = {
   },
   showTopReplies: {
     title: "显示热门回复",
+    defaultValue: true,
+  },
+  showCitedReplies: {
+    title: "显示被引用的回复",
     defaultValue: true,
   },
   filterRepliesByUser: {
@@ -86,6 +90,11 @@ async function process() {
   if (/\/t\/\d+/.test(location.href)) {
     const replyElements = getReplyElements()
     for (const replyElement of replyElements) {
+      if (!$(".reply_content", replyElement)) {
+        // 页面加载中，次回复标签还没有加在完整
+        continue
+      }
+
       if (getSettingsValue("lazyLoadAvatars")) {
         lazyLoadAvatars(replyElement)
       }
@@ -110,6 +119,10 @@ async function process() {
 
       if (getSettingsValue("quickHideReply")) {
         quickHideReply(replyElement)
+      }
+
+      if (getSettingsValue("showCitedReplies")) {
+        showCitedReplies(replyElement)
       }
     }
 
