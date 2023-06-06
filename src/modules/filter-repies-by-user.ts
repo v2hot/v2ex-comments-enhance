@@ -208,7 +208,7 @@ export const filterRepliesPostedByMember = (memberIds: string[]) => {
     const memberId = (/member\/(\w+)/.exec(memberLink.href) || [])[1]
     if (memberIds.includes(memberId)) {
       // console.log(replyElement)
-      const cloned = cloneReplyElement(replyElement)
+      const cloned = cloneReplyElement(replyElement, true)
       cloned.id = "related_" + replyElement.id
       replies.push(cloned)
     }
@@ -227,7 +227,7 @@ const filterRepliesByPosterOrMentioned = (memberId: string) => {
     }
 
     // console.log(replyElement)
-    const cloned = cloneReplyElement(replyElement)
+    const cloned = cloneReplyElement(replyElement, true)
 
     // fix v2ex polish start
     const memberLink2 = $(`a[href^="/member/${memberId}"]`, cloned)
