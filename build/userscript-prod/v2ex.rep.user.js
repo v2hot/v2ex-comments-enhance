@@ -4,9 +4,9 @@
 // @namespace            https://github.com/v2hot/v2ex.rep
 // @homepageURL          https://github.com/v2hot/v2ex.rep#readme
 // @supportURL           https://github.com/v2hot/v2ex.rep/issues
-// @version              0.1.2
-// @description          专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
-// @description:zh-CN    专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
+// @version              0.2.0
+// @description          专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
+// @description:zh-CN    专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
 // @icon                 https://www.v2ex.com/favicon.ico
 // @author               Pipecraft
 // @license              MIT
@@ -223,7 +223,7 @@
     GM.registerMenuCommand(name, callback, accessKey)
   }
   var content_default =
-    'a.icon_button{opacity:1 !important;visibility:visible;margin-right:14px}a.icon_button:last-child{margin-right:0}a.icon_button svg{vertical-align:text-top}body .v2p-controls{opacity:1}body .v2p-controls>a.icon_button{margin-right:0}body .v2p-controls div a{margin-right:15px}body .v2p-controls div a:last-child{margin-right:0}body .v2p-controls a[onclick^=replyOne]{opacity:1 !important}.sticky_rightbar #Rightbar{position:sticky;top:0;max-height:100vh;overflow-y:auto;overflow-x:hidden;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;scrollbar-color:rgba(0,0,0,0) rgba(0,0,0,0);scrollbar-width:thin}.sticky_rightbar #Rightbar:hover{scrollbar-color:var(--sb-thumb-color) var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar{width:var(--sb-size)}.sticky_rightbar #Rightbar::-webkit-scrollbar-track{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-track{background:var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar-thumb{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-thumb{background:var(--sb-thumb-color)}.sticky_rightbar #Rightbar .v2p-tool-box{position:unset}.related_replies_container .related_replies{position:absolute;z-index:10000;width:100%;-webkit-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);-moz-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);box-shadow:0px 10px 39px 10px rgba(62,66,66,.22) !important}.related_replies_container .related_replies_before::before{content:"";display:block;width:100%;height:10000px;position:absolute;margin-top:-10000px;background-color:#334;opacity:50%}.related_replies_container .related_replies_after::after{content:"";display:block;width:100%;height:10000px;position:absolute;background-color:#334;opacity:50%}.related_replies_container.no_replies .related_replies_before::before,.related_replies_container.no_replies .related_replies_after::after{display:none}.related_replies_container .tabs{position:sticky;top:0;display:flex;justify-content:center}.related_replies_container .tabs a{cursor:pointer}a.no{background-color:rgba(0,0,0,0) !important;color:#1484cd !important;border:1px solid #1484cd;border-radius:3px !important;opacity:1 !important}'
+    'a.icon_button{opacity:1 !important;visibility:visible;margin-right:14px}a.icon_button:last-child{margin-right:0}a.icon_button svg{vertical-align:text-top}body .v2p-controls{opacity:1}body .v2p-controls>a.icon_button{margin-right:0}body .v2p-controls div a{margin-right:15px}body .v2p-controls div a:last-child{margin-right:0}body .v2p-controls a[onclick^=replyOne]{opacity:1 !important}.sticky_rightbar #Rightbar{position:sticky;top:0;max-height:100vh;overflow-y:auto;overflow-x:hidden;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;scrollbar-color:rgba(0,0,0,0) rgba(0,0,0,0);scrollbar-width:thin}.sticky_rightbar #Rightbar:hover{scrollbar-color:var(--sb-thumb-color) var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar{width:var(--sb-size)}.sticky_rightbar #Rightbar::-webkit-scrollbar-track{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-track{background:var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar-thumb{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-thumb{background:var(--sb-thumb-color)}.sticky_rightbar #Rightbar .v2p-tool-box{position:unset}.related_replies_container .related_replies{position:absolute;z-index:10000;width:100%;-webkit-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);-moz-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);box-shadow:0px 10px 39px 10px rgba(62,66,66,.22) !important}.related_replies_container .related_replies_before::before{content:"";display:block;width:100%;height:10000px;position:absolute;margin-top:-10000px;background-color:#334;opacity:50%}.related_replies_container .related_replies_after::after{content:"";display:block;width:100%;height:10000px;position:absolute;background-color:#334;opacity:50%}.related_replies_container.no_replies .related_replies_before::before,.related_replies_container.no_replies .related_replies_after::after{display:none}.related_replies_container .tabs{position:sticky;top:0;display:flex;justify-content:center}.related_replies_container .tabs a{cursor:pointer}a.no{background-color:rgba(0,0,0,0) !important;color:#1484cd !important;border:1px solid #1484cd;border-radius:3px !important;opacity:1 !important}.reply_content .cell.cited_reply{scale:.85;opacity:.85;background-color:#f5f5f5;border:1px solid var(--box-border-color);max-height:150px;overflow:auto;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;scrollbar-color:var(--sb-thumb-color) var(--sb-track-color);scrollbar-width:thin}.reply_content .cell.cited_reply::-webkit-scrollbar{width:var(--sb-size)}.reply_content .cell.cited_reply::-webkit-scrollbar-track{background:var(--sb-track-color);border-radius:10px}.reply_content .cell.cited_reply::-webkit-scrollbar-thumb{background:var(--sb-thumb-color);border-radius:10px}.v2p-indent .cell.cited_reply{display:none}'
   var listeners = {}
   var getValue = async (key) => {
     const value = await GM.getValue(key)
@@ -530,7 +530,7 @@
     return []
   }
   var getReplyId = (replyElement) =>
-    replyElement ? replyElement.id.replace(/((top|related)_)?r_/, "") : ""
+    replyElement ? replyElement.id.replace(/((top|related|cited)_)?r_/, "") : ""
   var getFloorNumberElement = (replyElement) =>
     replyElement ? $(".no", replyElement) : void 0
   var getFloorNumber = (replyElement) => {
@@ -677,17 +677,18 @@
         innerHTML: `<span class="fade">\u8FD9\u6761\u56DE\u590D\u524D\u9762\u8FD8\u6709 ${beforeCount} \u6761\u56DE\u590D</span>`,
       })
     }
+    const width = main2.offsetWidth + "px"
     if (replyElement) {
       const offsetTop = getOffsetPosition(replyElement, main2).top
       const height = box.offsetHeight || box.clientHeight
       const height2 = replyElement.offsetHeight || replyElement.clientHeight
       setStyle(box, {
         top: offsetTop - height + "px",
-        width: replyElement.offsetWidth + "px",
+        width,
       })
       setStyle(box2, {
         top: offsetTop + height2 + "px",
-        width: replyElement.offsetWidth + "px",
+        width,
       })
     } else if (afterCount > 0) {
       ;(_a = box2.firstChild) == null ? void 0 : _a.before(tabs)
@@ -698,7 +699,7 @@
         const height2 = headerElement.offsetHeight || headerElement.clientHeight
         setStyle(box2, {
           top: offsetTop + height2 + "px",
-          width: headerElement.offsetWidth + "px",
+          width,
         })
         box.remove()
       } else {
@@ -708,11 +709,11 @@
           : window.scrollY
         setStyle(box, {
           top: offsetTop + "px",
-          width: firstReply ? firstReply.offsetWidth + "px" : "100%",
+          width,
         })
         setStyle(box2, {
           top: offsetTop + "px",
-          width: firstReply ? firstReply.offsetWidth + "px" : "100%",
+          width,
         })
         box2.scrollIntoView({ block: "nearest" })
       }
@@ -884,6 +885,29 @@
       return response.json()
     }
   }
+  var updateFloorNumber = (replyElement, newFloorNumber) => {
+    const numberElement = getFloorNumberElement(replyElement)
+    if (numberElement) {
+      const orgNumber = Number.parseInt(
+        numberElement.dataset.orgNumber || numberElement.textContent || "",
+        10
+      )
+      if (orgNumber) {
+        numberElement.dataset.orgNumber = String(orgNumber)
+      }
+      numberElement.textContent = String(newFloorNumber)
+    }
+  }
+  var updateAllFloorNumberById = (id, newFloorNumber) => {
+    for (const replyElement of $$(
+      `#r_${id},
+     #top_r_${id},
+     #related_r_${id},
+     #cited_r_${id}`
+    )) {
+      updateFloorNumber(replyElement, newFloorNumber)
+    }
+  }
   var updateReplyElements = (replies, replyElements, page = 1) => {
     var _a
     let floorNumberOffset = 0
@@ -920,6 +944,7 @@
           }
           numberElement.textContent = String(realFloorNumber)
         }
+        updateAllFloorNumberById(id, realFloorNumber)
       }
     }
     console.info(
@@ -933,6 +958,7 @@
         if (element.found) {
           continue
         }
+        const id = getReplyId(element)
         const numberElement = getFloorNumberElement(element)
         if (numberElement) {
           const orgNumber = Number.parseInt(
@@ -942,6 +968,7 @@
           if (orgNumber) {
             numberElement.dataset.orgNumber = String(orgNumber)
             numberElement.textContent = String(orgNumber + floorNumberOffset)
+            updateAllFloorNumberById(id, orgNumber + floorNumberOffset)
           }
         }
       }
@@ -1086,6 +1113,46 @@
       }
     }
   }
+  var showCitedReplies = (replyElement) => {
+    if (replyElement.dataset.showCitedReplies || $(".v2p-color-mode-toggle")) {
+      return
+    }
+    const floorNumber = getFloorNumber(replyElement)
+    if (!floorNumber) {
+      return
+    }
+    replyElement.dataset.showCitedReplies = "done"
+    const content = $(".reply_content", replyElement)
+    const memberLinks = $$('a[href^="/member/"]', content)
+    for (const memberLink of memberLinks) {
+      const textNode = memberLink.previousSibling
+      if (
+        textNode &&
+        textNode.nodeType === 3 &&
+        textNode.textContent &&
+        textNode.textContent.endsWith("@")
+      ) {
+        const memberId = (/member\/(\w+)/.exec(memberLink.href) || [])[1]
+        const replies = filterRepliesPostedByMember([memberId])
+        let hasCitedReplies = false
+        for (let i = replies.length - 1; i >= 0; i--) {
+          const reply = replies[i]
+          const floorNumber2 = getFloorNumber(reply)
+          if (floorNumber2 >= floorNumber) {
+            continue
+          }
+          if (floorNumber - floorNumber2 <= 1 && !hasCitedReplies) {
+            break
+          }
+          reply.id = reply.id.replace("related", "cited")
+          addClass(reply, "cited_reply")
+          memberLink.after(reply)
+          hasCitedReplies = true
+          break
+        }
+      }
+    }
+  }
   var done = false
   var reset = () => {
     const element = $("#top_replies")
@@ -1115,7 +1182,7 @@
         var _a
         const heartElement = $('img[alt="\u2764\uFE0F"],.v2p-icon-heart', reply)
         if (heartElement) {
-          const childReplies = $$('.cell[id^="r_"]', reply)
+          const childReplies = $$(".reply_content,.cell", reply)
           for (const child of childReplies) {
             if (child.contains(heartElement)) {
               return false
@@ -1181,6 +1248,10 @@
       title: "\u663E\u793A\u70ED\u95E8\u56DE\u590D",
       defaultValue: true,
     },
+    showCitedReplies: {
+      title: "\u663E\u793A\u88AB\u5F15\u7528\u7684\u56DE\u590D",
+      defaultValue: true,
+    },
     filterRepliesByUser: {
       title:
         "\u67E5\u770B\u7528\u6237\u5728\u5F53\u524D\u4E3B\u9898\u4E0B\u7684\u6240\u6709\u56DE\u590D\u4E0E\u88AB\u63D0\u53CA\u7684\u56DE\u590D",
@@ -1219,6 +1290,9 @@
     if (/\/t\/\d+/.test(location.href)) {
       const replyElements = getReplyElements()
       for (const replyElement of replyElements) {
+        if (!$(".reply_content", replyElement)) {
+          continue
+        }
         if (getSettingsValue("lazyLoadAvatars")) {
           lazyLoadAvatars(replyElement)
         }
@@ -1237,6 +1311,9 @@
         }
         if (getSettingsValue("quickHideReply")) {
           quickHideReply(replyElement)
+        }
+        if (getSettingsValue("showCitedReplies")) {
+          showCitedReplies(replyElement)
         }
       }
       if (domReady) {
@@ -1284,7 +1361,6 @@
           replyWithFloorNumber(replyElement, true)
         }
       }
-      showTopReplies(getSettingsValue("showTopReplies"), true)
     })
     addEventListener(doc, "readystatechange", async () => {
       await process2()
