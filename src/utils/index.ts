@@ -137,3 +137,92 @@ export const parseUrl = () => {
 }
 
 export const isTouchScreen = "ontouchstart" in document.documentElement
+
+export const getMemberIdFromMemberLink = (memberLink: HTMLAnchorElement) => {
+  if (!memberLink) {
+    return
+  }
+
+  return (/member\/(\w+)/.exec(memberLink.href) || [])[1]
+}
+
+export const getReplyAuthorMemberId = (replyElement: HTMLElement) => {
+  if (!replyElement) {
+    return
+  }
+
+  const memberLink = $('a[href^="/member/"]', replyElement) as HTMLAnchorElement
+  return getMemberIdFromMemberLink(memberLink)
+}
+
+/**
+ * type:
+ *   - 0: 取与指定楼层号最近的回复 (默认)
+ *   - 1: 取与指定楼层号相同或往前最近的回复
+ *   - 2: 取与指定楼层号相同或往后最近的回复
+ */
+export const getReplyElementByMemberIdAndFloorNumber = (
+  memberId: string | undefined,
+  floorNumber: number | undefined,
+  type = 0
+) => {
+  if (!memberId || !floorNumber) {
+    return
+  }
+
+  const replyElements = getCachedReplyElements()
+  const length = replyElements.length
+  // 如果楼层数比较大，从后往前找
+  const reverse = floorNumber > length / 2
+  let nearestReply: HTMLElement | undefined
+  let nearestReplyGap = 1000
+  for (let i = 0; i < length; i++) {
+    const replyElement = replyElements[reverse ? length - i - 1 : i]
+
+    const memberId2 = getReplyAuthorMemberId(replyElement)
+    if (memberId2 !== memberId) {
+      continue
+    }
+
+    const floorNumber2 = getFloorNumber(replyElement)
+    if (floorNumber2 === floorNumber) {
+      return replyElement
+    }
+
+    if (type === 1 && floorNumber2 > floorNumber) {
+      continue
+    }
+
+    if (type === 2 && floorNumber2 < floorNumber) {
+      continue
+    }
+
+    // 取最邻近的回复
+    if (
+      !nearestReply ||
+      Math.abs(floorNumber - floorNumber2) < nearestReplyGap
+    ) {
+      nearestReply = replyElement
+      nearestReplyGap = Math.abs(floorNumber - floorNumber2)
+    }
+  }
+
+  return nearestReply
+}
+
+const runOnceCache = {}
+/* eslint-disable @typescript-eslint/ban-types, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment */
+export const runOnce = (key: any, func: Function) => {
+  if (!key) {
+    return func()
+  }
+
+  if (Object.hasOwn(runOnceCache, key)) {
+    return runOnceCache[key]
+  }
+
+  const result = func()
+  runOnceCache[key] = result
+  return result
+}
+/* eslint-enable @typescript-eslint/ban-types, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment */

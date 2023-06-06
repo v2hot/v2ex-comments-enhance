@@ -1,12 +1,21 @@
-import { $, $$, addClass } from "browser-extension-utils"
+import { $, $$, addClass, hasClass } from "browser-extension-utils"
 
-import { getFloorNumber } from "~utils"
+import {
+  cloneReplyElement,
+  getFloorNumber,
+  getMemberIdFromMemberLink,
+  getReplyElementByMemberIdAndFloorNumber,
+} from "../utils"
 
-import { filterRepliesPostedByMember } from "./filter-repies-by-user"
-
-export const showCitedReplies = (replyElement: HTMLElement) => {
+export const showCitedReplies = (
+  replyElement: HTMLElement,
+  forceUpdate = false
+) => {
   // Don't show cited replies if v2ex plish extension is enabled
-  if (replyElement.dataset.showCitedReplies || $(".v2p-color-mode-toggle")) {
+  if (
+    !forceUpdate &&
+    (replyElement.dataset.showCitedReplies || $(".v2p-color-mode-toggle"))
+  ) {
     return
   }
 
@@ -16,10 +25,19 @@ export const showCitedReplies = (replyElement: HTMLElement) => {
   }
 
   replyElement.dataset.showCitedReplies = "done"
+
+  for (const element of $$(".cited_reply", replyElement)) {
+    element.remove()
+  }
+
   const content = $(".reply_content", replyElement)
-  const memberLinks = $$('a[href^="/member/"]', content)
+  const memberLinks = $$('a[href^="/member/"]', content) as HTMLAnchorElement[]
+  let hasCitedReplies = false
   for (const memberLink of memberLinks) {
     const textNode = memberLink.previousSibling
+    let nextElement = memberLink.nextElementSibling as HTMLElement | undefined
+    let target = memberLink as HTMLElement
+    let citedFloorNumber: number | undefined
     if (
       textNode &&
       textNode.nodeType === 3 /* TEXT_NODE */ &&
@@ -27,29 +45,57 @@ export const showCitedReplies = (replyElement: HTMLElement) => {
       textNode.textContent.endsWith("@")
     ) {
       // console.log(memberLink)
-      const memberId = (/member\/(\w+)/.exec(memberLink.href) || [])[1]
-      const replies = filterRepliesPostedByMember([memberId])
-      let hasCitedReplies = false
+      const memberId = getMemberIdFromMemberLink(memberLink)
+      if (!memberId) {
+        continue
+      }
 
-      for (let i = replies.length - 1; i >= 0; i--) {
-        const reply = replies[i]
-        const floorNumber2 = getFloorNumber(reply)
-        if (floorNumber2 >= floorNumber) {
+      if (nextElement && hasClass(nextElement, "utags_ul")) {
+        target = nextElement
+        nextElement = nextElement.nextElementSibling as HTMLElement | undefined
+      }
+
+      if (nextElement && hasClass(nextElement, "cited_floor_number")) {
+        target = nextElement
+        citedFloorNumber = Number.parseInt(
+          nextElement.dataset.floorNumber || "",
+          10
+        )
+      }
+
+      let citedReplyElement: HTMLElement | undefined
+      if (citedFloorNumber) {
+        citedReplyElement = getReplyElementByMemberIdAndFloorNumber(
+          memberId,
+          citedFloorNumber
+        )
+      }
+
+      if (!citedReplyElement) {
+        citedReplyElement = getReplyElementByMemberIdAndFloorNumber(
+          memberId,
+          floorNumber - 1,
+          1
+        )
+      }
+
+      if (citedReplyElement) {
+        // const floorNumber2 = getFloorNumber(citedReplyElement)
+        // if (floorNumber - floorNumber2 <= 1 && !hasCitedReplies) {
+        if (
+          citedReplyElement.nextElementSibling === replyElement &&
+          !hasCitedReplies
+        ) {
+          // 如果引用的是前一个回复，并且没有其他引用的回复，则不显示
           continue
         }
 
-        if (floorNumber - floorNumber2 <= 1 && !hasCitedReplies) {
-          // 如果引用的是前一个回复，并且没有其他引用的回复，则不显示
-          break
-        }
-
-        // console.log(reply, floorNumber2)
-        reply.id = reply.id.replace("related", "cited")
-        addClass(reply, "cited_reply")
-        // textNode.before(reply)
-        memberLink.after(reply)
+        const cloned = cloneReplyElement(citedReplyElement)
+        cloned.removeAttribute("id")
+        addClass(cloned, "cited_reply")
+        // textNode.before(cloned)
+        target.after(cloned)
         hasCitedReplies = true
-        break
       }
     }
   }
