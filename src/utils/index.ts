@@ -58,6 +58,7 @@ export const cloneReplyElement = (replyElement: HTMLElement) => {
     toolbox.append(floorNumber2)
   }
 
+  // Remove cited replies, child replies
   /* fix v2ex polish start */
   const cells = $$(".cell,.v2p-topic-reply-ref", cloned)
   for (const cell of cells) {

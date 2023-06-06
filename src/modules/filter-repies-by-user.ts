@@ -35,6 +35,7 @@ const showModalReplies = (
 
   setStyle(main, "position: relative;")
 
+  // 只匹配 main 区域，右侧栏除外
   const replyElement = $("#Main")
     ? (referElement.closest("#Main .cell") as HTMLElement | undefined)
     : (referElement.closest(".cell") as HTMLElement | undefined)
@@ -145,6 +146,7 @@ const showModalReplies = (
     })
   }
 
+  const width = main.offsetWidth + "px"
   if (replyElement) {
     const offsetTop = getOffsetPosition(replyElement, main).top
     const height = box.offsetHeight || box.clientHeight
@@ -152,11 +154,11 @@ const showModalReplies = (
     // console.log(offsetTop, replyElement)
     setStyle(box, {
       top: offsetTop - height + "px",
-      width: replyElement.offsetWidth + "px",
+      width,
     })
     setStyle(box2, {
       top: offsetTop + height2 + "px",
-      width: replyElement.offsetWidth + "px",
+      width,
     })
   } else if (afterCount > 0) {
     box2.firstChild?.before(tabs)
@@ -169,7 +171,7 @@ const showModalReplies = (
       const height2 = headerElement.offsetHeight || headerElement.clientHeight
       setStyle(box2, {
         top: offsetTop + height2 + "px",
-        width: headerElement.offsetWidth + "px",
+        width,
       })
       box.remove()
     } else {
@@ -180,11 +182,11 @@ const showModalReplies = (
         : window.scrollY
       setStyle(box, {
         top: offsetTop + "px",
-        width: firstReply ? firstReply.offsetWidth + "px" : "100%",
+        width,
       })
       setStyle(box2, {
         top: offsetTop + "px",
-        width: firstReply ? firstReply.offsetWidth + "px" : "100%",
+        width,
       })
       box2.scrollIntoView({ block: "nearest" })
     }
@@ -194,7 +196,7 @@ const showModalReplies = (
   }
 }
 
-const filterRepliesPostedByMember = (memberIds: string[]) => {
+export const filterRepliesPostedByMember = (memberIds: string[]) => {
   const replies: HTMLElement[] = []
   const replyElements = getReplyElements()
   for (const replyElement of replyElements) {
