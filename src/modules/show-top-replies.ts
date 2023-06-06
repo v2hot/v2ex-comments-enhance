@@ -89,7 +89,7 @@ export const showTopReplies = (
     })
 
     for (const element of topReplies) {
-      const cloned = cloneReplyElement(element)
+      const cloned = cloneReplyElement(element, true)
       cloned.id = "top_" + element.id
 
       const ago = $(".ago", cloned)

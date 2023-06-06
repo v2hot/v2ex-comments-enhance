@@ -79,7 +79,10 @@ export const getFloorNumber = (replyElement: HTMLElement | undefined) => {
   return 0
 }
 
-export const cloneReplyElement = (replyElement: HTMLElement) => {
+export const cloneReplyElement = (
+  replyElement: HTMLElement,
+  wrappingTable = false
+) => {
   const cloned = replyElement.cloneNode(true) as HTMLElement
 
   const floorNumber = $(".no", cloned)
@@ -104,7 +107,19 @@ export const cloneReplyElement = (replyElement: HTMLElement) => {
   for (const cell of cells) {
     cell.remove()
   }
+
   /* fix v2ex polish end */
+  if (wrappingTable) {
+    const table = cloned.firstElementChild as HTMLElement
+    if (table && table.tagName === "TABLE") {
+      const wrapper = createElement("div", {
+        class: "wrapper",
+      })
+
+      table.after(wrapper)
+      wrapper.append(table)
+    }
+  }
 
   return cloned
 }
