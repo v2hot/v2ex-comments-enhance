@@ -50,8 +50,8 @@ export const showTopReplies = (toggle: boolean, forceUpdate = false) => {
       /* v2ex polish: .v2p-icon-heart */
       const heartElement = $('img[alt="❤️"],.v2p-icon-heart', reply)
       if (heartElement) {
-        /* handle v2ex polish nested replies */
-        const childReplies = $$('.cell[id^="r_"]', reply)
+        /* handle cited replies, v2ex polish child replies */
+        const childReplies = $$(".reply_content,.cell", reply)
         for (const child of childReplies) {
           if (child.contains(heartElement)) {
             return false
