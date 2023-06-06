@@ -1,11 +1,6 @@
 import { $, $$ } from "browser-extension-utils"
 
-import {
-  getFloorNumberElement,
-  getReplyElements,
-  getReplyId,
-  parseUrl,
-} from "../utils"
+import { getFloorNumberElement, getReplyId, parseUrl } from "../utils"
 
 const getTopicReplies = async (topicId: string, replyCount?: number) => {
   const url = `${location.protocol}//${
@@ -27,15 +22,15 @@ const updateFloorNumber = (
 ) => {
   const numberElement = getFloorNumberElement(replyElement)
   if (numberElement) {
-    const orgNumber = Number.parseInt(
-      numberElement.dataset.orgNumber || numberElement.textContent || "",
-      10
-    )
-    if (orgNumber) {
-      numberElement.dataset.orgNumber = String(orgNumber)
+    if (!numberElement.dataset.orgNumber) {
+      const orgNumber = Number.parseInt(numberElement.textContent || "", 10)
+      if (orgNumber) {
+        numberElement.dataset.orgNumber = String(orgNumber)
+      }
     }
 
     numberElement.textContent = String(newFloorNumber)
+    replyElement.dataset.floorNumber = String(newFloorNumber)
   }
 }
 
@@ -131,7 +126,7 @@ const updateReplyElements = (
 
 let isRunning = false
 
-export const fixReplyFloorNumbers = async () => {
+export const fixReplyFloorNumbers = async (replyElements: HTMLElement[]) => {
   if (isRunning) {
     return
   }
@@ -144,8 +139,6 @@ export const fixReplyFloorNumbers = async () => {
   if (!topicId) {
     return
   }
-
-  const replyElements = getReplyElements()
 
   const displayNumber =
     Number.parseInt(
