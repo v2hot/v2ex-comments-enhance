@@ -144,6 +144,8 @@ a.no {
   opacity: 0.85;
   background-color: #f5f5f5;
   border: 1px solid var(--box-border-color);
+  /* Fix v2ex plus */
+  white-space: initial;
 
   .wrapper {
     max-height: 150px;
@@ -173,6 +175,9 @@ a.no {
 
 /* v2ex polish */
 .v2p-indent .cell.cited_reply,
+.v2p-indent .reply_content + .reply_content,
+.v2p-indent .reply_content + .reply_content + .v2p-expand-btn,
+.v2p-indent .v2p-collapsed:has(.reply_content + .reply_content)::before,
 /* V2EX - 超级增强 */
 .comment .comment .cell.cited_reply {
   display: none;
