@@ -4,7 +4,7 @@
 // @namespace            https://github.com/v2hot/v2ex.rep
 // @homepageURL          https://github.com/v2hot/v2ex.rep#readme
 // @supportURL           https://github.com/v2hot/v2ex.rep/issues
-// @version              0.2.0
+// @version              0.2.1
 // @description          专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
 // @description:zh-CN    专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
 // @icon                 https://www.v2ex.com/favicon.ico
@@ -223,7 +223,7 @@
     GM.registerMenuCommand(name, callback, accessKey)
   }
   var content_default =
-    'a.icon_button{opacity:1 !important;visibility:visible;margin-right:14px}a.icon_button:last-child{margin-right:0}a.icon_button svg{vertical-align:text-top}body .v2p-controls{opacity:1}body .v2p-controls>a.icon_button{margin-right:0}body .v2p-controls div a{margin-right:15px}body .v2p-controls div a:last-child{margin-right:0}body .v2p-controls a[onclick^=replyOne]{opacity:1 !important}.sticky_rightbar #Rightbar{position:sticky;top:0;max-height:100vh;overflow-y:auto;overflow-x:hidden;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;scrollbar-color:rgba(0,0,0,0) rgba(0,0,0,0);scrollbar-width:thin}.sticky_rightbar #Rightbar:hover{scrollbar-color:var(--sb-thumb-color) var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar{width:var(--sb-size)}.sticky_rightbar #Rightbar::-webkit-scrollbar-track{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-track{background:var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar-thumb{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-thumb{background:var(--sb-thumb-color)}.sticky_rightbar #Rightbar .v2p-tool-box{position:unset}.related_replies_container .related_replies{position:absolute;z-index:10000;width:100%;-webkit-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);-moz-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);box-shadow:0px 10px 39px 10px rgba(62,66,66,.22) !important}.related_replies_container .related_replies_before::before{content:"";display:block;width:100%;height:10000px;position:absolute;margin-top:-10000px;background-color:#334;opacity:50%}.related_replies_container .related_replies_after::after{content:"";display:block;width:100%;height:10000px;position:absolute;background-color:#334;opacity:50%}.related_replies_container.no_replies .related_replies_before::before,.related_replies_container.no_replies .related_replies_after::after{display:none}.related_replies_container .tabs{position:sticky;top:0;display:flex;justify-content:center}.related_replies_container .tabs a{cursor:pointer}a.no{background-color:rgba(0,0,0,0) !important;color:#1484cd !important;border:1px solid #1484cd;border-radius:3px !important;opacity:1 !important}.reply_content .cell.cited_reply{scale:.85;opacity:.85;background-color:#f5f5f5;border:1px solid var(--box-border-color);max-height:150px;overflow:auto;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;scrollbar-color:var(--sb-thumb-color) var(--sb-track-color);scrollbar-width:thin}.reply_content .cell.cited_reply::-webkit-scrollbar{width:var(--sb-size)}.reply_content .cell.cited_reply::-webkit-scrollbar-track{background:var(--sb-track-color);border-radius:10px}.reply_content .cell.cited_reply::-webkit-scrollbar-thumb{background:var(--sb-thumb-color);border-radius:10px}.v2p-indent .cell.cited_reply{display:none}'
+    'a.icon_button{opacity:1 !important;visibility:visible;margin-right:14px}a.icon_button:last-child{margin-right:0}a.icon_button svg{vertical-align:text-top}body .v2p-controls{opacity:1}body .v2p-controls>a.icon_button{margin-right:0}body .v2p-controls div a{margin-right:15px}body .v2p-controls div a:last-child{margin-right:0}body .v2p-controls a[onclick^=replyOne]{opacity:1 !important}.sticky_rightbar #Rightbar{position:sticky;top:0;max-height:100vh;overflow-y:auto;overflow-x:hidden;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;scrollbar-color:rgba(0,0,0,0) rgba(0,0,0,0);scrollbar-width:thin}.sticky_rightbar #Rightbar:hover{scrollbar-color:var(--sb-thumb-color) var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar{width:var(--sb-size)}.sticky_rightbar #Rightbar::-webkit-scrollbar-track{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-track{background:var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar-thumb{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-thumb{background:var(--sb-thumb-color)}.sticky_rightbar #Rightbar .v2p-tool-box{position:unset}.related_replies_container .related_replies{position:absolute;z-index:10000;width:100%;-webkit-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);-moz-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);box-shadow:0px 10px 39px 10px rgba(62,66,66,.22) !important}.related_replies_container .related_replies_before::before{content:"";display:block;width:100%;height:10000px;position:absolute;margin-top:-10000px;background-color:#334;opacity:50%}.related_replies_container .related_replies_after::after{content:"";display:block;width:100%;height:10000px;position:absolute;background-color:#334;opacity:50%}.related_replies_container.no_replies .related_replies_before::before,.related_replies_container.no_replies .related_replies_after::after{display:none}.related_replies_container .tabs{position:sticky;top:0;display:flex;justify-content:center}.related_replies_container .tabs a{cursor:pointer}a.no{background-color:rgba(0,0,0,0) !important;color:#1484cd !important;border:1px solid #1484cd;border-radius:3px !important;opacity:1 !important}.cited_floor_number{color:#1484cd !important;cursor:pointer}.reply_content .cell.cited_reply{scale:.85;opacity:.85;background-color:#f5f5f5;border:1px solid var(--box-border-color)}.reply_content .cell.cited_reply .wrapper{max-height:150px;overflow:auto;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;scrollbar-color:var(--sb-thumb-color) var(--sb-track-color);scrollbar-width:thin}.reply_content .cell.cited_reply .wrapper::-webkit-scrollbar{width:var(--sb-size)}.reply_content .cell.cited_reply .wrapper::-webkit-scrollbar-track{background:var(--sb-track-color);border-radius:10px}.reply_content .cell.cited_reply .wrapper::-webkit-scrollbar-thumb{background:var(--sb-thumb-color);border-radius:10px}.v2p-indent .cell.cited_reply,.comment .comment .cell.cited_reply{display:none}#top_replies .cell .wrapper{position:relative;max-height:150px;overflow:hidden}#top_replies .cell .wrapper::after{content:"";display:block;position:absolute;bottom:0;width:100%;height:5px;opacity:.8;background-color:#fff}'
   var listeners = {}
   var getValue = async (key) => {
     const value = await GM.getValue(key)
@@ -494,6 +494,233 @@
       memberLink2.append(avatar)
     }
   }
+  var getReplyElements = () => {
+    const firstReply = $('.box .cell[id^="r_"]')
+    if (firstReply == null ? void 0 : firstReply.parentElement) {
+      const v2exPolishModel = $(".v2p-model-mask")
+      return $$('.cell[id^="r_"]', firstReply.parentElement).filter((reply) => {
+        if (v2exPolishModel && v2exPolishModel.contains(reply)) {
+          return false
+        }
+        return true
+      })
+    }
+    return []
+  }
+  var cachedReplyElements
+  var getCachedReplyElements = () => {
+    if (!cachedReplyElements) {
+      if (doc.readyState === "loading") {
+        return getReplyElements()
+      }
+      cachedReplyElements = getReplyElements()
+    }
+    return cachedReplyElements
+  }
+  var resetCachedReplyElements = () => {
+    cachedReplyElements = void 0
+  }
+  var getReplyId = (replyElement) => {
+    if (!replyElement) {
+      return ""
+    }
+    let id = replyElement.dataset.id
+    if (id) {
+      return id
+    }
+    id = replyElement.id.replace(/((top|related|cited)_)?r_/, "")
+    replyElement.dataset.id = id
+    return id
+  }
+  var getFloorNumberElement = (replyElement) =>
+    replyElement ? $(".no", replyElement) : void 0
+  var getFloorNumber = (replyElement) => {
+    if (!replyElement) {
+      return 0
+    }
+    let floorNumber = Number.parseInt(
+      replyElement.dataset.floorNumber || "",
+      10
+    )
+    if (floorNumber) {
+      return floorNumber
+    }
+    const numberElement = getFloorNumberElement(replyElement)
+    if (numberElement) {
+      floorNumber = Number.parseInt(numberElement.textContent || "", 10) || 0
+      replyElement.dataset.floorNumber = String(floorNumber)
+      return floorNumber
+    }
+    return 0
+  }
+  var cloneReplyElement = (replyElement, wrappingTable = false) => {
+    const cloned = replyElement.cloneNode(true)
+    const floorNumber = $(".no", cloned)
+    const toolbox = $(".fr", cloned)
+    if (toolbox && floorNumber) {
+      const floorNumber2 = createElement("a", {
+        class: "no",
+        textContent: floorNumber.textContent,
+      })
+      addEventListener(floorNumber2, "click", (event) => {
+        replyElement.scrollIntoView({ block: "start" })
+        event.preventDefault()
+        event.stopPropagation()
+      })
+      toolbox.innerHTML = ""
+      toolbox.append(floorNumber2)
+    }
+    const cells = $$(".cell,.v2p-topic-reply-ref", cloned)
+    for (const cell of cells) {
+      cell.remove()
+    }
+    if (wrappingTable) {
+      const table = cloned.firstElementChild
+      if (table && table.tagName === "TABLE") {
+        const wrapper = createElement("div", {
+          class: "wrapper",
+        })
+        table.after(wrapper)
+        wrapper.append(table)
+      }
+    }
+    return cloned
+  }
+  var sortReplyElementsByFloorNumberCompareFn = (a, b) =>
+    getFloorNumber(a) - getFloorNumber(b)
+  var parseUrl = () => {
+    const matched = /\/t\/(\d+)(?:.+\bp=(\d+))?/.exec(location.href) || []
+    const topicId = matched[1]
+    const page = Number.parseInt(matched[2], 10) || 1
+    return { topicId, page }
+  }
+  var isTouchScreen = "ontouchstart" in document.documentElement
+  var getMemberIdFromMemberLink = (memberLink) => {
+    if (!memberLink) {
+      return
+    }
+    return (/member\/(\w+)/.exec(memberLink.href) || [])[1]
+  }
+  var getReplyAuthorMemberId = (replyElement) => {
+    if (!replyElement) {
+      return
+    }
+    const memberLink = $('a[href^="/member/"]', replyElement)
+    return getMemberIdFromMemberLink(memberLink)
+  }
+  var getReplyElementByMemberIdAndFloorNumber = (
+    memberId,
+    floorNumber,
+    type = 0
+  ) => {
+    if (!memberId || !floorNumber) {
+      return
+    }
+    const replyElements = getCachedReplyElements()
+    const length = replyElements.length
+    const reverse = floorNumber > length / 2
+    let nearestReply
+    let nearestReplyGap = 1e3
+    for (let i = 0; i < length; i++) {
+      const replyElement = replyElements[reverse ? length - i - 1 : i]
+      const memberId2 = getReplyAuthorMemberId(replyElement)
+      if (memberId2 !== memberId) {
+        continue
+      }
+      const floorNumber2 = getFloorNumber(replyElement)
+      if (floorNumber2 === floorNumber) {
+        return replyElement
+      }
+      if (type === 1 && floorNumber2 > floorNumber) {
+        continue
+      }
+      if (type === 2 && floorNumber2 < floorNumber) {
+        continue
+      }
+      if (
+        !nearestReply ||
+        Math.abs(floorNumber - floorNumber2) < nearestReplyGap
+      ) {
+        nearestReply = replyElement
+        nearestReplyGap = Math.abs(floorNumber - floorNumber2)
+      }
+    }
+    return nearestReply
+  }
+  var runOnceCache = {}
+  var runOnce = (key, func) => {
+    if (!key) {
+      return func()
+    }
+    if (Object.hasOwn(runOnceCache, key)) {
+      return runOnceCache[key]
+    }
+    const result = func()
+    runOnceCache[key] = result
+    return result
+  }
+  var addlinkToCitedFloorNumbers = (replyElement) => {
+    const content = $(".reply_content", replyElement)
+    const memberLinks = $$('a[href^="/member/"]', content)
+    for (const memberLink of memberLinks) {
+      const previousTextNode = memberLink.previousSibling
+      const nextTextNode = memberLink.nextSibling
+      const memberId = getMemberIdFromMemberLink(memberLink)
+      if (
+        previousTextNode &&
+        previousTextNode.nodeType === 3 &&
+        previousTextNode.textContent &&
+        previousTextNode.textContent.endsWith("@") &&
+        nextTextNode &&
+        nextTextNode.nodeType === 3 &&
+        nextTextNode.textContent &&
+        memberId
+      ) {
+        const textContent = nextTextNode.textContent
+        if (!/^\s#\d+/.test(textContent)) {
+          continue
+        }
+        const match = /^(\s*)(#(\d+))(.*)/.exec(textContent)
+        if (!match) {
+          continue
+        }
+        if (match[1]) {
+          nextTextNode.before(doc.createTextNode(match[1]))
+        }
+        if (match[2]) {
+          const element = createElement("a", {
+            class: "cited_floor_number",
+            textContent: match[2],
+            "data-member-id": memberId,
+            "data-floor-number": match[3],
+          })
+          nextTextNode.before(element)
+        }
+        nextTextNode.textContent = match[4]
+      }
+    }
+    runOnce("addlinkToCitedFloorNumbers:document-onclick", () => {
+      addEventListener(doc, "click", (event) => {
+        const target = event.target
+        if (hasClass(target, "cited_floor_number")) {
+          const memberId = target.dataset.memberId
+          const floorNumber = Number.parseInt(
+            target.dataset.floorNumber || "",
+            10
+          )
+          const citedReplyElement = getReplyElementByMemberIdAndFloorNumber(
+            memberId,
+            floorNumber
+          )
+          if (citedReplyElement) {
+            citedReplyElement.scrollIntoView({ block: "start" })
+            event.preventDefault()
+            event.stopPropagation()
+          }
+        }
+      })
+    })
+  }
   var alwaysShowHideButton = (replyElement) => {
     const hideButton = $('a[onclick*="ignoreReply"]', replyElement)
     if (hideButton && !hasClass(hideButton, "icon_button")) {
@@ -516,62 +743,6 @@
       }
     }
   }
-  var getReplyElements = () => {
-    const firstReply = $('.box .cell[id^="r_"]')
-    if (firstReply == null ? void 0 : firstReply.parentElement) {
-      const v2exPolishModel = $(".v2p-model-mask")
-      return $$('.cell[id^="r_"]', firstReply.parentElement).filter((reply) => {
-        if (v2exPolishModel && v2exPolishModel.contains(reply)) {
-          return false
-        }
-        return true
-      })
-    }
-    return []
-  }
-  var getReplyId = (replyElement) =>
-    replyElement ? replyElement.id.replace(/((top|related|cited)_)?r_/, "") : ""
-  var getFloorNumberElement = (replyElement) =>
-    replyElement ? $(".no", replyElement) : void 0
-  var getFloorNumber = (replyElement) => {
-    const numberElement = getFloorNumberElement(replyElement)
-    if (numberElement) {
-      return Number.parseInt(numberElement.textContent || "", 10) || 0
-    }
-    return 0
-  }
-  var cloneReplyElement = (replyElement) => {
-    const cloned = replyElement.cloneNode(true)
-    const floorNumber = $(".no", cloned)
-    const toolbox = $(".fr", cloned)
-    if (toolbox && floorNumber) {
-      const floorNumber2 = createElement("a", {
-        class: "no",
-        textContent: floorNumber.textContent,
-      })
-      addEventListener(floorNumber2, "click", (event) => {
-        replyElement.scrollIntoView({ block: "start" })
-        event.preventDefault()
-        event.stopPropagation()
-      })
-      toolbox.innerHTML = ""
-      toolbox.append(floorNumber2)
-    }
-    const cells = $$(".cell,.v2p-topic-reply-ref", cloned)
-    for (const cell of cells) {
-      cell.remove()
-    }
-    return cloned
-  }
-  var sortReplyElementsByFloorNumberCompareFn = (a, b) =>
-    getFloorNumber(a) - getFloorNumber(b)
-  var parseUrl = () => {
-    const matched = /\/t\/(\d+)(?:.+\bp=(\d+))?/.exec(location.href) || []
-    const topicId = matched[1]
-    const page = Number.parseInt(matched[2], 10) || 1
-    return { topicId, page }
-  }
-  var isTouchScreen = "ontouchstart" in document.documentElement
   var timeoutId
   var showModalReplies = (replies, referElement, memberId, type) => {
     var _a
@@ -724,7 +895,7 @@
   }
   var filterRepliesPostedByMember = (memberIds) => {
     const replies = []
-    const replyElements = getReplyElements()
+    const replyElements = getCachedReplyElements()
     for (const replyElement of replyElements) {
       const memberLink = $('a[href^="/member/"]', replyElement)
       if (!memberLink) {
@@ -732,7 +903,7 @@
       }
       const memberId = (/member\/(\w+)/.exec(memberLink.href) || [])[1]
       if (memberIds.includes(memberId)) {
-        const cloned = cloneReplyElement(replyElement)
+        const cloned = cloneReplyElement(replyElement, true)
         cloned.id = "related_" + replyElement.id
         replies.push(cloned)
       }
@@ -741,13 +912,13 @@
   }
   var filterRepliesByPosterOrMentioned = (memberId) => {
     const replies = []
-    const replyElements = getReplyElements()
+    const replyElements = getCachedReplyElements()
     for (const replyElement of replyElements) {
       const memberLink = $(`a[href^="/member/${memberId}"]`, replyElement)
       if (!memberLink) {
         continue
       }
-      const cloned = cloneReplyElement(replyElement)
+      const cloned = cloneReplyElement(replyElement, true)
       const memberLink2 = $(`a[href^="/member/${memberId}"]`, cloned)
       if (!memberLink2) {
         continue
@@ -888,14 +1059,14 @@
   var updateFloorNumber = (replyElement, newFloorNumber) => {
     const numberElement = getFloorNumberElement(replyElement)
     if (numberElement) {
-      const orgNumber = Number.parseInt(
-        numberElement.dataset.orgNumber || numberElement.textContent || "",
-        10
-      )
-      if (orgNumber) {
-        numberElement.dataset.orgNumber = String(orgNumber)
+      if (!numberElement.dataset.orgNumber) {
+        const orgNumber = Number.parseInt(numberElement.textContent || "", 10)
+        if (orgNumber) {
+          numberElement.dataset.orgNumber = String(orgNumber)
+        }
       }
       numberElement.textContent = String(newFloorNumber)
+      replyElement.dataset.floorNumber = String(newFloorNumber)
     }
   }
   var updateAllFloorNumberById = (id, newFloorNumber) => {
@@ -976,7 +1147,7 @@
     window.dispatchEvent(new Event("floorNumberUpdated"))
   }
   var isRunning = false
-  var fixReplyFloorNumbers = async () => {
+  var fixReplyFloorNumbers = async (replyElements) => {
     var _a
     if (isRunning) {
       return
@@ -988,7 +1159,6 @@
     if (!topicId) {
       return
     }
-    const replyElements = getReplyElements()
     const displayNumber =
       Number.parseInt(
         (/(\d+)\s条回复/.exec(
@@ -1113,8 +1283,11 @@
       }
     }
   }
-  var showCitedReplies = (replyElement) => {
-    if (replyElement.dataset.showCitedReplies || $(".v2p-color-mode-toggle")) {
+  var showCitedReplies = (replyElement, forceUpdate = false) => {
+    if (
+      !forceUpdate &&
+      (replyElement.dataset.showCitedReplies || $(".v2p-color-mode-toggle"))
+    ) {
       return
     }
     const floorNumber = getFloorNumber(replyElement)
@@ -1122,33 +1295,64 @@
       return
     }
     replyElement.dataset.showCitedReplies = "done"
+    for (const element of $$(".cited_reply", replyElement)) {
+      element.remove()
+    }
     const content = $(".reply_content", replyElement)
     const memberLinks = $$('a[href^="/member/"]', content)
+    let hasCitedReplies = false
     for (const memberLink of memberLinks) {
       const textNode = memberLink.previousSibling
+      let nextElement = memberLink.nextElementSibling
+      let target = memberLink
+      let citedFloorNumber
       if (
         textNode &&
         textNode.nodeType === 3 &&
         textNode.textContent &&
         textNode.textContent.endsWith("@")
       ) {
-        const memberId = (/member\/(\w+)/.exec(memberLink.href) || [])[1]
-        const replies = filterRepliesPostedByMember([memberId])
-        let hasCitedReplies = false
-        for (let i = replies.length - 1; i >= 0; i--) {
-          const reply = replies[i]
-          const floorNumber2 = getFloorNumber(reply)
-          if (floorNumber2 >= floorNumber) {
+        const memberId = getMemberIdFromMemberLink(memberLink)
+        if (!memberId) {
+          continue
+        }
+        if (nextElement && hasClass(nextElement, "utags_ul")) {
+          target = nextElement
+          nextElement = nextElement.nextElementSibling
+        }
+        if (nextElement && hasClass(nextElement, "cited_floor_number")) {
+          target = nextElement
+          citedFloorNumber = Number.parseInt(
+            nextElement.dataset.floorNumber || "",
+            10
+          )
+        }
+        let citedReplyElement
+        if (citedFloorNumber) {
+          citedReplyElement = getReplyElementByMemberIdAndFloorNumber(
+            memberId,
+            citedFloorNumber
+          )
+        }
+        if (!citedReplyElement) {
+          citedReplyElement = getReplyElementByMemberIdAndFloorNumber(
+            memberId,
+            floorNumber - 1,
+            1
+          )
+        }
+        if (citedReplyElement) {
+          if (
+            citedReplyElement.nextElementSibling === replyElement &&
+            !hasCitedReplies
+          ) {
             continue
           }
-          if (floorNumber - floorNumber2 <= 1 && !hasCitedReplies) {
-            break
-          }
-          reply.id = reply.id.replace("related", "cited")
-          addClass(reply, "cited_reply")
-          memberLink.after(reply)
+          const cloned = cloneReplyElement(citedReplyElement)
+          cloned.removeAttribute("id")
+          addClass(cloned, "cited_reply")
+          target.after(cloned)
           hasCitedReplies = true
-          break
         }
       }
     }
@@ -1164,7 +1368,7 @@
       element.remove()
     }
   }
-  var showTopReplies = (toggle, forceUpdate = false) => {
+  var showTopReplies = (replyElements, toggle, forceUpdate = false) => {
     if (!toggle) {
       reset()
       removeClass($("#Wrapper"), "sticky_rightbar")
@@ -1177,7 +1381,7 @@
     done = true
     reset()
     addClass($("#Wrapper"), "sticky_rightbar")
-    const replyElements = getReplyElements()
+    const topReplies = replyElements
       .filter((reply) => {
         var _a
         const heartElement = $('img[alt="\u2764\uFE0F"],.v2p-icon-heart', reply)
@@ -1206,14 +1410,14 @@
           ? sortReplyElementsByFloorNumberCompareFn(a, b)
           : b.thanked - a.thanked
       )
-    if (replyElements.length > 0) {
+    if (topReplies.length > 0) {
       const box = createElement("div", {
         class: "box",
         id: "top_replies",
         innerHTML: `<div class="cell"><div class="fr"></div><span class="fade">\u5F53\u524D\u9875\u70ED\u95E8\u56DE\u590D</span></div>`,
       })
-      for (const element of replyElements) {
-        const cloned = cloneReplyElement(element)
+      for (const element of topReplies) {
+        const cloned = cloneReplyElement(element, true)
         cloned.id = "top_" + element.id
         const ago = $(".ago", cloned)
         if (ago) {
@@ -1312,12 +1516,13 @@
         if (getSettingsValue("quickHideReply")) {
           quickHideReply(replyElement)
         }
+        addlinkToCitedFloorNumbers(replyElement)
         if (getSettingsValue("showCitedReplies")) {
           showCitedReplies(replyElement)
         }
       }
       if (domReady) {
-        showTopReplies(getSettingsValue("showTopReplies"))
+        showTopReplies(replyElements, getSettingsValue("showTopReplies"))
       }
       filterRepliesByUser(getSettingsValue("filterRepliesByUser"))
       if (
@@ -1325,7 +1530,7 @@
         getSettingsValue("fixReplyFloorNumbers") &&
         !fixedReplyFloorNumbers
       ) {
-        await fixReplyFloorNumbers()
+        await fixReplyFloorNumbers(replyElements)
       }
     }
   }
@@ -1359,10 +1564,12 @@
         const replyElements = getReplyElements()
         for (const replyElement of replyElements) {
           replyWithFloorNumber(replyElement, true)
+          showCitedReplies(replyElement, true)
         }
       }
     })
     addEventListener(doc, "readystatechange", async () => {
+      resetCachedReplyElements()
       await process2()
     })
     await process2()

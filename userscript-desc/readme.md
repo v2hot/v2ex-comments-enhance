@@ -16,7 +16,8 @@
 - ✅ 一直显示隐藏回复按钮 🙈
 - ✅ 快速发送感谢/快速隐藏回复（no confirm）
 
-> ⚠️ 兼容 V2EX Plus, V2EX Polish 等浏览器扩展/脚本。兼容手机网页版 V2EX。
+> - ⚠️ 兼容 V2EX Plus, V2EX Polish 等浏览器扩展/脚本。兼容手机网页版 V2EX。
+> - ⚠️ 暂时不兼容 V2EX - 超级增强脚本，以后会兼容。
 
 ## Screenshots
 
@@ -36,7 +37,7 @@
 
 ![screenshots](https://raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-05.png)
 
-- 显示回复中被引用的回复
+- 显示回复中被引用的回复，楼中楼的替代方案
 
 ![screenshots](https://raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-08.png)
 
@@ -72,6 +73,9 @@ Compatible with the following userscript managers
 
 ## Release Notes
 
+- 0.2.1 2023.06.07
+  - 解析回复中引用的楼层号，显示对应楼层号的回复，点击楼层号跳转到对应回复
+  - Improve performance
 - 0.2.0 2023.06.06
   - 显示被引用的回复
 - 0.1.2 2023.06.05
