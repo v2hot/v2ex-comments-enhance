@@ -172,26 +172,38 @@ async function main() {
 
   addStyle(styleText)
 
-  addEventListener(window, "floorNumberUpdated", () => {
-    fixedReplyFloorNumbers = true
-    if (getSettingsValue("replyWithFloorNumber")) {
-      const replyElements = getReplyElements()
-      for (const replyElement of replyElements) {
-        replyWithFloorNumber(replyElement, true)
-        showCitedReplies(replyElement, true)
-      }
-    }
-  })
-
-  addEventListener(doc, "readystatechange", async () => {
+  const resetCachedReplyElementsThenProcess = async () => {
     resetCachedReplyElements()
     await process()
+  }
+
+  addEventListener(window, {
+    floorNumberUpdated() {
+      fixedReplyFloorNumbers = true
+      if (
+        getSettingsValue("replyWithFloorNumber") ||
+        getSettingsValue("showCitedReplies")
+      ) {
+        const replyElements = getReplyElements()
+        for (const replyElement of replyElements) {
+          if (getSettingsValue("replyWithFloorNumber")) {
+            replyWithFloorNumber(replyElement, true)
+          }
+
+          if (getSettingsValue("showCitedReplies")) {
+            showCitedReplies(replyElement, true)
+          }
+        }
+      }
+    },
   })
+
+  addEventListener(doc, "readystatechange", resetCachedReplyElementsThenProcess)
 
   await process()
 
-  const scanNodes = throttle(() => {
-    process()
+  const scanNodes = throttle(async () => {
+    await process()
   }, 500)
 
   const observer = new MutationObserver((mutationsList) => {
