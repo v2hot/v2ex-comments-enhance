@@ -35,7 +35,7 @@ export const showCitedReplies = (
   let hasCitedReplies = false
   for (const memberLink of memberLinks) {
     const textNode = memberLink.previousSibling
-    let nextElement = memberLink.nextElementSibling as HTMLElement | undefined
+    let nextElement = memberLink.nextSibling as HTMLElement | undefined
     let target = memberLink as HTMLElement
     let citedFloorNumber: number | undefined
     if (
@@ -50,9 +50,15 @@ export const showCitedReplies = (
         continue
       }
 
-      if (nextElement && hasClass(nextElement, "utags_ul")) {
+      while (
+        nextElement &&
+        (nextElement.tagName === "BR" ||
+          !nextElement.textContent ||
+          nextElement.textContent.trim().length === 0 ||
+          hasClass(nextElement, "utags_ul"))
+      ) {
         target = nextElement
-        nextElement = nextElement.nextElementSibling as HTMLElement | undefined
+        nextElement = nextElement.nextSibling as HTMLElement | undefined
       }
 
       if (nextElement && hasClass(nextElement, "cited_floor_number")) {
