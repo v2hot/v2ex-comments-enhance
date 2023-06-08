@@ -18,24 +18,37 @@ export const addlinkToCitedFloorNumbers = (replyElement: HTMLElement) => {
   const memberLinks = $$('a[href^="/member/"]', content) as HTMLAnchorElement[]
   for (const memberLink of memberLinks) {
     const previousTextNode = memberLink.previousSibling
-    const nextTextNode = memberLink.nextSibling
     const memberId = getMemberIdFromMemberLink(memberLink)
     if (
       previousTextNode &&
       previousTextNode.nodeType === 3 /* TEXT_NODE */ &&
       previousTextNode.textContent &&
       previousTextNode.textContent.endsWith("@") &&
-      nextTextNode &&
-      nextTextNode.nodeType === 3 /* TEXT_NODE */ &&
-      nextTextNode.textContent &&
       memberId
     ) {
-      const textContent = nextTextNode.textContent
-      if (!/^\s#\d+/.test(textContent)) {
+      let nextTextNode = memberLink.nextSibling
+      while (nextTextNode) {
+        if (
+          nextTextNode.tagName === "BR" ||
+          !nextTextNode.textContent ||
+          nextTextNode.textContent.trim().length === 0
+        ) {
+          nextTextNode = nextTextNode.nextSibling
+        } else {
+          break
+        }
+      }
+
+      if (
+        !nextTextNode ||
+        nextTextNode.nodeType !== 3 /* TEXT_NODE */ ||
+        !nextTextNode.textContent ||
+        !/^\s*#\d+/.test(nextTextNode.textContent)
+      ) {
         continue
       }
 
-      const match = /^(\s*)(#(\d+))(.*)/.exec(textContent)
+      const match = /^(\s*)(#(\d+))(.*)/.exec(nextTextNode.textContent)
       if (!match) {
         continue
       }
