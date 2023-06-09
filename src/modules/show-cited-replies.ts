@@ -96,7 +96,7 @@ export const showCitedReplies = (
           continue
         }
 
-        const cloned = cloneReplyElement(citedReplyElement)
+        const cloned = cloneReplyElement(citedReplyElement, true)
         cloned.removeAttribute("id")
         addClass(cloned, "cited_reply")
         // textNode.before(cloned)
