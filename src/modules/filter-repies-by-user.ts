@@ -9,6 +9,7 @@ import {
   getOffsetPosition,
   removeEventListener,
   setStyle,
+  win as window,
 } from "browser-extension-utils"
 
 import {

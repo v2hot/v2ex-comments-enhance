@@ -1,18 +1,27 @@
-import { $, $$ } from "browser-extension-utils"
+import { $, $$, win as window } from "browser-extension-utils"
 
-import { getFloorNumberElement, getReplyId, parseUrl } from "../utils"
+import {
+  getFloorNumberElement,
+  getRepliesCount,
+  getReplyId,
+  parseUrl,
+} from "../utils"
 
 const getTopicReplies = async (topicId: string, replyCount?: number) => {
   const url = `${location.protocol}//${
     location.host
   }/api/replies/show.json?topic_id=${topicId}${
-    replyCount ? "&replyCount=" + replyCount : ""
+    replyCount ? "&replyCount=" + String(replyCount) : ""
   }`
 
-  const response = await fetch(url)
+  try {
+    const response = await fetch(url)
 
-  if (response.status === 200) {
-    return response.json()
+    if (response.status === 200) {
+      return (await response.json()) as Record<string, unknown>
+    }
+  } catch (error) {
+    console.error(error)
   }
 }
 
@@ -62,6 +71,7 @@ const updateReplyElements = (
     const element = $("#r_" + id)
     if (!element) {
       console.info(
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         `[V2EX.REP] 屏蔽或隐藏的回复: #${realFloorNumber}, 用户 ID: ${reply.member?.username}, 回复 ID: ${reply.id}, 回复内容: ${reply.content}`
       )
       hideCount++
@@ -90,10 +100,7 @@ const updateReplyElements = (
   }
 
   console.info(
-    "[V2EX.REP] floorNumberOffset",
-    floorNumberOffset,
-    "hideCount",
-    hideCount
+    `[V2EX.REP] page: ${page}, floorNumberOffset: ${floorNumberOffset}, hideCount: ${hideCount}`
   )
 
   if (floorNumberOffset > 0) {
@@ -126,12 +133,85 @@ const updateReplyElements = (
 
 let isRunning = false
 
-export const fixReplyFloorNumbers = async (replyElements: HTMLElement[]) => {
+const splitArrayPerPages = (replyElements: HTMLElement[]) => {
+  if (!replyElements[0].dataset.page) {
+    return
+  }
+
+  const replyElementsPerPages = [] as HTMLElement[][]
+  let lastPage: string | undefined
+  let replyElementsPerPage = [] as HTMLElement[]
+  for (const reply of replyElements) {
+    if (reply.dataset.page !== lastPage) {
+      lastPage = reply.dataset.page
+      const page = Number.parseInt(reply.dataset.page || "", 10)
+      replyElementsPerPage = replyElementsPerPages[page - 1] || []
+      replyElementsPerPages[page - 1] = replyElementsPerPage
+    }
+
+    replyElementsPerPage.push(reply)
+  }
+
+  return replyElementsPerPages
+}
+
+const process = async (
+  topicId: string,
+  page: number,
+  displayNumber: number,
+  replyElements: HTMLElement[],
+  forceUpdate = false
+  // eslint-disable-next-line max-params
+) => {
   if (isRunning) {
     return
   }
 
   isRunning = true
+
+  const replies = (await getTopicReplies(
+    topicId,
+    forceUpdate ? displayNumber : undefined
+  )) as Array<Record<string, unknown>> | undefined
+
+  if (replies) {
+    const replyElementsPerPages = splitArrayPerPages(replyElements)
+    if (replyElementsPerPages) {
+      // eslint-disable-next-line unicorn/no-for-loop
+      for (let i = 0; i < replyElementsPerPages.length; i++) {
+        const replyElementsPerPage = replyElementsPerPages[i]
+
+        if (
+          !replyElementsPerPage ||
+          displayNumber === replyElementsPerPage.length ||
+          displayNumber % 100 === replyElementsPerPage.length % 100 ||
+          replyElementsPerPage.length % 100 === 0
+        ) {
+          continue
+        }
+
+        updateReplyElements(replies, replyElementsPerPage, i + 1)
+      }
+    } else {
+      updateReplyElements(replies, replyElements, page)
+    }
+
+    if (replies.length < displayNumber) {
+      console.info("[V2EX.REP] API data outdated, re-fetch it")
+      setTimeout(async () => {
+        await process(topicId, page, displayNumber, replyElements, true)
+      }, 100)
+    }
+  }
+
+  isRunning = false
+}
+
+export const fixReplyFloorNumbers = async (replyElements: HTMLElement[]) => {
+  if (isRunning) {
+    return
+  }
+
   const result = parseUrl()
   const topicId = result.topicId
   const page = result.page
@@ -140,56 +220,15 @@ export const fixReplyFloorNumbers = async (replyElements: HTMLElement[]) => {
     return
   }
 
-  const displayNumber =
-    Number.parseInt(
-      (/(\d+)\s条回复/.exec($(".box .cell .gray")?.textContent || "") || [])[1],
-      10
-    ) || 0
+  const displayNumber = getRepliesCount()
 
   if (
     displayNumber === replyElements.length ||
-    displayNumber % 100 === replyElements.length ||
-    replyElements.length === 100
+    displayNumber % 100 === replyElements.length % 100 ||
+    replyElements.length % 100 === 0
   ) {
     return
   }
 
-  const replies = (await getTopicReplies(topicId)) as Array<
-    Record<string, unknown>
-  >
-
-  if (replies) {
-    // console.error(
-    //   "fixReplyFloorNumbers",
-    //   displayNumber,
-    //   replyElements.length,
-    //   replies.length
-    // )
-    updateReplyElements(replies, replyElements, page)
-
-    if (replies.length < displayNumber) {
-      console.info("[V2EX.REP] API data outdated, re-fetch it")
-      setTimeout(async () => {
-        isRunning = true
-        const replies = (await getTopicReplies(
-          topicId,
-          displayNumber
-        )) as Array<Record<string, unknown>>
-
-        if (replies) {
-          // console.error(
-          //   "fixReplyFloorNumbers",
-          //   displayNumber,
-          //   replyElements.length,
-          //   replies.length
-          // )
-          updateReplyElements(replies, replyElements, page)
-        }
-
-        isRunning = false
-      }, 100)
-    }
-  }
-
-  isRunning = false
+  await process(topicId, page, displayNumber, replyElements)
 }

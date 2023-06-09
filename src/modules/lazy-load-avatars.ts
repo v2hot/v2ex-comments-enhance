@@ -6,6 +6,7 @@ import {
   getAttribute,
   setAttribute,
   throttle,
+  win as window,
 } from "browser-extension-utils"
 
 const restoreImgSrc = throttle(() => {
