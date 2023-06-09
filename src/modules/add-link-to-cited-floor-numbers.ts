@@ -5,12 +5,12 @@ import {
   createElement,
   doc,
   hasClass,
+  runOnce,
 } from "browser-extension-utils"
 
 import {
   getMemberIdFromMemberLink,
   getReplyElementByMemberIdAndFloorNumber,
-  runOnce,
 } from "../utils"
 
 export const addlinkToCitedFloorNumbers = (replyElement: HTMLElement) => {
