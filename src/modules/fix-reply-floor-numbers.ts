@@ -6,8 +6,10 @@ import {
   getRepliesCount,
   getReplyId,
   parseUrl,
+  sleep,
 } from "../utils"
 
+let retryCount = 0
 const getTopicReplies = async (topicId: string, replyCount?: number) => {
   const cached = Cache.get(["getTopicReplies", topicId, replyCount]) as
     | Record<string, unknown>
@@ -32,6 +34,13 @@ const getTopicReplies = async (topicId: string, replyCount?: number) => {
     }
   } catch (error) {
     console.error(error)
+    retryCount++
+    if (retryCount < 3) {
+      await sleep(1000)
+      return getTopicReplies(topicId, replyCount) as Promise<
+        Record<string, unknown>
+      >
+    }
   }
 }
 

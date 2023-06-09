@@ -7,7 +7,6 @@ import {
   hasClass,
   removeClass,
   runOnce,
-  setAttribute,
   win as window,
 } from "browser-extension-utils"
 
@@ -18,9 +17,11 @@ import {
   getPagingPreviousButtons,
   getRepliesCount,
   parseUrl,
+  sleep,
 } from "../utils"
 import { lazyLoadAvatars } from "./lazy-load-avatars"
 
+let retryCount = 0
 const getTopicPage = async (topicId: string, page = 1) => {
   const url = `${location.protocol}//${location.host}/t/${topicId}?p=${page}`
 
@@ -31,7 +32,12 @@ const getTopicPage = async (topicId: string, page = 1) => {
       return await response.text()
     }
   } catch (error) {
-    console.error(error)
+    console.error(error, `page ${page}`)
+    retryCount++
+    if (retryCount < 10) {
+      await sleep(1000)
+      return getTopicPage(topicId, page) as Promise<string>
+    }
   }
 }
 
@@ -234,7 +240,7 @@ export const loadMultiPages = async () => {
 
       console.info("[V2EX.REP] Fetching page", i)
       // eslint-disable-next-line no-await-in-loop
-      const html = await getTopicPage(topicId, i)
+      const html = (await getTopicPage(topicId, i)) as string
       if (html) {
         const replyElements = getReplyElements(html)
         insertReplyElementsToPage(
@@ -245,6 +251,9 @@ export const loadMultiPages = async () => {
         // 触发更新事件
         window.dispatchEvent(new Event("replyElementsLengthUpdated"))
       }
+
+      // eslint-disable-next-line no-await-in-loop
+      await sleep(1000)
     }
   }
 }
