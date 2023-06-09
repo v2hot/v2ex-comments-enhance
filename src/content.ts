@@ -4,10 +4,14 @@ import {
   addStyle,
   doc,
   registerMenuCommand,
+  runOnce,
   throttle,
+  win as window,
 } from "browser-extension-utils"
 import styleText from "data-text:./content.scss"
 import type { PlasmoCSConfig } from "plasmo"
+
+import { loadMultiPages } from "~modules/load-multi-pages"
 
 import {
   getSettingsValue,
@@ -26,7 +30,11 @@ import { quickSendThank } from "./modules/quick-send-thank"
 import { replyWithFloorNumber } from "./modules/reply-with-floor-number"
 import { showCitedReplies } from "./modules/show-cited-replies"
 import { showTopReplies } from "./modules/show-top-replies"
-import { getReplyElements, resetCachedReplyElements } from "./utils"
+import {
+  getCachedReplyElements,
+  getReplyElements,
+  resetCachedReplyElements,
+} from "./utils"
 
 export const config: PlasmoCSConfig = {
   matches: ["https://*.v2ex.com/*"],
@@ -55,6 +63,10 @@ const settingsTable = {
     title: "查看用户在当前主题下的所有回复与被提及的回复",
     description:
       "鼠标移至用户名，会显示该用户在当前主题下的所有回复与被提及的回复",
+    defaultValue: true,
+  },
+  loadMultiPages: {
+    title: "预加载所有分页",
     defaultValue: true,
   },
   lazyLoadAvatars: {
@@ -130,10 +142,13 @@ async function process() {
     }
 
     if (domReady) {
-      showTopReplies(replyElements, getSettingsValue("showTopReplies"))
+      showTopReplies(
+        replyElements,
+        getSettingsValue("showTopReplies") as boolean
+      )
     }
 
-    filterRepliesByUser(getSettingsValue("filterRepliesByUser"))
+    filterRepliesByUser(getSettingsValue("filterRepliesByUser") as boolean)
 
     if (
       domReady &&
@@ -141,6 +156,12 @@ async function process() {
       !fixedReplyFloorNumbers
     ) {
       await fixReplyFloorNumbers(replyElements)
+    }
+
+    if (doc.readyState === "complete" && getSettingsValue("loadMultiPages")) {
+      runOnce("main:loadMultiPages", () => {
+        setTimeout(loadMultiPages, 1000)
+      })
     }
   }
 }
@@ -194,6 +215,18 @@ async function main() {
             showCitedReplies(replyElement, true)
           }
         }
+      }
+    },
+    async replyElementsLengthUpdated() {
+      await resetCachedReplyElementsThenProcess()
+      const replyElements = getCachedReplyElements()
+      showTopReplies(
+        replyElements,
+        getSettingsValue("showTopReplies") as boolean,
+        true
+      )
+      if (getSettingsValue("fixReplyFloorNumbers")) {
+        await fixReplyFloorNumbers(replyElements)
       }
     },
   })

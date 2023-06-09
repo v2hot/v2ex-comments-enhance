@@ -24,7 +24,7 @@ export const getReplyElements = () => {
   return []
 }
 
-let cachedReplyElements: HTMLElement[]
+let cachedReplyElements: HTMLElement[] | undefined
 export const getCachedReplyElements = () => {
   if (!cachedReplyElements) {
     if (doc.readyState === "loading") {
@@ -136,6 +136,15 @@ export const parseUrl = () => {
   return { topicId, page }
 }
 
+export const getRepliesCount = () => {
+  return (
+    Number.parseInt(
+      (/(\d+)\s条回复/.exec($(".box .cell .gray")?.textContent || "") || [])[1],
+      10
+    ) || 0
+  )
+}
+
 export const isTouchScreen = "ontouchstart" in document.documentElement
 
 export const getMemberIdFromMemberLink = (memberLink: HTMLAnchorElement) => {
@@ -210,19 +219,8 @@ export const getReplyElementByMemberIdAndFloorNumber = (
   return nearestReply
 }
 
-const runOnceCache = {}
-/* eslint-disable @typescript-eslint/ban-types, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment */
-export const runOnce = (key: any, func: Function) => {
-  if (!key) {
-    return func()
-  }
-
-  if (Object.hasOwn(runOnceCache, key)) {
-    return runOnceCache[key]
-  }
-
-  const result = func()
-  runOnceCache[key] = result
-  return result
-}
-/* eslint-enable @typescript-eslint/ban-types, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment */
+export const getPagingPreviousButtons = () =>
+  $$(".normal_page_right").map(
+    (right) => right.previousElementSibling as HTMLElement
+  )
+export const getPagingNextButtons = () => $$(".normal_page_right")
