@@ -4,7 +4,7 @@
 // @namespace            https://github.com/v2hot/v2ex.rep
 // @homepageURL          https://github.com/v2hot/v2ex.rep#readme
 // @supportURL           https://github.com/v2hot/v2ex.rep/issues
-// @version              1.0.0
+// @version              1.0.1
 // @description          专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 自动预加载所有分页，支持解析显示跨页面引用；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
 // @description:zh-CN    专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 自动预加载所有分页，支持解析显示跨页面引用；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
 // @icon                 https://www.v2ex.com/favicon.ico
@@ -656,6 +656,21 @@
   var getPagingPreviousButtons = () =>
     $$(".normal_page_right").map((right) => right.previousElementSibling)
   var getPagingNextButtons = () => $$(".normal_page_right")
+  var cacheStore = {}
+  var makeKey = (key) => (Array.isArray(key) ? key.join(":") : key)
+  var Cache = {
+    get: (key) => cacheStore[makeKey(key)],
+    add(key, value) {
+      cacheStore[makeKey(key)] = value
+    },
+  }
+  var sleep = async (time) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(1)
+      }, time)
+    })
+  }
   var restoreImgSrc = throttle(() => {
     for (const img of $$("img[data-src]")) {
       setAttribute(img, "src", getAttribute(img, "data-src"))
@@ -683,6 +698,7 @@
       }
     }
   }
+  var retryCount = 0
   var getTopicPage = async (topicId, page = 1) => {
     const url = `${location.protocol}//${location.host}/t/${topicId}?p=${page}`
     try {
@@ -691,7 +707,12 @@
         return await response.text()
       }
     } catch (error) {
-      console.error(error)
+      console.error(error, `page ${page}`)
+      retryCount++
+      if (retryCount < 10) {
+        await sleep(1e3)
+        return getTopicPage(topicId, page)
+      }
     }
   }
   var getReplyElements2 = (html) => {
@@ -877,6 +898,7 @@
           )
           win.dispatchEvent(new Event("replyElementsLengthUpdated"))
         }
+        await sleep(1e3)
       }
     }
   }
@@ -1296,7 +1318,12 @@
       }
     }
   }
+  var retryCount2 = 0
   var getTopicReplies = async (topicId, replyCount) => {
+    const cached = Cache.get(["getTopicReplies", topicId, replyCount])
+    if (cached) {
+      return cached
+    }
     const url = `${location.protocol}//${
       location.host
     }/api/replies/show.json?topic_id=${topicId}${
@@ -1305,10 +1332,17 @@
     try {
       const response = await fetch(url)
       if (response.status === 200) {
-        return await response.json()
+        const result = await response.json()
+        Cache.add(["getTopicReplies", topicId, replyCount], result)
+        return result
       }
     } catch (error) {
       console.error(error)
+      retryCount2++
+      if (retryCount2 < 3) {
+        await sleep(1e3)
+        return getTopicReplies(topicId, replyCount)
+      }
     }
   }
   var updateFloorNumber = (replyElement, newFloorNumber) => {
@@ -1860,6 +1894,11 @@
       async replyElementsLengthUpdated() {
         await resetCachedReplyElementsThenProcess()
         const replyElements = getCachedReplyElements()
+        for (const replyElement of replyElements) {
+          if (getSettingsValue("showCitedReplies")) {
+            showCitedReplies(replyElement, true)
+          }
+        }
         showTopReplies(replyElements, getSettingsValue("showTopReplies"), true)
         if (getSettingsValue("fixReplyFloorNumbers")) {
           await fixReplyFloorNumbers(replyElements)
