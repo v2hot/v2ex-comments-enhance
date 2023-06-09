@@ -224,3 +224,16 @@ export const getPagingPreviousButtons = () =>
     (right) => right.previousElementSibling as HTMLElement
   )
 export const getPagingNextButtons = () => $$(".normal_page_right")
+
+const cacheStore = {}
+const makeKey = (key: string | any[]) =>
+  Array.isArray(key) ? key.join(":") : key
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const Cache = {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  get: (key: string | any[]) => cacheStore[makeKey(key)],
+  add(key: string | any[], value: any) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    cacheStore[makeKey(key)] = value
+  },
+}
