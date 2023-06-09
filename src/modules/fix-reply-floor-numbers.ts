@@ -1,6 +1,7 @@
 import { $, $$, win as window } from "browser-extension-utils"
 
 import {
+  Cache,
   getFloorNumberElement,
   getRepliesCount,
   getReplyId,
@@ -8,6 +9,13 @@ import {
 } from "../utils"
 
 const getTopicReplies = async (topicId: string, replyCount?: number) => {
+  const cached = Cache.get(["getTopicReplies", topicId, replyCount]) as
+    | Record<string, unknown>
+    | undefined
+  if (cached) {
+    return cached
+  }
+
   const url = `${location.protocol}//${
     location.host
   }/api/replies/show.json?topic_id=${topicId}${
@@ -18,7 +26,9 @@ const getTopicReplies = async (topicId: string, replyCount?: number) => {
     const response = await fetch(url)
 
     if (response.status === 200) {
-      return (await response.json()) as Record<string, unknown>
+      const result = (await response.json()) as Record<string, unknown>
+      Cache.add(["getTopicReplies", topicId, replyCount], result)
+      return result
     }
   } catch (error) {
     console.error(error)
