@@ -4,9 +4,9 @@
 // @namespace            https://github.com/v2hot/v2ex.rep
 // @homepageURL          https://github.com/v2hot/v2ex.rep#readme
 // @supportURL           https://github.com/v2hot/v2ex.rep/issues
-// @version              0.2.1
-// @description          专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
-// @description:zh-CN    专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
+// @version              1.0.0
+// @description          专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 自动预加载所有分页，支持解析显示跨页面引用；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
+// @description:zh-CN    专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 自动预加载所有分页，支持解析显示跨页面引用；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
 // @icon                 https://www.v2ex.com/favicon.ico
 // @author               Pipecraft
 // @license              MIT
@@ -24,6 +24,7 @@
 ;(() => {
   "use strict"
   var doc = document
+  var win = window
   var $ = (selectors, element) => (element || doc).querySelector(selectors)
   var $$ = (selectors, element) => [
     ...(element || doc).querySelectorAll(selectors),
@@ -117,19 +118,19 @@
     }
   }
   var addClass = (element, className) => {
-    if (!element) {
+    if (!element || !element.classList) {
       return
     }
     element.classList.add(className)
   }
   var removeClass = (element, className) => {
-    if (!element) {
+    if (!element || !element.classList) {
       return
     }
     element.classList.remove(className)
   }
   var hasClass = (element, className) => {
-    if (!element) {
+    if (!element || !element.classList) {
       return false
     }
     return element.classList.contains(className)
@@ -186,6 +187,18 @@
     }
     return position
   }
+  var runOnceCache = {}
+  var runOnce = (key, func) => {
+    if (!key) {
+      return func()
+    }
+    if (Object.hasOwn(runOnceCache, key)) {
+      return runOnceCache[key]
+    }
+    const result = func()
+    runOnceCache[key] = result
+    return result
+  }
   var addElement2 =
     typeof GM_addElement === "function"
       ? (parentNode, tagName, attributes) => {
@@ -223,7 +236,7 @@
     GM.registerMenuCommand(name, callback, accessKey)
   }
   var content_default =
-    'a.icon_button{opacity:1 !important;visibility:visible;margin-right:14px}a.icon_button:last-child{margin-right:0}a.icon_button svg{vertical-align:text-top}body .v2p-controls{opacity:1}body .v2p-controls>a.icon_button{margin-right:0}body .v2p-controls div a{margin-right:15px}body .v2p-controls div a:last-child{margin-right:0}body .v2p-controls a[onclick^=replyOne]{opacity:1 !important}.sticky_rightbar #Rightbar{position:sticky;top:0;max-height:100vh;overflow-y:auto;overflow-x:hidden;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;scrollbar-color:rgba(0,0,0,0) rgba(0,0,0,0);scrollbar-width:thin}.sticky_rightbar #Rightbar:hover{scrollbar-color:var(--sb-thumb-color) var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar{width:var(--sb-size)}.sticky_rightbar #Rightbar::-webkit-scrollbar-track{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-track{background:var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar-thumb{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-thumb{background:var(--sb-thumb-color)}.sticky_rightbar #Rightbar .v2p-tool-box{position:unset}.related_replies_container .related_replies{position:absolute;z-index:10000;width:100%;-webkit-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);-moz-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);box-shadow:0px 10px 39px 10px rgba(62,66,66,.22) !important}.related_replies_container .related_replies_before::before{content:"";display:block;width:100%;height:10000px;position:absolute;margin-top:-10000px;background-color:#334;opacity:50%}.related_replies_container .related_replies_after::after{content:"";display:block;width:100%;height:10000px;position:absolute;background-color:#334;opacity:50%}.related_replies_container.no_replies .related_replies_before::before,.related_replies_container.no_replies .related_replies_after::after{display:none}.related_replies_container .tabs{position:sticky;top:0;display:flex;justify-content:center}.related_replies_container .tabs a{cursor:pointer}a.no{background-color:rgba(0,0,0,0) !important;color:#1484cd !important;border:1px solid #1484cd;border-radius:3px !important;opacity:1 !important}.cited_floor_number{color:#1484cd !important;cursor:pointer}.reply_content .cell.cited_reply{scale:.85;opacity:.85;background-color:#f5f5f5;border:1px solid var(--box-border-color)}.reply_content .cell.cited_reply .wrapper{max-height:150px;overflow:auto;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;scrollbar-color:var(--sb-thumb-color) var(--sb-track-color);scrollbar-width:thin}.reply_content .cell.cited_reply .wrapper::-webkit-scrollbar{width:var(--sb-size)}.reply_content .cell.cited_reply .wrapper::-webkit-scrollbar-track{background:var(--sb-track-color);border-radius:10px}.reply_content .cell.cited_reply .wrapper::-webkit-scrollbar-thumb{background:var(--sb-thumb-color);border-radius:10px}.v2p-indent .cell.cited_reply,.comment .comment .cell.cited_reply{display:none}#top_replies .cell .wrapper{position:relative;max-height:150px;overflow:hidden}#top_replies .cell .wrapper::after{content:"";display:block;position:absolute;bottom:0;width:100%;height:5px;opacity:.8;background-color:#fff}'
+    'a.icon_button{opacity:1 !important;visibility:visible;margin-right:14px}a.icon_button:last-child{margin-right:0}a.icon_button svg{vertical-align:text-top}body .v2p-controls{opacity:1}body .v2p-controls>a.icon_button{margin-right:0}body .v2p-controls div a{margin-right:15px}body .v2p-controls div a:last-child{margin-right:0}body .v2p-controls a[onclick^=replyOne]{opacity:1 !important}.sticky_rightbar #Rightbar{position:sticky;top:0;max-height:100vh;overflow-y:auto;overflow-x:hidden;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;scrollbar-color:rgba(0,0,0,0) rgba(0,0,0,0);scrollbar-width:thin}.sticky_rightbar #Rightbar:hover{scrollbar-color:var(--sb-thumb-color) var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar{width:var(--sb-size)}.sticky_rightbar #Rightbar::-webkit-scrollbar-track{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-track{background:var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar-thumb{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-thumb{background:var(--sb-thumb-color)}.sticky_rightbar #Rightbar .v2p-tool-box{position:unset}.related_replies_container .related_replies{position:absolute;z-index:10000;width:100%;-webkit-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);-moz-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);box-shadow:0px 10px 39px 10px rgba(62,66,66,.22) !important}.related_replies_container .related_replies_before::before{content:"";display:block;width:100%;height:10000px;position:absolute;margin-top:-10000px;background-color:#334;opacity:50%}.related_replies_container .related_replies_after::after{content:"";display:block;width:100%;height:10000px;position:absolute;background-color:#334;opacity:50%}.related_replies_container.no_replies .related_replies_before::before,.related_replies_container.no_replies .related_replies_after::after{display:none}.related_replies_container .tabs{position:sticky;top:0;display:flex;justify-content:center}.related_replies_container .tabs a{cursor:pointer}a.no{background-color:rgba(0,0,0,0) !important;color:#1484cd !important;border:1px solid #1484cd;border-radius:3px !important;opacity:1 !important}.cited_floor_number{color:#1484cd !important;cursor:pointer}.reply_content .cell.cited_reply{scale:.85;opacity:.85;background-color:#f5f5f5;border:1px solid var(--box-border-color);white-space:initial}.reply_content .cell.cited_reply .wrapper{max-height:150px;overflow:auto;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;scrollbar-color:var(--sb-thumb-color) var(--sb-track-color);scrollbar-width:thin}.reply_content .cell.cited_reply .wrapper::-webkit-scrollbar{width:var(--sb-size)}.reply_content .cell.cited_reply .wrapper::-webkit-scrollbar-track{background:var(--sb-track-color);border-radius:10px}.reply_content .cell.cited_reply .wrapper::-webkit-scrollbar-thumb{background:var(--sb-thumb-color);border-radius:10px}.v2p-indent .cell.cited_reply,.v2p-indent .reply_content+.reply_content,.v2p-indent .reply_content+.reply_content+.v2p-expand-btn,.v2p-indent .v2p-collapsed:has(.reply_content+.reply_content)::before,.comment .comment .cell.cited_reply{display:none}#top_replies .cell .wrapper{position:relative;max-height:150px;overflow:hidden}#top_replies .cell .wrapper::after{content:"";display:block;position:absolute;bottom:0;width:100%;height:5px;opacity:.8;background-color:var(--box-background-color)}.sticky_paging{position:sticky;bottom:0;background-color:var(--box-background-color);border-top:1px solid var(--box-border-color)}.Night .reply_content .cell.cited_reply{background-color:#1d1f21}'
   var listeners = {}
   var getValue = async (key) => {
     const value = await GM.getValue(key)
@@ -476,24 +489,6 @@
     addStyle2(getSettingsStyle())
     addSideMenu(options)
   }
-  var addLinkToAvatars = (replyElement) => {
-    var _a
-    const memberLink = $('a[href^="/member/"]', replyElement)
-    if (
-      memberLink &&
-      ((_a = memberLink.firstChild) == null ? void 0 : _a.tagName) === "IMG"
-    ) {
-      return
-    }
-    const avatar = $("img.avatar", replyElement)
-    if (memberLink && avatar) {
-      const memberLink2 = createElement("a", {
-        href: getAttribute(memberLink, "href"),
-      })
-      avatar.after(memberLink2)
-      memberLink2.append(avatar)
-    }
-  }
   var getReplyElements = () => {
     const firstReply = $('.box .cell[id^="r_"]')
     if (firstReply == null ? void 0 : firstReply.parentElement) {
@@ -594,6 +589,17 @@
     const page = Number.parseInt(matched[2], 10) || 1
     return { topicId, page }
   }
+  var getRepliesCount = () => {
+    var _a
+    return (
+      Number.parseInt(
+        (/(\d+)\s条回复/.exec(
+          ((_a = $(".box .cell .gray")) == null ? void 0 : _a.textContent) || ""
+        ) || [])[1],
+        10
+      ) || 0
+    )
+  }
   var isTouchScreen = "ontouchstart" in document.documentElement
   var getMemberIdFromMemberLink = (memberLink) => {
     if (!memberLink) {
@@ -647,40 +653,285 @@
     }
     return nearestReply
   }
-  var runOnceCache = {}
-  var runOnce = (key, func) => {
-    if (!key) {
-      return func()
+  var getPagingPreviousButtons = () =>
+    $$(".normal_page_right").map((right) => right.previousElementSibling)
+  var getPagingNextButtons = () => $$(".normal_page_right")
+  var restoreImgSrc = throttle(() => {
+    for (const img of $$("img[data-src]")) {
+      setAttribute(img, "src", getAttribute(img, "data-src"))
+      delete img.dataset.src
     }
-    if (Object.hasOwn(runOnceCache, key)) {
-      return runOnceCache[key]
+  }, 500)
+  var lazyLoadAvatars = (replyElement) => {
+    const avatar = $("img.avatar", replyElement)
+    if (avatar) {
+      if (getAttribute(avatar, "loading") === "lazy" || avatar.complete) {
+        return
+      }
+      const src = getAttribute(avatar, "src")
+      setAttribute(avatar, "loading", "lazy")
+      setAttribute(avatar, "data-src", src)
+      setAttribute(
+        avatar,
+        "src",
+        "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+      )
+      if (doc.readyState === "complete") {
+        setTimeout(restoreImgSrc)
+      } else {
+        addEventListener(win, "load", restoreImgSrc)
+      }
     }
-    const result = func()
-    runOnceCache[key] = result
-    return result
+  }
+  var getTopicPage = async (topicId, page = 1) => {
+    const url = `${location.protocol}//${location.host}/t/${topicId}?p=${page}`
+    try {
+      const response = await fetch(url)
+      if (response.status === 200) {
+        return await response.text()
+      }
+    } catch (error) {
+      console.error(error)
+    }
+  }
+  var getReplyElements2 = (html) => {
+    const htmlNode = createElement("html")
+    htmlNode.innerHTML = html
+    return $$('.cell[id^="r_"]', htmlNode)
+  }
+  var insertReplyElementsToPage = (replyElements, page, inertPoint) => {
+    if (!replyElements || replyElements.length === 0 || !inertPoint) {
+      return
+    }
+    for (const replyElement of replyElements) {
+      replyElement.dataset.page = String(page)
+      if (getSettingsValue("lazyLoadAvatars")) {
+        lazyLoadAvatars(replyElement)
+      }
+      inertPoint.before(replyElement)
+    }
+  }
+  var gotoPage = (page, event) => {
+    if (!page) {
+      return
+    }
+    history.pushState(null, null, `?p=${page}`)
+    const main2 = $("#Main") || $(".content")
+    const firstReply = $(`.cell[data-page="${page}"]`, main2)
+    if (firstReply) {
+      firstReply.scrollIntoView({ block: "start" })
+      event.preventDefault()
+      event.stopImmediatePropagation()
+    }
+    for (const pagingElement of $$(".page_current,.page_normal")) {
+      if (pagingElement.textContent === String(page)) {
+        removeClass(pagingElement, "page_normal")
+        addClass(pagingElement, "page_current")
+      } else {
+        removeClass(pagingElement, "page_current")
+        addClass(pagingElement, "page_normal")
+      }
+    }
+    for (const pageInput of $$(".page_input")) {
+      pageInput.value = page
+    }
+    const repliesCount = getRepliesCount()
+    const totalPage = Math.ceil(repliesCount / 100)
+    for (const button of getPagingPreviousButtons()) {
+      if (String(page) === "1") {
+        addClass(button, "disable_now")
+      } else {
+        removeClass(button, "disable_now")
+      }
+    }
+    for (const button of getPagingNextButtons()) {
+      if (String(page) === String(totalPage)) {
+        addClass(button, "disable_now")
+      } else {
+        removeClass(button, "disable_now")
+      }
+    }
+  }
+  var updatePagingElements = () => {
+    runOnce("loadMultiPages:updatePagingElements", () => {
+      for (const pagingElement of $$(".page_current,.page_normal")) {
+        addEventListener(pagingElement, "click", (event) => {
+          const page = pagingElement.textContent
+          gotoPage(page, event)
+        })
+      }
+      for (const pageInput of $$(".page_input")) {
+        pageInput.removeAttribute("onkeydown")
+        addEventListener(
+          pageInput,
+          "keydown",
+          (event) => {
+            var _a
+            if (event.keyCode === 13) {
+              gotoPage((_a = event.target) == null ? void 0 : _a.value, event)
+              return false
+            }
+          },
+          true
+        )
+      }
+      const buttons = [...getPagingPreviousButtons(), ...getPagingNextButtons()]
+      for (const button of buttons) {
+        button.removeAttribute("onclick")
+        button.removeAttribute("onmouseover")
+        button.removeAttribute("onmousedown")
+        button.removeAttribute("onmouseleave")
+        addEventListener(
+          button,
+          "mouseover",
+          (event) => {
+            if (!hasClass(button, "disable_now")) {
+              addClass(button, "hover_now")
+            }
+            event.preventDefault()
+            event.stopImmediatePropagation()
+          },
+          true
+        )
+        addEventListener(
+          button,
+          "mousedown",
+          (event) => {
+            if (!hasClass(button, "disable_now")) {
+              addClass(button, "active_now")
+            }
+            event.preventDefault()
+            event.stopImmediatePropagation()
+          },
+          true
+        )
+        addEventListener(
+          button,
+          "mouseleave",
+          (event) => {
+            removeClass(button, "hover_now")
+            removeClass(button, "active_now")
+            event.preventDefault()
+            event.stopImmediatePropagation()
+          },
+          true
+        )
+        addEventListener(
+          button,
+          "click",
+          (event) => {
+            var _a
+            if (!hasClass(button, "disable_now")) {
+              const page = Number.parseInt(
+                ((_a = $(".page_input")) == null ? void 0 : _a.value) || "",
+                10
+              )
+              if (page) {
+                if (hasClass(button, "normal_page_right")) {
+                  gotoPage(page + 1, event)
+                } else {
+                  gotoPage(page - 1, event)
+                }
+              }
+            }
+            setTimeout(() => {
+              removeClass(button, "hover_now")
+              removeClass(button, "active_now")
+            }, 100)
+            event.preventDefault()
+            event.stopImmediatePropagation()
+          },
+          true
+        )
+      }
+    })
+  }
+  var loadMultiPages = async () => {
+    const repliesCount = getRepliesCount()
+    if (repliesCount > 100) {
+      const result = parseUrl()
+      const topicId = result.topicId
+      const currentPage = result.page
+      const totalPage = Math.ceil(repliesCount / 100)
+      const orgReplyElements = getCachedReplyElements()
+      const firstReply = orgReplyElements[0]
+      const pageElement =
+        orgReplyElements[orgReplyElements.length - 1].nextElementSibling
+      addClass(pageElement, "sticky_paging")
+      updatePagingElements()
+      for (const replyElement of orgReplyElements) {
+        replyElement.dataset.page = String(currentPage)
+      }
+      for (let i = 1; i <= totalPage; i++) {
+        if (i === currentPage) {
+          continue
+        }
+        console.info("[V2EX.REP] Fetching page", i)
+        const html = await getTopicPage(topicId, i)
+        if (html) {
+          const replyElements = getReplyElements2(html)
+          insertReplyElementsToPage(
+            replyElements,
+            i,
+            i < currentPage ? firstReply : pageElement
+          )
+          win.dispatchEvent(new Event("replyElementsLengthUpdated"))
+        }
+      }
+    }
+  }
+  var addLinkToAvatars = (replyElement) => {
+    var _a
+    const memberLink = $('a[href^="/member/"]', replyElement)
+    if (
+      memberLink &&
+      ((_a = memberLink.firstChild) == null ? void 0 : _a.tagName) === "IMG"
+    ) {
+      return
+    }
+    const avatar = $("img.avatar", replyElement)
+    if (memberLink && avatar) {
+      const memberLink2 = createElement("a", {
+        href: getAttribute(memberLink, "href"),
+      })
+      avatar.after(memberLink2)
+      memberLink2.append(avatar)
+    }
   }
   var addlinkToCitedFloorNumbers = (replyElement) => {
     const content = $(".reply_content", replyElement)
     const memberLinks = $$('a[href^="/member/"]', content)
     for (const memberLink of memberLinks) {
       const previousTextNode = memberLink.previousSibling
-      const nextTextNode = memberLink.nextSibling
       const memberId = getMemberIdFromMemberLink(memberLink)
       if (
         previousTextNode &&
         previousTextNode.nodeType === 3 &&
         previousTextNode.textContent &&
         previousTextNode.textContent.endsWith("@") &&
-        nextTextNode &&
-        nextTextNode.nodeType === 3 &&
-        nextTextNode.textContent &&
         memberId
       ) {
-        const textContent = nextTextNode.textContent
-        if (!/^\s#\d+/.test(textContent)) {
+        let nextTextNode = memberLink.nextSibling
+        while (nextTextNode) {
+          if (
+            nextTextNode.tagName === "BR" ||
+            !nextTextNode.textContent ||
+            nextTextNode.textContent.trim().length === 0
+          ) {
+            nextTextNode = nextTextNode.nextSibling
+          } else {
+            break
+          }
+        }
+        if (
+          !nextTextNode ||
+          nextTextNode.nodeType !== 3 ||
+          !nextTextNode.textContent ||
+          !/^\s*#\d+/.test(nextTextNode.textContent)
+        ) {
           continue
         }
-        const match = /^(\s*)(#(\d+))(.*)/.exec(textContent)
+        const match = /^(\s*)(#(\d+))(.*)/.exec(nextTextNode.textContent)
         if (!match) {
           continue
         }
@@ -876,8 +1127,8 @@
       } else {
         const firstReply = $('.box .cell[id^="r_"]')
         const offsetTop = firstReply
-          ? Math.max(getOffsetPosition(firstReply, main2).top, window.scrollY)
-          : window.scrollY
+          ? Math.max(getOffsetPosition(firstReply, main2).top, win.scrollY)
+          : win.scrollY
         setStyle(box, {
           top: offsetTop + "px",
           width,
@@ -1049,11 +1300,15 @@
     const url = `${location.protocol}//${
       location.host
     }/api/replies/show.json?topic_id=${topicId}${
-      replyCount ? "&replyCount=" + replyCount : ""
+      replyCount ? "&replyCount=" + String(replyCount) : ""
     }`
-    const response = await fetch(url)
-    if (response.status === 200) {
-      return response.json()
+    try {
+      const response = await fetch(url)
+      if (response.status === 200) {
+        return await response.json()
+      }
+    } catch (error) {
+      console.error(error)
     }
   }
   var updateFloorNumber = (replyElement, newFloorNumber) => {
@@ -1119,10 +1374,7 @@
       }
     }
     console.info(
-      "[V2EX.REP] floorNumberOffset",
-      floorNumberOffset,
-      "hideCount",
-      hideCount
+      `[V2EX.REP] page: ${page}, floorNumberOffset: ${floorNumberOffset}, hideCount: ${hideCount}`
     )
     if (floorNumberOffset > 0) {
       for (const element of replyElements) {
@@ -1144,78 +1396,88 @@
         }
       }
     }
-    window.dispatchEvent(new Event("floorNumberUpdated"))
+    win.dispatchEvent(new Event("floorNumberUpdated"))
   }
   var isRunning = false
-  var fixReplyFloorNumbers = async (replyElements) => {
-    var _a
+  var splitArrayPerPages = (replyElements) => {
+    if (!replyElements[0].dataset.page) {
+      return
+    }
+    const replyElementsPerPages = []
+    let lastPage
+    let replyElementsPerPage = []
+    for (const reply of replyElements) {
+      if (reply.dataset.page !== lastPage) {
+        lastPage = reply.dataset.page
+        const page = Number.parseInt(reply.dataset.page || "", 10)
+        replyElementsPerPage = replyElementsPerPages[page - 1] || []
+        replyElementsPerPages[page - 1] = replyElementsPerPage
+      }
+      replyElementsPerPage.push(reply)
+    }
+    return replyElementsPerPages
+  }
+  var process2 = async (
+    topicId,
+    page,
+    displayNumber,
+    replyElements,
+    forceUpdate = false
+  ) => {
     if (isRunning) {
       return
     }
     isRunning = true
+    const replies = await getTopicReplies(
+      topicId,
+      forceUpdate ? displayNumber : void 0
+    )
+    if (replies) {
+      const replyElementsPerPages = splitArrayPerPages(replyElements)
+      if (replyElementsPerPages) {
+        for (let i = 0; i < replyElementsPerPages.length; i++) {
+          const replyElementsPerPage = replyElementsPerPages[i]
+          if (
+            !replyElementsPerPage ||
+            displayNumber === replyElementsPerPage.length ||
+            displayNumber % 100 === replyElementsPerPage.length % 100 ||
+            replyElementsPerPage.length % 100 === 0
+          ) {
+            continue
+          }
+          updateReplyElements(replies, replyElementsPerPage, i + 1)
+        }
+      } else {
+        updateReplyElements(replies, replyElements, page)
+      }
+      if (replies.length < displayNumber) {
+        console.info("[V2EX.REP] API data outdated, re-fetch it")
+        setTimeout(async () => {
+          await process2(topicId, page, displayNumber, replyElements, true)
+        }, 100)
+      }
+    }
+    isRunning = false
+  }
+  var fixReplyFloorNumbers = async (replyElements) => {
+    if (isRunning) {
+      return
+    }
     const result = parseUrl()
     const topicId = result.topicId
     const page = result.page
     if (!topicId) {
       return
     }
-    const displayNumber =
-      Number.parseInt(
-        (/(\d+)\s条回复/.exec(
-          ((_a = $(".box .cell .gray")) == null ? void 0 : _a.textContent) || ""
-        ) || [])[1],
-        10
-      ) || 0
+    const displayNumber = getRepliesCount()
     if (
       displayNumber === replyElements.length ||
-      displayNumber % 100 === replyElements.length ||
-      replyElements.length === 100
+      displayNumber % 100 === replyElements.length % 100 ||
+      replyElements.length % 100 === 0
     ) {
       return
     }
-    const replies = await getTopicReplies(topicId)
-    if (replies) {
-      updateReplyElements(replies, replyElements, page)
-      if (replies.length < displayNumber) {
-        console.info("[V2EX.REP] API data outdated, re-fetch it")
-        setTimeout(async () => {
-          isRunning = true
-          const replies2 = await getTopicReplies(topicId, displayNumber)
-          if (replies2) {
-            updateReplyElements(replies2, replyElements, page)
-          }
-          isRunning = false
-        }, 100)
-      }
-    }
-    isRunning = false
-  }
-  var restoreImgSrc = throttle(() => {
-    for (const img of $$("img[data-src]")) {
-      setAttribute(img, "src", getAttribute(img, "data-src"))
-      delete img.dataset.src
-    }
-  }, 500)
-  var lazyLoadAvatars = (replyElement) => {
-    const avatar = $("img.avatar", replyElement)
-    if (avatar) {
-      if (getAttribute(avatar, "loading") === "lazy" || avatar.complete) {
-        return
-      }
-      const src = getAttribute(avatar, "src")
-      setAttribute(avatar, "loading", "lazy")
-      setAttribute(avatar, "data-src", src)
-      setAttribute(
-        avatar,
-        "src",
-        "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-      )
-      if (doc.readyState === "complete") {
-        setTimeout(restoreImgSrc)
-      } else {
-        addEventListener(window, "load", restoreImgSrc)
-      }
-    }
+    await process2(topicId, page, displayNumber, replyElements)
   }
   var quickHideReply = (replyElement) => {
     const hideButton = $('a[onclick*="ignoreReply"]', replyElement)
@@ -1303,7 +1565,7 @@
     let hasCitedReplies = false
     for (const memberLink of memberLinks) {
       const textNode = memberLink.previousSibling
-      let nextElement = memberLink.nextElementSibling
+      let nextElement = memberLink.nextSibling
       let target = memberLink
       let citedFloorNumber
       if (
@@ -1316,9 +1578,15 @@
         if (!memberId) {
           continue
         }
-        if (nextElement && hasClass(nextElement, "utags_ul")) {
+        while (
+          nextElement &&
+          (nextElement.tagName === "BR" ||
+            !nextElement.textContent ||
+            nextElement.textContent.trim().length === 0 ||
+            hasClass(nextElement, "utags_ul"))
+        ) {
           target = nextElement
-          nextElement = nextElement.nextElementSibling
+          nextElement = nextElement.nextSibling
         }
         if (nextElement && hasClass(nextElement, "cited_floor_number")) {
           target = nextElement
@@ -1463,6 +1731,10 @@
         "\u9F20\u6807\u79FB\u81F3\u7528\u6237\u540D\uFF0C\u4F1A\u663E\u793A\u8BE5\u7528\u6237\u5728\u5F53\u524D\u4E3B\u9898\u4E0B\u7684\u6240\u6709\u56DE\u590D\u4E0E\u88AB\u63D0\u53CA\u7684\u56DE\u590D",
       defaultValue: true,
     },
+    loadMultiPages: {
+      title: "\u9884\u52A0\u8F7D\u6240\u6709\u5206\u9875",
+      defaultValue: true,
+    },
     lazyLoadAvatars: {
       title: "\u61D2\u52A0\u8F7D\u7528\u6237\u5934\u50CF\u56FE\u7247",
       defaultValue: false,
@@ -1488,7 +1760,7 @@
     registerMenuCommand("\u2699\uFE0F \u8BBE\u7F6E", showSettings, "o")
   }
   var fixedReplyFloorNumbers = false
-  async function process2() {
+  async function process3() {
     const domReady =
       doc.readyState === "interactive" || doc.readyState === "complete"
     if (/\/t\/\d+/.test(location.href)) {
@@ -1532,6 +1804,11 @@
       ) {
         await fixReplyFloorNumbers(replyElements)
       }
+      if (doc.readyState === "complete" && getSettingsValue("loadMultiPages")) {
+        runOnce("main:loadMultiPages", () => {
+          setTimeout(loadMultiPages, 1e3)
+        })
+      }
     }
   }
   async function main() {
@@ -1553,28 +1830,50 @@
     </a></p>`,
       settingsTable: settingsTable2,
       async onValueChange() {
-        await process2()
+        await process3()
       },
     })
     registerMenuCommands()
     addStyle2(content_default)
-    addEventListener(window, "floorNumberUpdated", () => {
-      fixedReplyFloorNumbers = true
-      if (getSettingsValue("replyWithFloorNumber")) {
-        const replyElements = getReplyElements()
-        for (const replyElement of replyElements) {
-          replyWithFloorNumber(replyElement, true)
-          showCitedReplies(replyElement, true)
-        }
-      }
-    })
-    addEventListener(doc, "readystatechange", async () => {
+    const resetCachedReplyElementsThenProcess = async () => {
       resetCachedReplyElements()
-      await process2()
+      await process3()
+    }
+    addEventListener(win, {
+      floorNumberUpdated() {
+        fixedReplyFloorNumbers = true
+        if (
+          getSettingsValue("replyWithFloorNumber") ||
+          getSettingsValue("showCitedReplies")
+        ) {
+          const replyElements = getReplyElements()
+          for (const replyElement of replyElements) {
+            if (getSettingsValue("replyWithFloorNumber")) {
+              replyWithFloorNumber(replyElement, true)
+            }
+            if (getSettingsValue("showCitedReplies")) {
+              showCitedReplies(replyElement, true)
+            }
+          }
+        }
+      },
+      async replyElementsLengthUpdated() {
+        await resetCachedReplyElementsThenProcess()
+        const replyElements = getCachedReplyElements()
+        showTopReplies(replyElements, getSettingsValue("showTopReplies"), true)
+        if (getSettingsValue("fixReplyFloorNumbers")) {
+          await fixReplyFloorNumbers(replyElements)
+        }
+      },
     })
-    await process2()
-    const scanNodes = throttle(() => {
-      process2()
+    addEventListener(
+      doc,
+      "readystatechange",
+      resetCachedReplyElementsThenProcess
+    )
+    await process3()
+    const scanNodes = throttle(async () => {
+      await process3()
     }, 500)
     const observer = new MutationObserver((mutationsList) => {
       scanNodes()
