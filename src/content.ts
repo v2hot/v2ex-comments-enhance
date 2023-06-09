@@ -220,6 +220,12 @@ async function main() {
     async replyElementsLengthUpdated() {
       await resetCachedReplyElementsThenProcess()
       const replyElements = getCachedReplyElements()
+      for (const replyElement of replyElements) {
+        if (getSettingsValue("showCitedReplies")) {
+          showCitedReplies(replyElement, true)
+        }
+      }
+
       showTopReplies(
         replyElements,
         getSettingsValue("showTopReplies") as boolean,
