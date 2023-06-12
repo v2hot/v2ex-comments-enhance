@@ -211,3 +211,14 @@ a.no {
     background-color: #1d1f21;
   }
 }
+
+.vr_upload_image {
+  cursor: pointer;
+}
+
+.vr_upload_image.vr_button_disabled,
+.vr_upload_image.vr_button_disabled:hover {
+  cursor: default;
+  text-decoration: none;
+  color: var(--color-fade);
+}

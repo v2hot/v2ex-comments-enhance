@@ -245,3 +245,69 @@ export const sleep = async (time: number) => {
     }, time)
   })
 }
+
+export const getReplyInputElement = () => {
+  return $("#reply_content") as HTMLTextAreaElement | undefined
+}
+
+export const getReplyInputText = () => {
+  const replyTextArea = getReplyInputElement()
+  return replyTextArea ? replyTextArea.value : ""
+}
+
+/**
+ * 插入文本至回复输入框中，聚焦输入框，并更新光标位置。
+ */
+export function insertTextToReplyInput(text: string) {
+  const replyTextArea = getReplyInputElement()
+  if (replyTextArea) {
+    const startPos = replyTextArea.selectionStart
+    const endPos = replyTextArea.selectionEnd
+
+    const valueToStart = replyTextArea.value.slice(0, startPos)
+    const valueFromEnd = replyTextArea.value.slice(
+      endPos,
+      replyTextArea.value.length
+    )
+    replyTextArea.value = `${valueToStart}${text}${valueFromEnd}`
+
+    replyTextArea.focus()
+
+    const newPos = startPos + text.length
+    replyTextArea.selectionStart = newPos
+    replyTextArea.selectionEnd = newPos
+  }
+}
+
+export const replaceReplyInputText = (
+  find: string,
+  replace: string,
+  dispatchInputEvent = false
+) => {
+  const replyTextArea = getReplyInputElement()
+  if (replyTextArea) {
+    const value = replyTextArea.value
+
+    if (typeof value === "string") {
+      const index = value.indexOf(find)
+      if (index === -1) {
+        return
+      }
+
+      const endPos = replyTextArea.selectionEnd
+
+      const newValue = value.replace(find, replace)
+      replyTextArea.value = newValue
+      replyTextArea.focus()
+
+      const newPos =
+        index > endPos ? endPos : endPos + newValue.length - value.length
+      replyTextArea.selectionStart = newPos
+      replyTextArea.selectionEnd = newPos
+
+      if (dispatchInputEvent) {
+        replyTextArea.dispatchEvent(new Event("input"))
+      }
+    }
+  }
+}
