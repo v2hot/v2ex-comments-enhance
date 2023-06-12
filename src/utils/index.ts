@@ -102,18 +102,18 @@ export const cloneReplyElement = (
   }
 
   // Remove cited replies, child replies
-  /* fix v2ex polish start */
-  const cells = $$(".cell,.v2p-topic-reply-ref", cloned)
+  /* fix v2ex polish, v2ex plus start */
+  const cells = $$(".cell,.v2p-topic-reply-ref,.nested", cloned)
   for (const cell of cells) {
     cell.remove()
   }
 
-  /* fix v2ex polish end */
+  /* fix v2ex polish, v2ex plus end */
   if (wrappingTable) {
     const table = cloned.firstElementChild as HTMLElement
     if (table && table.tagName === "TABLE") {
       const wrapper = createElement("div", {
-        class: "wrapper",
+        class: "vr_wrapper",
       })
 
       table.after(wrapper)
