@@ -4,9 +4,9 @@
 // @namespace            https://github.com/v2hot/v2ex.rep
 // @homepageURL          https://github.com/v2hot/v2ex.rep#readme
 // @supportURL           https://github.com/v2hot/v2ex.rep/issues
-// @version              1.0.2
-// @description          专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 自动预加载所有分页，支持解析显示跨页面引用；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
-// @description:zh-CN    专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 自动预加载所有分页，支持解析显示跨页面引用；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
+// @version              1.1.0
+// @description          专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 自动预加载所有分页，支持解析显示跨页面引用；✅ 回复时上传图片；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
+// @description:zh-CN    专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 自动预加载所有分页，支持解析显示跨页面引用；✅ 回复时上传图片；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
 // @icon                 https://www.v2ex.com/favicon.ico
 // @author               Pipecraft
 // @license              MIT
@@ -236,7 +236,7 @@
     GM.registerMenuCommand(name, callback, accessKey)
   }
   var content_default =
-    'a.icon_button{opacity:1 !important;visibility:visible;margin-right:14px}a.icon_button:last-child{margin-right:0}a.icon_button svg{vertical-align:text-top}body .v2p-controls{opacity:1}body .v2p-controls>a.icon_button{margin-right:0}body .v2p-controls div a{margin-right:15px}body .v2p-controls div a:last-child{margin-right:0}body .v2p-controls a[onclick^=replyOne]{opacity:1 !important}.sticky_rightbar #Rightbar{position:sticky;top:0;max-height:100vh;overflow-y:auto;overflow-x:hidden;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;scrollbar-color:rgba(0,0,0,0) rgba(0,0,0,0);scrollbar-width:thin}.sticky_rightbar #Rightbar:hover{scrollbar-color:var(--sb-thumb-color) var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar{width:var(--sb-size)}.sticky_rightbar #Rightbar::-webkit-scrollbar-track{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-track{background:var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar-thumb{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-thumb{background:var(--sb-thumb-color)}.sticky_rightbar #Rightbar .v2p-tool-box{position:unset}.related_replies_container .related_replies{position:absolute;z-index:10000;width:100%;-webkit-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);-moz-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);box-shadow:0px 10px 39px 10px rgba(62,66,66,.22) !important}.related_replies_container .related_replies_before::before{content:"";display:block;width:100%;height:10000px;position:absolute;margin-top:-10000px;background-color:#334;opacity:50%}.related_replies_container .related_replies_after::after{content:"";display:block;width:100%;height:10000px;position:absolute;background-color:#334;opacity:50%}.related_replies_container.no_replies .related_replies_before::before,.related_replies_container.no_replies .related_replies_after::after{display:none}.related_replies_container .tabs{position:sticky;top:0;display:flex;justify-content:center}.related_replies_container .tabs a{cursor:pointer}a.no{background-color:rgba(0,0,0,0) !important;color:#1484cd !important;border:1px solid #1484cd;border-radius:3px !important;opacity:1 !important}.cited_floor_number{color:#1484cd !important;cursor:pointer}.reply_content .cell.cited_reply{scale:.85;opacity:.85;background-color:#f5f5f5;border:1px solid var(--box-border-color);white-space:initial}.reply_content .cell.cited_reply .vr_wrapper{max-height:150px;overflow:auto;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;scrollbar-color:var(--sb-thumb-color) var(--sb-track-color);scrollbar-width:thin}.reply_content .cell.cited_reply .vr_wrapper::-webkit-scrollbar{width:var(--sb-size)}.reply_content .cell.cited_reply .vr_wrapper::-webkit-scrollbar-track{background:var(--sb-track-color);border-radius:10px}.reply_content .cell.cited_reply .vr_wrapper::-webkit-scrollbar-thumb{background:var(--sb-thumb-color);border-radius:10px}.v2p-indent .cell.cited_reply,.v2p-indent .reply_content+.reply_content,.v2p-indent .reply_content+.reply_content+.v2p-expand-btn,.v2p-indent .v2p-collapsed:has(.reply_content+.reply_content)::before,.comment .comment .cell.cited_reply{display:none}#top_replies .cell .vr_wrapper{position:relative;max-height:150px;overflow:hidden}#top_replies .cell .vr_wrapper::after{content:"";display:block;position:absolute;bottom:0;width:100%;height:5px;opacity:.8;background-color:var(--box-background-color)}.sticky_paging{position:sticky;bottom:0;background-color:var(--box-background-color);border-top:1px solid var(--box-border-color)}.Night .reply_content .cell.cited_reply{background-color:#1d1f21}'
+    'a.icon_button{opacity:1 !important;visibility:visible;margin-right:14px}a.icon_button:last-child{margin-right:0}a.icon_button svg{vertical-align:text-top}body .v2p-controls{opacity:1}body .v2p-controls>a.icon_button{margin-right:0}body .v2p-controls div a{margin-right:15px}body .v2p-controls div a:last-child{margin-right:0}body .v2p-controls a[onclick^=replyOne]{opacity:1 !important}.sticky_rightbar #Rightbar{position:sticky;top:0;max-height:100vh;overflow-y:auto;overflow-x:hidden;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;scrollbar-color:rgba(0,0,0,0) rgba(0,0,0,0);scrollbar-width:thin}.sticky_rightbar #Rightbar:hover{scrollbar-color:var(--sb-thumb-color) var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar{width:var(--sb-size)}.sticky_rightbar #Rightbar::-webkit-scrollbar-track{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-track{background:var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar-thumb{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-thumb{background:var(--sb-thumb-color)}.sticky_rightbar #Rightbar .v2p-tool-box{position:unset}.related_replies_container .related_replies{position:absolute;z-index:10000;width:100%;-webkit-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);-moz-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);box-shadow:0px 10px 39px 10px rgba(62,66,66,.22) !important}.related_replies_container .related_replies_before::before{content:"";display:block;width:100%;height:10000px;position:absolute;margin-top:-10000px;background-color:#334;opacity:50%}.related_replies_container .related_replies_after::after{content:"";display:block;width:100%;height:10000px;position:absolute;background-color:#334;opacity:50%}.related_replies_container.no_replies .related_replies_before::before,.related_replies_container.no_replies .related_replies_after::after{display:none}.related_replies_container .tabs{position:sticky;top:0;display:flex;justify-content:center}.related_replies_container .tabs a{cursor:pointer}a.no{background-color:rgba(0,0,0,0) !important;color:#1484cd !important;border:1px solid #1484cd;border-radius:3px !important;opacity:1 !important}.cited_floor_number{color:#1484cd !important;cursor:pointer}.reply_content .cell.cited_reply{scale:.85;opacity:.85;background-color:#f5f5f5;border:1px solid var(--box-border-color);white-space:initial}.reply_content .cell.cited_reply .vr_wrapper{max-height:150px;overflow:auto;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;scrollbar-color:var(--sb-thumb-color) var(--sb-track-color);scrollbar-width:thin}.reply_content .cell.cited_reply .vr_wrapper::-webkit-scrollbar{width:var(--sb-size)}.reply_content .cell.cited_reply .vr_wrapper::-webkit-scrollbar-track{background:var(--sb-track-color);border-radius:10px}.reply_content .cell.cited_reply .vr_wrapper::-webkit-scrollbar-thumb{background:var(--sb-thumb-color);border-radius:10px}.v2p-indent .cell.cited_reply,.v2p-indent .reply_content+.reply_content,.v2p-indent .reply_content+.reply_content+.v2p-expand-btn,.v2p-indent .v2p-collapsed:has(.reply_content+.reply_content)::before,.comment .comment .cell.cited_reply{display:none}#top_replies .cell .vr_wrapper{position:relative;max-height:150px;overflow:hidden}#top_replies .cell .vr_wrapper::after{content:"";display:block;position:absolute;bottom:0;width:100%;height:5px;opacity:.8;background-color:var(--box-background-color)}.sticky_paging{position:sticky;bottom:0;background-color:var(--box-background-color);border-top:1px solid var(--box-border-color)}.Night .reply_content .cell.cited_reply{background-color:#1d1f21}.vr_upload_image{cursor:pointer}.vr_upload_image.vr_button_disabled,.vr_upload_image.vr_button_disabled:hover{cursor:default;text-decoration:none;color:var(--color-fade)}'
   var listeners = {}
   var getValue = async (key) => {
     const value = await GM.getValue(key)
@@ -670,6 +670,49 @@
         resolve(1)
       }, time)
     })
+  }
+  var getReplyInputElement = () => {
+    return $("#reply_content")
+  }
+  function insertTextToReplyInput(text) {
+    const replyTextArea = getReplyInputElement()
+    if (replyTextArea) {
+      const startPos = replyTextArea.selectionStart
+      const endPos = replyTextArea.selectionEnd
+      const valueToStart = replyTextArea.value.slice(0, startPos)
+      const valueFromEnd = replyTextArea.value.slice(
+        endPos,
+        replyTextArea.value.length
+      )
+      replyTextArea.value = `${valueToStart}${text}${valueFromEnd}`
+      replyTextArea.focus()
+      const newPos = startPos + text.length
+      replyTextArea.selectionStart = newPos
+      replyTextArea.selectionEnd = newPos
+    }
+  }
+  var replaceReplyInputText = (find, replace, dispatchInputEvent = false) => {
+    const replyTextArea = getReplyInputElement()
+    if (replyTextArea) {
+      const value = replyTextArea.value
+      if (typeof value === "string") {
+        const index = value.indexOf(find)
+        if (index === -1) {
+          return
+        }
+        const endPos = replyTextArea.selectionEnd
+        const newValue = value.replace(find, replace)
+        replyTextArea.value = newValue
+        replyTextArea.focus()
+        const newPos =
+          index > endPos ? endPos : endPos + newValue.length - value.length
+        replyTextArea.selectionStart = newPos
+        replyTextArea.selectionEnd = newPos
+        if (dispatchInputEvent) {
+          replyTextArea.dispatchEvent(new Event("input"))
+        }
+      }
+    }
   }
   var restoreImgSrc = throttle(() => {
     for (const img of $$("img[data-src]")) {
@@ -1737,6 +1780,175 @@
       }
     }
   }
+  var imgurClientIdPool = [
+    "3107b9ef8b316f3",
+    "442b04f26eefc8a",
+    "59cfebe717c09e4",
+    "60605aad4a62882",
+    "6c65ab1d3f5452a",
+    "83e123737849aa9",
+    "9311f6be1c10160",
+    "c4a4a563f698595",
+    "81be04b9e4a08ce",
+  ]
+  async function uploadImageToImgur(file) {
+    const formData = new FormData()
+    formData.append("image", file)
+    const randomIndex = Math.floor(Math.random() * imgurClientIdPool.length)
+    const clidenId = imgurClientIdPool[randomIndex]
+    const response = await fetch("https://api.imgur.com/3/upload", {
+      method: "POST",
+      headers: { Authorization: `Client-ID ${clidenId}` },
+      body: formData,
+    })
+    if (response.ok) {
+      const responseData = await response.json()
+      if (responseData.success) {
+        return responseData.data.link
+      }
+    }
+    throw new Error("\u4E0A\u4F20\u5931\u8D25")
+  }
+  var handleUploadImage = (file) => {
+    win.dispatchEvent(new Event("uploadImageStart"))
+    uploadImageToImgur(file)
+      .then((imgLink) => {
+        win.dispatchEvent(
+          new CustomEvent("uploadImageSuccess", { detail: { imgLink } })
+        )
+      })
+      .catch(() => {
+        win.dispatchEvent(new Event("uploadImageFailed"))
+      })
+  }
+  var handleClickUploadImage = () => {
+    const imgInput = document.createElement("input")
+    imgInput.style.display = "none"
+    imgInput.type = "file"
+    imgInput.accept = "image/*"
+    addEventListener(imgInput, "change", () => {
+      var _a
+      const selectedFile = (_a = imgInput.files) == null ? void 0 : _a[0]
+      if (selectedFile) {
+        handleUploadImage(selectedFile)
+      }
+    })
+    imgInput.click()
+  }
+  var init = () => {
+    const replyTextArea = getReplyInputElement()
+    if (!replyTextArea) {
+      return
+    }
+    const appendPosition = $("#reply-box > div > div")
+    if (!appendPosition) {
+      return
+    }
+    setAttribute(
+      replyTextArea,
+      "placeholder",
+      "\u60A8\u53EF\u4EE5\u5728\u56DE\u590D\u6846\u5185\u76F4\u63A5\u7C98\u8D34\u56FE\u7247\u6216\u62D6\u62FD\u56FE\u7247\u6587\u4EF6\u81F3\u56DE\u590D\u6846\u5185\u4E0A\u4F20"
+    )
+    const uploadTip = "+ \u63D2\u5165\u56FE\u7247"
+    const placeholder = "[\u4E0A\u4F20\u56FE\u7247\u4E2D...]"
+    addElement2(appendPosition, "span", {
+      class: "snow",
+      textContent: " \xB7 ",
+    })
+    const uploadButton = createElement("a", {
+      class: "vr_upload_image",
+      textContent: uploadTip,
+    })
+    appendPosition.append(uploadButton)
+    addEventListener(uploadButton, "click", () => {
+      if (!hasClass(uploadButton, "vr_button_disabled")) {
+        handleClickUploadImage()
+      }
+    })
+    addEventListener(
+      doc,
+      "paste",
+      (event) => {
+        var _a
+        if (!(event instanceof ClipboardEvent)) {
+          return
+        }
+        event.preventDefault()
+        event.stopImmediatePropagation()
+        const replyTextArea2 = getReplyInputElement()
+        if (
+          !(replyTextArea2 == null ? void 0 : replyTextArea2.matches(":focus"))
+        ) {
+          return
+        }
+        const items = (_a = event.clipboardData) == null ? void 0 : _a.items
+        if (!items) {
+          return
+        }
+        const imageItem = Array.from(items).find((item) =>
+          item.type.includes("image")
+        )
+        if (imageItem) {
+          const file = imageItem.getAsFile()
+          if (file) {
+            handleUploadImage(file)
+          }
+        }
+      },
+      true
+    )
+    addEventListener(
+      replyTextArea,
+      "drop",
+      (event) => {
+        var _a
+        if (!(event instanceof DragEvent)) {
+          return
+        }
+        event.preventDefault()
+        event.stopImmediatePropagation()
+        const file = (_a = event.dataTransfer) == null ? void 0 : _a.files[0]
+        if (file) {
+          handleUploadImage(file)
+        }
+      },
+      true
+    )
+    addEventListener(win, {
+      uploadImageStart() {
+        addClass(uploadButton, "vr_button_disabled")
+        uploadButton.textContent = "\u6B63\u5728\u4E0A\u4F20\u56FE\u7247..."
+        const replyTextArea2 = getReplyInputElement()
+        if (replyTextArea2) {
+          insertTextToReplyInput(
+            replyTextArea2.value.trim().length > 0 &&
+              replyTextArea2.selectionStart > 0
+              ? `
+${placeholder}
+`
+              : `${placeholder}
+`
+          )
+        }
+      },
+      uploadImageSuccess(event) {
+        removeClass(uploadButton, "vr_button_disabled")
+        uploadButton.textContent = uploadTip
+        replaceReplyInputText(placeholder, event.detail.imgLink || "", true)
+      },
+      uploadImageFailed() {
+        removeClass(uploadButton, "vr_button_disabled")
+        uploadButton.textContent = uploadTip
+        replaceReplyInputText(placeholder, "")
+        alert(
+          "[V2EX.REP] \u274C \u4E0A\u4F20\u56FE\u7247\u5931\u8D25\uFF0C\u8BF7\u6253\u5F00\u63A7\u5236\u53F0\u67E5\u770B\u539F\u56E0"
+        )
+      },
+    })
+  }
+  var uploadImage = () => {
+    runOnce("uploadImage:init", init)
+  }
   var config = {
     matches: ["https://*.v2ex.com/*"],
     run_at: "document_start",
@@ -1767,6 +1979,10 @@
     },
     loadMultiPages: {
       title: "\u9884\u52A0\u8F7D\u6240\u6709\u5206\u9875",
+      defaultValue: true,
+    },
+    uploadImage: {
+      title: "\u56DE\u590D\u65F6\u4E0A\u4F20\u56FE\u7247",
       defaultValue: true,
     },
     lazyLoadAvatars: {
@@ -1837,6 +2053,9 @@
         !fixedReplyFloorNumbers
       ) {
         await fixReplyFloorNumbers(replyElements)
+      }
+      if (domReady && getSettingsValue("uploadImage")) {
+        uploadImage()
       }
       if (doc.readyState === "complete" && getSettingsValue("loadMultiPages")) {
         runOnce("main:loadMultiPages", () => {
