@@ -30,6 +30,7 @@ import { quickSendThank } from "./modules/quick-send-thank"
 import { replyWithFloorNumber } from "./modules/reply-with-floor-number"
 import { showCitedReplies } from "./modules/show-cited-replies"
 import { showTopReplies } from "./modules/show-top-replies"
+import { uploadImage } from "./modules/upload-image"
 import {
   getCachedReplyElements,
   getReplyElements,
@@ -67,6 +68,10 @@ const settingsTable = {
   },
   loadMultiPages: {
     title: "预加载所有分页",
+    defaultValue: true,
+  },
+  uploadImage: {
+    title: "回复时上传图片",
     defaultValue: true,
   },
   lazyLoadAvatars: {
@@ -156,6 +161,10 @@ async function process() {
       !fixedReplyFloorNumbers
     ) {
       await fixReplyFloorNumbers(replyElements)
+    }
+
+    if (domReady && getSettingsValue("uploadImage")) {
+      uploadImage()
     }
 
     if (doc.readyState === "complete" && getSettingsValue("loadMultiPages")) {
