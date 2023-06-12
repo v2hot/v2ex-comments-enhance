@@ -74,6 +74,8 @@
 
 ## Release Notes
 
+- 1.0.2 2023.06.12
+  - 修复 v2ex plus 2.x 兼容性问题
 - 1.0.1 2023.06.10
   - 缓存 API 结果
   - Retry fetch requests
