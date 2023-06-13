@@ -311,3 +311,14 @@ export const replaceReplyInputText = (
     }
   }
 }
+
+export const getOnce = () => {
+  const onceElement = $("#once") as HTMLInputElement
+  if (onceElement?.value) {
+    return onceElement.value
+  }
+
+  const html = doc.body.innerHTML
+  const once = (/once=(\d+)/.exec(html) || [])[1]
+  return once
+}
