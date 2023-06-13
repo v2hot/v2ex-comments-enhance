@@ -5,7 +5,6 @@
 
 import {
   $,
-  addClass,
   addElement,
   addEventListener,
   createElement,
@@ -19,7 +18,6 @@ import {
 
 import {
   getReplyInputElement,
-  getReplyInputText,
   insertTextToReplyInput,
   replaceReplyInputText,
 } from "../utils"
@@ -51,6 +49,12 @@ type ImgurResponse = {
   }
 }
 
+type UploadingImageDetail = {
+  file: File
+  placeholder?: string
+  imgLink?: string
+}
+
 async function uploadImageToImgur(file: File): Promise<string> {
   const formData = new FormData()
   formData.append("image", file)
@@ -79,15 +83,15 @@ async function uploadImageToImgur(file: File): Promise<string> {
 }
 
 const handleUploadImage = (file: File) => {
-  window.dispatchEvent(new Event("uploadImageStart"))
+  const detail: UploadingImageDetail = { file }
+  window.dispatchEvent(new CustomEvent("uploadImageStart", { detail }))
   uploadImageToImgur(file)
     .then((imgLink) => {
-      window.dispatchEvent(
-        new CustomEvent("uploadImageSuccess", { detail: { imgLink } })
-      )
+      detail.imgLink = imgLink
+      window.dispatchEvent(new CustomEvent("uploadImageSuccess", { detail }))
     })
     .catch(() => {
-      window.dispatchEvent(new Event("uploadImageFailed"))
+      window.dispatchEvent(new CustomEvent("uploadImageFailed", { detail }))
     })
 }
 
@@ -155,9 +159,6 @@ const init = () => {
         return
       }
 
-      event.preventDefault()
-      event.stopImmediatePropagation()
-
       const replyTextArea = getReplyInputElement()
       if (!replyTextArea?.matches(":focus")) {
         return
@@ -178,6 +179,8 @@ const init = () => {
         const file = imageItem.getAsFile()
 
         if (file) {
+          // event.preventDefault()
+          // event.stopImmediatePropagation()
           handleUploadImage(file)
         }
       }
@@ -194,46 +197,65 @@ const init = () => {
         return
       }
 
-      event.preventDefault()
-      event.stopImmediatePropagation()
-
-      const file = event.dataTransfer?.files[0]
-
-      if (file) {
-        handleUploadImage(file)
+      const files = event.dataTransfer?.files
+      if (files?.length) {
+        for (const file of files) {
+          if (file.type.includes("image")) {
+            event.preventDefault()
+            event.stopImmediatePropagation()
+            handleUploadImage(file)
+          }
+        }
       }
     },
     true
   )
 
   addEventListener(window, {
-    uploadImageStart() {
-      addClass(uploadButton, "vr_button_disabled")
-      uploadButton.textContent = "正在上传图片..."
+    uploadImageStart(event: CustomEvent) {
+      if (!event.detail) {
+        return
+      }
+
+      // addClass(uploadButton, "vr_button_disabled")
+      // uploadButton.textContent = "正在上传图片..."
+      const detail: UploadingImageDetail = event.detail as UploadingImageDetail
+      const fileName = detail.file.name || "noname"
+      detail.placeholder = placeholder.replace(/]/, ` (${fileName})]`)
 
       const replyTextArea = getReplyInputElement()
       if (replyTextArea) {
         insertTextToReplyInput(
           replyTextArea.value.trim().length > 0 &&
             replyTextArea.selectionStart > 0
-            ? `\n${placeholder}\n`
-            : `${placeholder}\n`
+            ? `\n${detail.placeholder}\n`
+            : `${detail.placeholder}\n`
         )
       }
     },
     uploadImageSuccess(event: CustomEvent) {
+      if (!event.detail) {
+        return
+      }
+
+      const detail: UploadingImageDetail = event.detail as UploadingImageDetail
       removeClass(uploadButton, "vr_button_disabled")
       uploadButton.textContent = uploadTip
       replaceReplyInputText(
-        placeholder,
-        (event.detail.imgLink as string) || "",
+        detail.placeholder || placeholder,
+        detail.imgLink! || "",
         true
       )
     },
-    uploadImageFailed() {
+    uploadImageFailed(event: CustomEvent) {
+      if (!event.detail) {
+        return
+      }
+
+      const detail: UploadingImageDetail = event.detail as UploadingImageDetail
       removeClass(uploadButton, "vr_button_disabled")
       uploadButton.textContent = uploadTip
-      replaceReplyInputText(placeholder, "")
+      replaceReplyInputText(detail.placeholder || placeholder, "")
 
       // eslint-disable-next-line no-alert
       alert("[V2EX.REP] ❌ 上传图片失败，请打开控制台查看原因")
