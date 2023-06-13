@@ -4,7 +4,7 @@
 // @namespace            https://github.com/v2hot/v2ex.rep
 // @homepageURL          https://github.com/v2hot/v2ex.rep#readme
 // @supportURL           https://github.com/v2hot/v2ex.rep/issues
-// @version              1.2.0
+// @version              1.2.1
 // @description          专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 自动预加载所有分页，支持解析显示跨页面引用；✅ 回复时上传图片；✅ 无感自动签到；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
 // @description:zh-CN    专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 自动预加载所有分页，支持解析显示跨页面引用；✅ 回复时上传图片；✅ 无感自动签到；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
 // @icon                 https://www.v2ex.com/favicon.ico
@@ -1897,15 +1897,15 @@
     throw new Error("\u4E0A\u4F20\u5931\u8D25")
   }
   var handleUploadImage = (file) => {
-    win.dispatchEvent(new Event("uploadImageStart"))
+    const detail = { file }
+    win.dispatchEvent(new CustomEvent("uploadImageStart", { detail }))
     uploadImageToImgur(file)
       .then((imgLink) => {
-        win.dispatchEvent(
-          new CustomEvent("uploadImageSuccess", { detail: { imgLink } })
-        )
+        detail.imgLink = imgLink
+        win.dispatchEvent(new CustomEvent("uploadImageSuccess", { detail }))
       })
       .catch(() => {
-        win.dispatchEvent(new Event("uploadImageFailed"))
+        win.dispatchEvent(new CustomEvent("uploadImageFailed", { detail }))
       })
   }
   var handleClickUploadImage = () => {
@@ -1960,8 +1960,6 @@
         if (!(event instanceof ClipboardEvent)) {
           return
         }
-        event.preventDefault()
-        event.stopImmediatePropagation()
         const replyTextArea2 = getReplyInputElement()
         if (
           !(replyTextArea2 == null ? void 0 : replyTextArea2.matches(":focus"))
@@ -1992,41 +1990,61 @@
         if (!(event instanceof DragEvent)) {
           return
         }
-        event.preventDefault()
-        event.stopImmediatePropagation()
-        const file = (_a = event.dataTransfer) == null ? void 0 : _a.files[0]
-        if (file) {
-          handleUploadImage(file)
+        const files = (_a = event.dataTransfer) == null ? void 0 : _a.files
+        if (files == null ? void 0 : files.length) {
+          for (const file of files) {
+            if (file.type.includes("image")) {
+              event.preventDefault()
+              event.stopImmediatePropagation()
+              handleUploadImage(file)
+            }
+          }
         }
       },
       true
     )
     addEventListener(win, {
-      uploadImageStart() {
-        addClass(uploadButton, "vr_button_disabled")
-        uploadButton.textContent = "\u6B63\u5728\u4E0A\u4F20\u56FE\u7247..."
+      uploadImageStart(event) {
+        if (!event.detail) {
+          return
+        }
+        const detail = event.detail
+        const fileName = detail.file.name || "noname"
+        detail.placeholder = placeholder.replace(/]/, ` (${fileName})]`)
         const replyTextArea2 = getReplyInputElement()
         if (replyTextArea2) {
           insertTextToReplyInput(
             replyTextArea2.value.trim().length > 0 &&
               replyTextArea2.selectionStart > 0
               ? `
-${placeholder}
+${detail.placeholder}
 `
-              : `${placeholder}
+              : `${detail.placeholder}
 `
           )
         }
       },
       uploadImageSuccess(event) {
+        if (!event.detail) {
+          return
+        }
+        const detail = event.detail
         removeClass(uploadButton, "vr_button_disabled")
         uploadButton.textContent = uploadTip
-        replaceReplyInputText(placeholder, event.detail.imgLink || "", true)
+        replaceReplyInputText(
+          detail.placeholder || placeholder,
+          detail.imgLink || "",
+          true
+        )
       },
-      uploadImageFailed() {
+      uploadImageFailed(event) {
+        if (!event.detail) {
+          return
+        }
+        const detail = event.detail
         removeClass(uploadButton, "vr_button_disabled")
         uploadButton.textContent = uploadTip
-        replaceReplyInputText(placeholder, "")
+        replaceReplyInputText(detail.placeholder || placeholder, "")
         alert(
           "[V2EX.REP] \u274C \u4E0A\u4F20\u56FE\u7247\u5931\u8D25\uFF0C\u8BF7\u6253\u5F00\u63A7\u5236\u53F0\u67E5\u770B\u539F\u56E0"
         )
