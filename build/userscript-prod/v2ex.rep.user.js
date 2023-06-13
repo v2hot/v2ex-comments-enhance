@@ -4,9 +4,9 @@
 // @namespace            https://github.com/v2hot/v2ex.rep
 // @homepageURL          https://github.com/v2hot/v2ex.rep#readme
 // @supportURL           https://github.com/v2hot/v2ex.rep/issues
-// @version              1.1.0
-// @description          专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 自动预加载所有分页，支持解析显示跨页面引用；✅ 回复时上传图片；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
-// @description:zh-CN    专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 自动预加载所有分页，支持解析显示跨页面引用；✅ 回复时上传图片；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
+// @version              1.2.0
+// @description          专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 自动预加载所有分页，支持解析显示跨页面引用；✅ 回复时上传图片；✅ 无感自动签到；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
+// @description:zh-CN    专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 自动预加载所有分页，支持解析显示跨页面引用；✅ 回复时上传图片；✅ 无感自动签到；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
 // @icon                 https://www.v2ex.com/favicon.ico
 // @author               Pipecraft
 // @license              MIT
@@ -489,6 +489,24 @@
     addStyle2(getSettingsStyle())
     addSideMenu(options)
   }
+  var addLinkToAvatars = (replyElement) => {
+    var _a
+    const memberLink = $('a[href^="/member/"]', replyElement)
+    if (
+      memberLink &&
+      ((_a = memberLink.firstChild) == null ? void 0 : _a.tagName) === "IMG"
+    ) {
+      return
+    }
+    const avatar = $("img.avatar", replyElement)
+    if (memberLink && avatar) {
+      const memberLink2 = createElement("a", {
+        href: getAttribute(memberLink, "href"),
+      })
+      avatar.after(memberLink2)
+      memberLink2.append(avatar)
+    }
+  }
   var getReplyElements = () => {
     const firstReply = $('.box .cell[id^="r_"]')
     if (firstReply == null ? void 0 : firstReply.parentElement) {
@@ -714,254 +732,14 @@
       }
     }
   }
-  var restoreImgSrc = throttle(() => {
-    for (const img of $$("img[data-src]")) {
-      setAttribute(img, "src", getAttribute(img, "data-src"))
-      delete img.dataset.src
+  var getOnce = () => {
+    const onceElement = $("#once")
+    if (onceElement == null ? void 0 : onceElement.value) {
+      return onceElement.value
     }
-  }, 500)
-  var lazyLoadAvatars = (replyElement) => {
-    const avatar = $("img.avatar", replyElement)
-    if (avatar) {
-      if (getAttribute(avatar, "loading") === "lazy" || avatar.complete) {
-        return
-      }
-      const src = getAttribute(avatar, "src")
-      setAttribute(avatar, "loading", "lazy")
-      setAttribute(avatar, "data-src", src)
-      setAttribute(
-        avatar,
-        "src",
-        "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-      )
-      if (doc.readyState === "complete") {
-        setTimeout(restoreImgSrc)
-      } else {
-        addEventListener(win, "load", restoreImgSrc)
-      }
-    }
-  }
-  var retryCount = 0
-  var getTopicPage = async (topicId, page = 1) => {
-    const url = `${location.protocol}//${location.host}/t/${topicId}?p=${page}`
-    try {
-      const response = await fetch(url)
-      if (response.status === 200) {
-        return await response.text()
-      }
-    } catch (error) {
-      console.error(error, `page ${page}`)
-      retryCount++
-      if (retryCount < 10) {
-        await sleep(1e3)
-        return getTopicPage(topicId, page)
-      }
-    }
-  }
-  var getReplyElements2 = (html) => {
-    const htmlNode = createElement("html")
-    htmlNode.innerHTML = html
-    return $$('.cell[id^="r_"]', htmlNode)
-  }
-  var insertReplyElementsToPage = (replyElements, page, inertPoint) => {
-    if (!replyElements || replyElements.length === 0 || !inertPoint) {
-      return
-    }
-    for (const replyElement of replyElements) {
-      replyElement.dataset.page = String(page)
-      if (getSettingsValue("lazyLoadAvatars")) {
-        lazyLoadAvatars(replyElement)
-      }
-      inertPoint.before(replyElement)
-    }
-  }
-  var gotoPage = (page, event) => {
-    if (!page) {
-      return
-    }
-    history.pushState(null, null, `?p=${page}`)
-    const main2 = $("#Main") || $(".content")
-    const firstReply = $(`.cell[data-page="${page}"]`, main2)
-    if (firstReply) {
-      firstReply.scrollIntoView({ block: "start" })
-      event.preventDefault()
-      event.stopImmediatePropagation()
-    }
-    for (const pagingElement of $$(".page_current,.page_normal")) {
-      if (pagingElement.textContent === String(page)) {
-        removeClass(pagingElement, "page_normal")
-        addClass(pagingElement, "page_current")
-      } else {
-        removeClass(pagingElement, "page_current")
-        addClass(pagingElement, "page_normal")
-      }
-    }
-    for (const pageInput of $$(".page_input")) {
-      pageInput.value = page
-    }
-    const repliesCount = getRepliesCount()
-    const totalPage = Math.ceil(repliesCount / 100)
-    for (const button of getPagingPreviousButtons()) {
-      if (String(page) === "1") {
-        addClass(button, "disable_now")
-      } else {
-        removeClass(button, "disable_now")
-      }
-    }
-    for (const button of getPagingNextButtons()) {
-      if (String(page) === String(totalPage)) {
-        addClass(button, "disable_now")
-      } else {
-        removeClass(button, "disable_now")
-      }
-    }
-  }
-  var updatePagingElements = () => {
-    runOnce("loadMultiPages:updatePagingElements", () => {
-      for (const pagingElement of $$(".page_current,.page_normal")) {
-        addEventListener(pagingElement, "click", (event) => {
-          const page = pagingElement.textContent
-          gotoPage(page, event)
-        })
-      }
-      for (const pageInput of $$(".page_input")) {
-        pageInput.removeAttribute("onkeydown")
-        addEventListener(
-          pageInput,
-          "keydown",
-          (event) => {
-            var _a
-            if (event.keyCode === 13) {
-              gotoPage((_a = event.target) == null ? void 0 : _a.value, event)
-              return false
-            }
-          },
-          true
-        )
-      }
-      const buttons = [...getPagingPreviousButtons(), ...getPagingNextButtons()]
-      for (const button of buttons) {
-        button.removeAttribute("onclick")
-        button.removeAttribute("onmouseover")
-        button.removeAttribute("onmousedown")
-        button.removeAttribute("onmouseleave")
-        addEventListener(
-          button,
-          "mouseover",
-          (event) => {
-            if (!hasClass(button, "disable_now")) {
-              addClass(button, "hover_now")
-            }
-            event.preventDefault()
-            event.stopImmediatePropagation()
-          },
-          true
-        )
-        addEventListener(
-          button,
-          "mousedown",
-          (event) => {
-            if (!hasClass(button, "disable_now")) {
-              addClass(button, "active_now")
-            }
-            event.preventDefault()
-            event.stopImmediatePropagation()
-          },
-          true
-        )
-        addEventListener(
-          button,
-          "mouseleave",
-          (event) => {
-            removeClass(button, "hover_now")
-            removeClass(button, "active_now")
-            event.preventDefault()
-            event.stopImmediatePropagation()
-          },
-          true
-        )
-        addEventListener(
-          button,
-          "click",
-          (event) => {
-            var _a
-            if (!hasClass(button, "disable_now")) {
-              const page = Number.parseInt(
-                ((_a = $(".page_input")) == null ? void 0 : _a.value) || "",
-                10
-              )
-              if (page) {
-                if (hasClass(button, "normal_page_right")) {
-                  gotoPage(page + 1, event)
-                } else {
-                  gotoPage(page - 1, event)
-                }
-              }
-            }
-            setTimeout(() => {
-              removeClass(button, "hover_now")
-              removeClass(button, "active_now")
-            }, 100)
-            event.preventDefault()
-            event.stopImmediatePropagation()
-          },
-          true
-        )
-      }
-    })
-  }
-  var loadMultiPages = async () => {
-    const repliesCount = getRepliesCount()
-    if (repliesCount > 100) {
-      const result = parseUrl()
-      const topicId = result.topicId
-      const currentPage = result.page
-      const totalPage = Math.ceil(repliesCount / 100)
-      const orgReplyElements = getCachedReplyElements()
-      const firstReply = orgReplyElements[0]
-      const pageElement =
-        orgReplyElements[orgReplyElements.length - 1].nextElementSibling
-      addClass(pageElement, "sticky_paging")
-      updatePagingElements()
-      for (const replyElement of orgReplyElements) {
-        replyElement.dataset.page = String(currentPage)
-      }
-      for (let i = 1; i <= totalPage; i++) {
-        if (i === currentPage) {
-          continue
-        }
-        console.info("[V2EX.REP] Fetching page", i)
-        const html = await getTopicPage(topicId, i)
-        if (html) {
-          const replyElements = getReplyElements2(html)
-          insertReplyElementsToPage(
-            replyElements,
-            i,
-            i < currentPage ? firstReply : pageElement
-          )
-          win.dispatchEvent(new Event("replyElementsLengthUpdated"))
-        }
-        await sleep(1e3)
-      }
-    }
-  }
-  var addLinkToAvatars = (replyElement) => {
-    var _a
-    const memberLink = $('a[href^="/member/"]', replyElement)
-    if (
-      memberLink &&
-      ((_a = memberLink.firstChild) == null ? void 0 : _a.tagName) === "IMG"
-    ) {
-      return
-    }
-    const avatar = $("img.avatar", replyElement)
-    if (memberLink && avatar) {
-      const memberLink2 = createElement("a", {
-        href: getAttribute(memberLink, "href"),
-      })
-      avatar.after(memberLink2)
-      memberLink2.append(avatar)
-    }
+    const html = doc.body.innerHTML
+    const once = (/once=(\d+)/.exec(html) || [])[1]
+    return once
   }
   var addlinkToCitedFloorNumbers = (replyElement) => {
     const content = $(".reply_content", replyElement)
@@ -1058,6 +836,84 @@
         thankButton.innerHTML = `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.89346 2.35248C3.49195 2.35248 2.35248 3.49359 2.35248 4.90532C2.35248 6.38164 3.20954 7.9168 4.37255 9.33522C5.39396 10.581 6.59464 11.6702 7.50002 12.4778C8.4054 11.6702 9.60608 10.581 10.6275 9.33522C11.7905 7.9168 12.6476 6.38164 12.6476 4.90532C12.6476 3.49359 11.5081 2.35248 10.1066 2.35248C9.27059 2.35248 8.81894 2.64323 8.5397 2.95843C8.27877 3.25295 8.14623 3.58566 8.02501 3.88993C8.00391 3.9429 7.98315 3.99501 7.96211 4.04591C7.88482 4.23294 7.7024 4.35494 7.50002 4.35494C7.29765 4.35494 7.11523 4.23295 7.03793 4.04592C7.01689 3.99501 6.99612 3.94289 6.97502 3.8899C6.8538 3.58564 6.72126 3.25294 6.46034 2.95843C6.18109 2.64323 5.72945 2.35248 4.89346 2.35248ZM1.35248 4.90532C1.35248 2.94498 2.936 1.35248 4.89346 1.35248C6.0084 1.35248 6.73504 1.76049 7.20884 2.2953C7.32062 2.42147 7.41686 2.55382 7.50002 2.68545C7.58318 2.55382 7.67941 2.42147 7.79119 2.2953C8.265 1.76049 8.99164 1.35248 10.1066 1.35248C12.064 1.35248 13.6476 2.94498 13.6476 4.90532C13.6476 6.74041 12.6013 8.50508 11.4008 9.96927C10.2636 11.3562 8.92194 12.5508 8.00601 13.3664C7.94645 13.4194 7.88869 13.4709 7.83291 13.5206C7.64324 13.6899 7.3568 13.6899 7.16713 13.5206C7.11135 13.4709 7.05359 13.4194 6.99403 13.3664C6.0781 12.5508 4.73641 11.3562 3.59926 9.96927C2.39872 8.50508 1.35248 6.74041 1.35248 4.90532Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`
       }
     }
+  }
+  var fetchOnce = async () => {
+    const url = `${location.protocol}//${location.host}/poll_once`
+    const response = await fetch(url)
+    try {
+      if (response.status === 200) {
+        return await response.text()
+      }
+    } catch (error) {
+      console.error("[V2EX.REP] Unable to refresh once", error)
+    }
+  }
+  var updateOnce = async () => {
+    const once = await fetchOnce()
+    if (once) {
+      window.once = once
+      if ($("#once")) {
+        $("#once").value = once
+      }
+      const links = $$(`a[href*="once="]`)
+      for (const link of links) {
+        const href = getAttribute(link, "href")
+        setAttribute(link, "href", href.replace(/once=\d+/, `once=${once}`))
+      }
+    }
+  }
+  var storageKey2 = "dailyCheckIn"
+  var retryCount = 0
+  var fetchCheckInApi = async (once) => {
+    const url = `${location.protocol}//${location.host}/mission/daily/redeem?once=${once}`
+    try {
+      const response = await fetch(url)
+      if (response.status === 200) {
+        return await response.text()
+      }
+    } catch (error) {
+      console.error(error)
+      retryCount++
+      if (retryCount < 3) {
+        await sleep(1e3)
+        return fetchCheckInApi(once)
+      }
+    }
+  }
+  var dailyCheckIn = async () => {
+    var _a
+    const once = getOnce()
+    if (!once) {
+      return
+    }
+    const lastCheckInDate = await getValue(storageKey2)
+    if (lastCheckInDate) {
+      const now = Date.now()
+      if (
+        now - lastCheckInDate < 864e5 &&
+        new Date(now).getUTCDate() === new Date(lastCheckInDate).getUTCDate()
+      ) {
+        return
+      }
+    }
+    const result = await fetchCheckInApi(once)
+    if (
+      result.includes("\u6BCF\u65E5\u767B\u5F55\u5956\u52B1\u5DF2\u9886\u53D6")
+    ) {
+      console.info("[V2EX.REP] \u7B7E\u5230\u6210\u529F")
+      await setValue(storageKey2, Date.now())
+      const checkInLink = $(`a[href^="/mission/daily"]`)
+      if (checkInLink) {
+        const box = checkInLink.closest(".box")
+        if (box) {
+          ;(_a = box.nextElementSibling) == null ? void 0 : _a.remove()
+          box.remove()
+        }
+      }
+    } else {
+      console.error("[V2EX.REP] \u7B7E\u5230\u5931\u8D25")
+    }
+    await updateOnce()
   }
   var timeoutId
   var showModalReplies = (replies, referElement, memberId, type) => {
@@ -1556,6 +1412,237 @@
     }
     await process2(topicId, page, displayNumber, replyElements)
   }
+  var restoreImgSrc = throttle(() => {
+    for (const img of $$("img[data-src]")) {
+      setAttribute(img, "src", getAttribute(img, "data-src"))
+      delete img.dataset.src
+    }
+  }, 500)
+  var lazyLoadAvatars = (replyElement) => {
+    const avatar = $("img.avatar", replyElement)
+    if (avatar) {
+      if (getAttribute(avatar, "loading") === "lazy" || avatar.complete) {
+        return
+      }
+      const src = getAttribute(avatar, "src")
+      setAttribute(avatar, "loading", "lazy")
+      setAttribute(avatar, "data-src", src)
+      setAttribute(
+        avatar,
+        "src",
+        "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+      )
+      if (doc.readyState === "complete") {
+        setTimeout(restoreImgSrc)
+      } else {
+        addEventListener(win, "load", restoreImgSrc)
+      }
+    }
+  }
+  var retryCount3 = 0
+  var getTopicPage = async (topicId, page = 1) => {
+    const url = `${location.protocol}//${location.host}/t/${topicId}?p=${page}`
+    try {
+      const response = await fetch(url)
+      if (response.status === 200) {
+        return await response.text()
+      }
+    } catch (error) {
+      console.error(error, `page ${page}`)
+      retryCount3++
+      if (retryCount3 < 10) {
+        await sleep(1e3)
+        return getTopicPage(topicId, page)
+      }
+    }
+  }
+  var getReplyElements2 = (html) => {
+    const htmlNode = createElement("html")
+    htmlNode.innerHTML = html
+    return $$('.cell[id^="r_"]', htmlNode)
+  }
+  var insertReplyElementsToPage = (replyElements, page, inertPoint) => {
+    if (!replyElements || replyElements.length === 0 || !inertPoint) {
+      return
+    }
+    for (const replyElement of replyElements) {
+      replyElement.dataset.page = String(page)
+      if (getSettingsValue("lazyLoadAvatars")) {
+        lazyLoadAvatars(replyElement)
+      }
+      inertPoint.before(replyElement)
+    }
+  }
+  var gotoPage = (page, event) => {
+    if (!page) {
+      return
+    }
+    history.pushState(null, null, `?p=${page}`)
+    const main2 = $("#Main") || $(".content")
+    const firstReply = $(`.cell[data-page="${page}"]`, main2)
+    if (firstReply) {
+      firstReply.scrollIntoView({ block: "start" })
+      event.preventDefault()
+      event.stopImmediatePropagation()
+    }
+    for (const pagingElement of $$(".page_current,.page_normal")) {
+      if (pagingElement.textContent === String(page)) {
+        removeClass(pagingElement, "page_normal")
+        addClass(pagingElement, "page_current")
+      } else {
+        removeClass(pagingElement, "page_current")
+        addClass(pagingElement, "page_normal")
+      }
+    }
+    for (const pageInput of $$(".page_input")) {
+      pageInput.value = page
+    }
+    const repliesCount = getRepliesCount()
+    const totalPage = Math.ceil(repliesCount / 100)
+    for (const button of getPagingPreviousButtons()) {
+      if (String(page) === "1") {
+        addClass(button, "disable_now")
+      } else {
+        removeClass(button, "disable_now")
+      }
+    }
+    for (const button of getPagingNextButtons()) {
+      if (String(page) === String(totalPage)) {
+        addClass(button, "disable_now")
+      } else {
+        removeClass(button, "disable_now")
+      }
+    }
+  }
+  var updatePagingElements = () => {
+    runOnce("loadMultiPages:updatePagingElements", () => {
+      for (const pagingElement of $$(".page_current,.page_normal")) {
+        addEventListener(pagingElement, "click", (event) => {
+          const page = pagingElement.textContent
+          gotoPage(page, event)
+        })
+      }
+      for (const pageInput of $$(".page_input")) {
+        pageInput.removeAttribute("onkeydown")
+        addEventListener(
+          pageInput,
+          "keydown",
+          (event) => {
+            var _a
+            if (event.keyCode === 13) {
+              gotoPage((_a = event.target) == null ? void 0 : _a.value, event)
+              return false
+            }
+          },
+          true
+        )
+      }
+      const buttons = [...getPagingPreviousButtons(), ...getPagingNextButtons()]
+      for (const button of buttons) {
+        button.removeAttribute("onclick")
+        button.removeAttribute("onmouseover")
+        button.removeAttribute("onmousedown")
+        button.removeAttribute("onmouseleave")
+        addEventListener(
+          button,
+          "mouseover",
+          (event) => {
+            if (!hasClass(button, "disable_now")) {
+              addClass(button, "hover_now")
+            }
+            event.preventDefault()
+            event.stopImmediatePropagation()
+          },
+          true
+        )
+        addEventListener(
+          button,
+          "mousedown",
+          (event) => {
+            if (!hasClass(button, "disable_now")) {
+              addClass(button, "active_now")
+            }
+            event.preventDefault()
+            event.stopImmediatePropagation()
+          },
+          true
+        )
+        addEventListener(
+          button,
+          "mouseleave",
+          (event) => {
+            removeClass(button, "hover_now")
+            removeClass(button, "active_now")
+            event.preventDefault()
+            event.stopImmediatePropagation()
+          },
+          true
+        )
+        addEventListener(
+          button,
+          "click",
+          (event) => {
+            var _a
+            if (!hasClass(button, "disable_now")) {
+              const page = Number.parseInt(
+                ((_a = $(".page_input")) == null ? void 0 : _a.value) || "",
+                10
+              )
+              if (page) {
+                if (hasClass(button, "normal_page_right")) {
+                  gotoPage(page + 1, event)
+                } else {
+                  gotoPage(page - 1, event)
+                }
+              }
+            }
+            setTimeout(() => {
+              removeClass(button, "hover_now")
+              removeClass(button, "active_now")
+            }, 100)
+            event.preventDefault()
+            event.stopImmediatePropagation()
+          },
+          true
+        )
+      }
+    })
+  }
+  var loadMultiPages = async () => {
+    const repliesCount = getRepliesCount()
+    if (repliesCount > 100) {
+      const result = parseUrl()
+      const topicId = result.topicId
+      const currentPage = result.page
+      const totalPage = Math.ceil(repliesCount / 100)
+      const orgReplyElements = getCachedReplyElements()
+      const firstReply = orgReplyElements[0]
+      const pageElement =
+        orgReplyElements[orgReplyElements.length - 1].nextElementSibling
+      addClass(pageElement, "sticky_paging")
+      updatePagingElements()
+      for (const replyElement of orgReplyElements) {
+        replyElement.dataset.page = String(currentPage)
+      }
+      for (let i = 1; i <= totalPage; i++) {
+        if (i === currentPage) {
+          continue
+        }
+        console.info("[V2EX.REP] Fetching page", i)
+        const html = await getTopicPage(topicId, i)
+        if (html) {
+          const replyElements = getReplyElements2(html)
+          insertReplyElementsToPage(
+            replyElements,
+            i,
+            i < currentPage ? firstReply : pageElement
+          )
+          win.dispatchEvent(new Event("replyElementsLengthUpdated"))
+        }
+        await sleep(1e3)
+      }
+    }
+  }
   var quickHideReply = (replyElement) => {
     const hideButton = $('a[onclick*="ignoreReply"]', replyElement)
     if (hideButton) {
@@ -1985,6 +2072,10 @@ ${placeholder}
       title: "\u56DE\u590D\u65F6\u4E0A\u4F20\u56FE\u7247",
       defaultValue: true,
     },
+    dailyCheckIn: {
+      title: "\u6BCF\u65E5\u81EA\u52A8\u7B7E\u5230",
+      defaultValue: true,
+    },
     lazyLoadAvatars: {
       title: "\u61D2\u52A0\u8F7D\u7528\u6237\u5934\u50CF\u56FE\u7247",
       defaultValue: false,
@@ -2013,6 +2104,11 @@ ${placeholder}
   async function process3() {
     const domReady =
       doc.readyState === "interactive" || doc.readyState === "complete"
+    if (doc.readyState === "complete" && getSettingsValue("dailyCheckIn")) {
+      runOnce("dailyCheckIn", () => {
+        setTimeout(dailyCheckIn, 1e3)
+      })
+    }
     if (/\/t\/\d+/.test(location.href)) {
       const replyElements = getReplyElements()
       for (const replyElement of replyElements) {
