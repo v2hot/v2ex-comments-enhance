@@ -147,6 +147,10 @@ a.no {
   /* Fix v2ex plus */
   white-space: initial;
 
+  &:hover {
+    opacity: 1;
+  }
+
   .vr_wrapper {
     max-height: 150px;
     overflow: auto;
