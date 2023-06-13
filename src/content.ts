@@ -11,8 +11,6 @@ import {
 import styleText from "data-text:./content.scss"
 import type { PlasmoCSConfig } from "plasmo"
 
-import { loadMultiPages } from "~modules/load-multi-pages"
-
 import {
   getSettingsValue,
   initSettings,
@@ -22,9 +20,11 @@ import { addLinkToAvatars } from "./modules/add-link-to-avatars"
 import { addlinkToCitedFloorNumbers } from "./modules/add-link-to-cited-floor-numbers"
 import { alwaysShowHideButton } from "./modules/always-show-hide-button"
 import { alwaysShowThankButton } from "./modules/always-show-thank-button"
+import { dailyCheckIn } from "./modules/daily-check-in"
 import { filterRepliesByUser } from "./modules/filter-repies-by-user"
 import { fixReplyFloorNumbers } from "./modules/fix-reply-floor-numbers"
 import { lazyLoadAvatars } from "./modules/lazy-load-avatars"
+import { loadMultiPages } from "./modules/load-multi-pages"
 import { quickHideReply } from "./modules/quick-hide-reply"
 import { quickSendThank } from "./modules/quick-send-thank"
 import { replyWithFloorNumber } from "./modules/reply-with-floor-number"
@@ -74,6 +74,10 @@ const settingsTable = {
     title: "回复时上传图片",
     defaultValue: true,
   },
+  dailyCheckIn: {
+    title: "每日自动签到",
+    defaultValue: true,
+  },
   lazyLoadAvatars: {
     title: "懒加载用户头像图片",
     defaultValue: false,
@@ -105,6 +109,14 @@ let fixedReplyFloorNumbers = false
 async function process() {
   const domReady =
     doc.readyState === "interactive" || doc.readyState === "complete"
+
+  if (doc.readyState === "complete" && getSettingsValue("dailyCheckIn")) {
+    // Run on every page
+    runOnce("dailyCheckIn", () => {
+      setTimeout(dailyCheckIn, 1000)
+    })
+  }
+
   if (/\/t\/\d+/.test(location.href)) {
     const replyElements = getReplyElements()
     for (const replyElement of replyElements) {
