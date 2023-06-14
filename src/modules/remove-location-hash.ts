@@ -1,7 +1,6 @@
 import { getRepliesCount } from "../utils"
 
 const replaceState = (newHref: string) => {
-  console.log(newHref, Date.now())
   history.replaceState(null, "", newHref)
 }
 
