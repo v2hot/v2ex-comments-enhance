@@ -26,6 +26,7 @@ import { fixReplyFloorNumbers } from "./modules/fix-reply-floor-numbers"
 import { lazyLoadAvatars } from "./modules/lazy-load-avatars"
 import { loadMultiPages } from "./modules/load-multi-pages"
 import { quickHideReply } from "./modules/quick-hide-reply"
+import { quickNavigation } from "./modules/quick-navigation"
 import { quickSendThank } from "./modules/quick-send-thank"
 import { removeLocationHash } from "./modules/remove-location-hash"
 import { replyWithFloorNumber } from "./modules/reply-with-floor-number"
@@ -106,6 +107,10 @@ const settingsTable = {
   },
   stickyTopicButtons: {
     title: "主题内容底部固定显示按钮栏",
+    defaultValue: true,
+  },
+  quickNavigation: {
+    title: "双击空白处快速导航",
     defaultValue: true,
   },
 }
@@ -193,6 +198,10 @@ async function process() {
 
     if (domReady && getSettingsValue("removeLocationHash")) {
       runOnce("main:removeLocationHash", removeLocationHash)
+    }
+
+    if (domReady && getSettingsValue("quickNavigation")) {
+      quickNavigation()
     }
 
     if (doc.readyState === "complete" && getSettingsValue("loadMultiPages")) {
