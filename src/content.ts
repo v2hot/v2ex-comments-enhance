@@ -27,6 +27,7 @@ import { lazyLoadAvatars } from "./modules/lazy-load-avatars"
 import { loadMultiPages } from "./modules/load-multi-pages"
 import { quickHideReply } from "./modules/quick-hide-reply"
 import { quickSendThank } from "./modules/quick-send-thank"
+import { removeLocationHash } from "./modules/remove-location-hash"
 import { replyWithFloorNumber } from "./modules/reply-with-floor-number"
 import { showCitedReplies } from "./modules/show-cited-replies"
 import { showTopReplies } from "./modules/show-top-replies"
@@ -97,6 +98,10 @@ const settingsTable = {
   alwaysShowHideButton: {
     title: "一直显示隐藏回复按钮",
     defaultValue: false,
+  },
+  removeLocationHash: {
+    title: "去掉 URL 中的 #replyXX",
+    defaultValue: true,
   },
 }
 
@@ -177,6 +182,10 @@ async function process() {
 
     if (domReady && getSettingsValue("uploadImage")) {
       uploadImage()
+    }
+
+    if (domReady && getSettingsValue("removeLocationHash")) {
+      runOnce("main:removeLocationHash", removeLocationHash)
     }
 
     if (doc.readyState === "complete" && getSettingsValue("loadMultiPages")) {
