@@ -226,3 +226,17 @@ a.no {
   text-decoration: none;
   color: var(--color-fade);
 }
+
+.sticky_topic_buttons {
+  .topic_buttons,
+  .topic_buttons_mobile {
+    position: sticky;
+    bottom: 0;
+    background-color: var(--box-background-color);
+    border-top: 1px solid var(--box-border-color);
+  }
+
+  .header + .cell {
+    border-bottom: none;
+  }
+}

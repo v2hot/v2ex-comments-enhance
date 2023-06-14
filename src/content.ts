@@ -31,6 +31,7 @@ import { removeLocationHash } from "./modules/remove-location-hash"
 import { replyWithFloorNumber } from "./modules/reply-with-floor-number"
 import { showCitedReplies } from "./modules/show-cited-replies"
 import { showTopReplies } from "./modules/show-top-replies"
+import { stickyTopicButtons } from "./modules/sticky-topic-buttons"
 import { uploadImage } from "./modules/upload-image"
 import {
   getCachedReplyElements,
@@ -103,6 +104,10 @@ const settingsTable = {
     title: "去掉 URL 中的 #replyXX",
     defaultValue: true,
   },
+  stickyTopicButtons: {
+    title: "主题内容底部固定显示按钮栏",
+    defaultValue: true,
+  },
 }
 
 function registerMenuCommands() {
@@ -169,6 +174,8 @@ async function process() {
         getSettingsValue("showTopReplies") as boolean
       )
     }
+
+    stickyTopicButtons(getSettingsValue("stickyTopicButtons") as boolean)
 
     filterRepliesByUser(getSettingsValue("filterRepliesByUser") as boolean)
 
