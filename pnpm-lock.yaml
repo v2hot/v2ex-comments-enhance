@@ -1,6 +1,9 @@
 lockfileVersion: '6.0'
 
 dependencies:
+  browser-extension-settings:
+    specifier: ^0.0.4
+    version: 0.0.4(react@18.2.0)
   browser-extension-storage:
     specifier: ^0.1.2
     version: 0.1.2(react@18.2.0)
@@ -3231,6 +3234,16 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       fill-range: 7.0.1
+
+  /browser-extension-settings@0.0.4(react@18.2.0):
+    resolution: {integrity: sha512-MZqLamE0TbFOlNNwoA6RqnMIMInrHyIBvN99kA8ev4I9MDkSd43SRSMe+l9/oRBsui8FU4/PFHtuJoyUB7KE5g==}
+    engines: {node: ^14.13.1 || >=16.0.0}
+    dependencies:
+      browser-extension-storage: 0.1.2(react@18.2.0)
+      browser-extension-utils: 0.1.4
+    transitivePeerDependencies:
+      - react
+    dev: false
 
   /browser-extension-storage@0.1.2(react@18.2.0):
     resolution: {integrity: sha512-Xe5fF/YLHMiHwnV8MWU2f+EGapxHyv8ZpDI9LtUKVK7SuDBTr74ljNBRmtEP00xxx3bN4uOFaL95Gk+tdKYJ0A==}

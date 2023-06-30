@@ -1,3 +1,4 @@
+import { getSettingsValue } from "browser-extension-settings"
 import {
   $,
   $$,
@@ -10,7 +11,6 @@ import {
   win as window,
 } from "browser-extension-utils"
 
-import { getSettingsValue } from "../components/settings"
 import {
   getCachedReplyElements,
   getPagingNextButtons,
