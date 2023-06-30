@@ -80,6 +80,8 @@ Compatible with the following userscript managers
 
 ## Release Notes
 
+- 1.4.0 2023.06.30
+  - 更新设置模块
 - 1.3.2 2023.06.15
   - 双击空白处快速导，在主题区，回复区，回复框之间快速跳转
 - 1.3.1 2023.06.14
