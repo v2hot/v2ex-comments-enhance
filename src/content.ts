@@ -1,4 +1,9 @@
 import {
+  getSettingsValue,
+  initSettings,
+  showSettings,
+} from "browser-extension-settings"
+import {
   $,
   addEventListener,
   addStyle,
@@ -11,11 +16,6 @@ import {
 import styleText from "data-text:./content.scss"
 import type { PlasmoCSConfig } from "plasmo"
 
-import {
-  getSettingsValue,
-  initSettings,
-  showSettings,
-} from "./components/settings"
 import { addLinkToAvatars } from "./modules/add-link-to-avatars"
 import { addlinkToCitedFloorNumbers } from "./modules/add-link-to-cited-floor-numbers"
 import { alwaysShowHideButton } from "./modules/always-show-hide-button"
@@ -219,6 +219,7 @@ async function main() {
   }
 
   await initSettings({
+    id: "v2ex.rep",
     title: "V2EX.REP",
     footer: `
     <p>更改设置后，需要重新加载页面</p>
