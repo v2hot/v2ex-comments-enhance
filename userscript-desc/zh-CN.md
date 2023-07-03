@@ -80,6 +80,8 @@
 
 ## Release Notes
 
+- 1.4.1 2023.07.04
+  - Fix settings style on mobile devices
 - 1.4.0 2023.06.30
   - 更新设置模块
 - 1.3.2 2023.06.15
