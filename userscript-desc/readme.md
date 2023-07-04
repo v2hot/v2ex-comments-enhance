@@ -80,6 +80,9 @@ Compatible with the following userscript managers
 
 ## Release Notes
 
+- 1.4.2 2023.07.04
+  - 相关回复层中显示被引用的回
+  - 关闭相关回复层时，还原滚动条位置
 - 1.4.1 2023.07.04
   - Fix settings style on mobile devices
 - 1.4.0 2023.06.30
