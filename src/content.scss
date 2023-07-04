@@ -118,6 +118,7 @@ body .v2p-controls a[onclick^="replyOne"] {
     top: 0;
     display: flex;
     justify-content: center;
+    z-index: 10001;
 
     a {
       cursor: pointer;

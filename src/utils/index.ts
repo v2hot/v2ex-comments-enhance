@@ -4,6 +4,7 @@ import {
   addEventListener,
   createElement,
   doc,
+  hasClass,
 } from "browser-extension-utils"
 
 // 从含有第一个评论的 box div 查询
@@ -81,7 +82,8 @@ export const getFloorNumber = (replyElement: HTMLElement | undefined) => {
 
 export const cloneReplyElement = (
   replyElement: HTMLElement,
-  wrappingTable = false
+  wrappingTable = false,
+  keepCitedReplies = false
 ) => {
   const cloned = replyElement.cloneNode(true) as HTMLElement
 
@@ -105,6 +107,10 @@ export const cloneReplyElement = (
   /* fix v2ex polish, v2ex plus start */
   const cells = $$(".cell,.v2p-topic-reply-ref,.nested", cloned)
   for (const cell of cells) {
+    if (keepCitedReplies && hasClass(cell, "cited_reply")) {
+      continue
+    }
+
     cell.remove()
   }
 
