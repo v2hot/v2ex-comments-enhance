@@ -4,7 +4,7 @@
 // @namespace            https://github.com/v2hot/v2ex.rep
 // @homepageURL          https://github.com/v2hot/v2ex.rep#readme
 // @supportURL           https://github.com/v2hot/v2ex.rep/issues
-// @version              1.4.1
+// @version              1.4.2
 // @description          专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 自动预加载所有分页，支持解析显示跨页面引用；✅ 回复时上传图片；✅ 无感自动签到；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
 // @description:zh-CN    专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 自动预加载所有分页，支持解析显示跨页面引用；✅ 回复时上传图片；✅ 无感自动签到；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
 // @icon                 https://www.v2ex.com/favicon.ico
@@ -301,7 +301,7 @@
     div.append(createSwitch(options))
     return div
   }
-  var besVersion = 12
+  var besVersion = 13
   var openButton = `<svg viewBox="0 0 60.2601318359375 84.8134765625" version="1.1" xmlns="http://www.w3.org/2000/svg" class=" glyph-box" style="height: 9.62969px; width: 6.84191px;"><g transform="matrix(1 0 0 1 -6.194965820312518 77.63671875)"><path d="M66.4551-35.2539C66.4551-36.4746 65.9668-37.5977 65.0391-38.4766L26.3672-76.3672C25.4883-77.1973 24.4141-77.6367 23.1445-77.6367C20.6543-77.6367 18.7012-75.7324 18.7012-73.1934C18.7012-71.9727 19.1895-70.8496 19.9707-70.0195L55.5176-35.2539L19.9707-0.488281C19.1895 0.341797 18.7012 1.41602 18.7012 2.68555C18.7012 5.22461 20.6543 7.12891 23.1445 7.12891C24.4141 7.12891 25.4883 6.68945 26.3672 5.81055L65.0391-32.0312C65.9668-32.959 66.4551-34.0332 66.4551-35.2539Z"></path></g></svg>`
   var openInNewTabButton = `<svg viewBox="0 0 72.127685546875 72.2177734375" version="1.1" xmlns="http://www.w3.org/2000/svg" class=" glyph-box" style="height: 8.19958px; width: 8.18935px;"><g transform="matrix(1 0 0 1 -12.451127929687573 71.3388671875)"><path d="M84.5703-17.334L84.5215-66.4551C84.5215-69.2383 82.7148-71.1914 79.7852-71.1914L30.6641-71.1914C27.9297-71.1914 26.0742-69.0918 26.0742-66.748C26.0742-64.4043 28.1738-62.4023 30.4688-62.4023L47.4609-62.4023L71.2891-63.1836L62.207-55.2246L13.8184-6.73828C12.9395-5.85938 12.4512-4.73633 12.4512-3.66211C12.4512-1.31836 14.5508 0.878906 16.9922 0.878906C18.1152 0.878906 19.1895 0.488281 20.0684-0.439453L68.5547-48.877L76.6113-58.0078L75.7324-35.2051L75.7324-17.1387C75.7324-14.8438 77.7344-12.6953 80.127-12.6953C82.4707-12.6953 84.5703-14.6973 84.5703-17.334Z"></path></g></svg>`
   var relatedExtensions = [
@@ -478,19 +478,13 @@
     if (settingsContainer) {
       settingsContainer.style.display = "none"
     }
-    removeEventListener(document, "click", onDocumentClick)
-    removeEventListener(document, "keydown", onDocumentKeyDown)
+    removeEventListener(document, "click", onDocumentClick, true)
+    removeEventListener(document, "keydown", onDocumentKeyDown, true)
   }
   var onDocumentClick = (event) => {
-    let target = event.target
-    const settingsContainer = getSettingsContainer()
-    if (settingsContainer) {
-      while (target !== settingsContainer && target) {
-        target = target.parentNode
-      }
-      if (target === settingsContainer) {
-        return
-      }
+    const target = event.target
+    if (target == null ? void 0 : target.closest(`.${prefix}container`)) {
+      return
     }
     closeModal()
   }
@@ -498,16 +492,10 @@
     if (event.defaultPrevented) {
       return
     }
-    switch (event.key) {
-      case "Escape": {
-        closeModal()
-        break
-      }
-      default: {
-        return
-      }
+    if (event.key === "Escape") {
+      closeModal()
+      event.preventDefault()
     }
-    event.preventDefault()
   }
   async function updateOptions() {
     if (!getSettingsElement()) {
@@ -555,12 +543,14 @@
       id: settingsContainerId,
       class: `${prefix}container`,
       "data-bes-version": besVersion,
+      style: "display: none;",
     })
   }
   function getSettingsWrapper() {
+    const container = getSettingsContainer()
     return (
-      $(`.${prefix}container .${prefix}wrapper`) ||
-      addElement2(getSettingsContainer(), "div", {
+      $(`.${prefix}wrapper`, container) ||
+      addElement2(container, "div", {
         class: `${prefix}wrapper`,
       })
     )
@@ -611,7 +601,9 @@
           if (!item.type || item.type === "switch") {
             const switchOption = createSwitchOption(item.title, {
               async onchange(event) {
-                await saveSattingsValue(key, event.target.checked)
+                if (event.target) {
+                  await saveSattingsValue(key, event.target.checked)
+                }
               },
             })
             switchOption.dataset.key = key
@@ -626,16 +618,19 @@
       addElement2(options2, "textarea", {
         placeholder: `/* Custom rules for internal URLs, matching URLs will be opened in new tabs */`,
         onkeyup(event) {
+          const textArea = event.target
           if (timeoutId2) {
             clearTimeout(timeoutId2)
-            timeoutId2 = null
+            timeoutId2 = void 0
           }
           timeoutId2 = setTimeout(async () => {
             const host = location.host
-            await saveSattingsValue(
-              `customRulesForCurrentSite_${host}`,
-              event.target.value.trim()
-            )
+            if (textArea) {
+              await saveSattingsValue(
+                `customRulesForCurrentSite_${host}`,
+                textArea.value.trim()
+              )
+            }
           }, 100)
         },
       })
@@ -705,8 +700,8 @@
     const settingsMain = createSettingsElement()
     await updateOptions()
     settingsContainer.style.display = "block"
-    addEventListener(document, "click", onDocumentClick)
-    addEventListener(document, "keydown", onDocumentKeyDown)
+    addEventListener(document, "click", onDocumentClick, true)
+    addEventListener(document, "keydown", onDocumentKeyDown, true)
     activeExtension(settingsOptions.id)
     deactiveExtensionList()
   }
@@ -726,7 +721,7 @@
     addSideMenu()
   }
   var content_default =
-    'a.icon_button{opacity:1 !important;visibility:visible;margin-right:14px}a.icon_button:last-child{margin-right:0}a.icon_button svg{vertical-align:text-top}body .v2p-controls{opacity:1}body .v2p-controls>a.icon_button{margin-right:0}body .v2p-controls div a{margin-right:15px}body .v2p-controls div a:last-child{margin-right:0}body .v2p-controls a[onclick^=replyOne]{opacity:1 !important}.sticky_rightbar #Rightbar{position:sticky;top:0;max-height:100vh;overflow-y:auto;overflow-x:hidden;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;scrollbar-color:rgba(0,0,0,0) rgba(0,0,0,0);scrollbar-width:thin}.sticky_rightbar #Rightbar:hover{scrollbar-color:var(--sb-thumb-color) var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar{width:var(--sb-size)}.sticky_rightbar #Rightbar::-webkit-scrollbar-track{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-track{background:var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar-thumb{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-thumb{background:var(--sb-thumb-color)}.sticky_rightbar #Rightbar .v2p-tool-box{position:unset}.related_replies_container .related_replies{position:absolute;z-index:10000;width:100%;-webkit-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);-moz-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);box-shadow:0px 10px 39px 10px rgba(62,66,66,.22) !important}.related_replies_container .related_replies_before::before{content:"";display:block;width:100%;height:10000px;position:absolute;margin-top:-10000px;background-color:#334;opacity:50%}.related_replies_container .related_replies_after::after{content:"";display:block;width:100%;height:10000px;position:absolute;background-color:#334;opacity:50%}.related_replies_container.no_replies .related_replies_before::before,.related_replies_container.no_replies .related_replies_after::after{display:none}.related_replies_container .tabs{position:sticky;top:0;display:flex;justify-content:center}.related_replies_container .tabs a{cursor:pointer}a.no{background-color:rgba(0,0,0,0) !important;color:#1484cd !important;border:1px solid #1484cd;border-radius:3px !important;opacity:1 !important}.cited_floor_number{color:#1484cd !important;cursor:pointer}.reply_content .cell.cited_reply{scale:.85;opacity:.85;background-color:#f5f5f5;border:1px solid var(--box-border-color);white-space:initial}.reply_content .cell.cited_reply:hover{opacity:1}.reply_content .cell.cited_reply .vr_wrapper{max-height:150px;overflow:auto;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;scrollbar-color:var(--sb-thumb-color) var(--sb-track-color);scrollbar-width:thin}.reply_content .cell.cited_reply .vr_wrapper::-webkit-scrollbar{width:var(--sb-size)}.reply_content .cell.cited_reply .vr_wrapper::-webkit-scrollbar-track{background:var(--sb-track-color);border-radius:10px}.reply_content .cell.cited_reply .vr_wrapper::-webkit-scrollbar-thumb{background:var(--sb-thumb-color);border-radius:10px}.v2p-indent .cell.cited_reply,.v2p-indent .reply_content+.reply_content,.v2p-indent .reply_content+.reply_content+.v2p-expand-btn,.v2p-indent .v2p-collapsed:has(.reply_content+.reply_content)::before,.comment .comment .cell.cited_reply{display:none}#top_replies .cell .vr_wrapper{position:relative;max-height:150px;overflow:hidden}#top_replies .cell .vr_wrapper::after{content:"";display:block;position:absolute;bottom:0;width:100%;height:5px;opacity:.8;background-color:var(--box-background-color)}.sticky_paging{position:sticky;bottom:0;background-color:var(--box-background-color);border-top:1px solid var(--box-border-color)}.Night .reply_content .cell.cited_reply{background-color:#1d1f21}.vr_upload_image{cursor:pointer}.vr_upload_image.vr_button_disabled,.vr_upload_image.vr_button_disabled:hover{cursor:default;text-decoration:none;color:var(--color-fade)}.sticky_topic_buttons .topic_buttons,.sticky_topic_buttons .topic_buttons_mobile{position:sticky;bottom:0;background-color:var(--box-background-color);border-top:1px solid var(--box-border-color)}.sticky_topic_buttons .header+.cell{border-bottom:none}'
+    'a.icon_button{opacity:1 !important;visibility:visible;margin-right:14px}a.icon_button:last-child{margin-right:0}a.icon_button svg{vertical-align:text-top}body .v2p-controls{opacity:1}body .v2p-controls>a.icon_button{margin-right:0}body .v2p-controls div a{margin-right:15px}body .v2p-controls div a:last-child{margin-right:0}body .v2p-controls a[onclick^=replyOne]{opacity:1 !important}.sticky_rightbar #Rightbar{position:sticky;top:0;max-height:100vh;overflow-y:auto;overflow-x:hidden;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;scrollbar-color:rgba(0,0,0,0) rgba(0,0,0,0);scrollbar-width:thin}.sticky_rightbar #Rightbar:hover{scrollbar-color:var(--sb-thumb-color) var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar{width:var(--sb-size)}.sticky_rightbar #Rightbar::-webkit-scrollbar-track{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-track{background:var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar-thumb{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-thumb{background:var(--sb-thumb-color)}.sticky_rightbar #Rightbar .v2p-tool-box{position:unset}.related_replies_container .related_replies{position:absolute;z-index:10000;width:100%;-webkit-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);-moz-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);box-shadow:0px 10px 39px 10px rgba(62,66,66,.22) !important}.related_replies_container .related_replies_before::before{content:"";display:block;width:100%;height:10000px;position:absolute;margin-top:-10000px;background-color:#334;opacity:50%}.related_replies_container .related_replies_after::after{content:"";display:block;width:100%;height:10000px;position:absolute;background-color:#334;opacity:50%}.related_replies_container.no_replies .related_replies_before::before,.related_replies_container.no_replies .related_replies_after::after{display:none}.related_replies_container .tabs{position:sticky;top:0;display:flex;justify-content:center;z-index:10001}.related_replies_container .tabs a{cursor:pointer}a.no{background-color:rgba(0,0,0,0) !important;color:#1484cd !important;border:1px solid #1484cd;border-radius:3px !important;opacity:1 !important}.cited_floor_number{color:#1484cd !important;cursor:pointer}.reply_content .cell.cited_reply{scale:.85;opacity:.85;background-color:#f5f5f5;border:1px solid var(--box-border-color);white-space:initial}.reply_content .cell.cited_reply:hover{opacity:1}.reply_content .cell.cited_reply .vr_wrapper{max-height:150px;overflow:auto;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;scrollbar-color:var(--sb-thumb-color) var(--sb-track-color);scrollbar-width:thin}.reply_content .cell.cited_reply .vr_wrapper::-webkit-scrollbar{width:var(--sb-size)}.reply_content .cell.cited_reply .vr_wrapper::-webkit-scrollbar-track{background:var(--sb-track-color);border-radius:10px}.reply_content .cell.cited_reply .vr_wrapper::-webkit-scrollbar-thumb{background:var(--sb-thumb-color);border-radius:10px}.v2p-indent .cell.cited_reply,.v2p-indent .reply_content+.reply_content,.v2p-indent .reply_content+.reply_content+.v2p-expand-btn,.v2p-indent .v2p-collapsed:has(.reply_content+.reply_content)::before,.comment .comment .cell.cited_reply{display:none}#top_replies .cell .vr_wrapper{position:relative;max-height:150px;overflow:hidden}#top_replies .cell .vr_wrapper::after{content:"";display:block;position:absolute;bottom:0;width:100%;height:5px;opacity:.8;background-color:var(--box-background-color)}.sticky_paging{position:sticky;bottom:0;background-color:var(--box-background-color);border-top:1px solid var(--box-border-color)}.Night .reply_content .cell.cited_reply{background-color:#1d1f21}.vr_upload_image{cursor:pointer}.vr_upload_image.vr_button_disabled,.vr_upload_image.vr_button_disabled:hover{cursor:default;text-decoration:none;color:var(--color-fade)}.sticky_topic_buttons .topic_buttons,.sticky_topic_buttons .topic_buttons_mobile{position:sticky;bottom:0;background-color:var(--box-background-color);border-top:1px solid var(--box-border-color)}.sticky_topic_buttons .header+.cell{border-bottom:none}'
   var addLinkToAvatars = (replyElement) => {
     var _a
     const memberLink = $('a[href^="/member/"]', replyElement)
@@ -804,7 +799,11 @@
     }
     return 0
   }
-  var cloneReplyElement = (replyElement, wrappingTable = false) => {
+  var cloneReplyElement = (
+    replyElement,
+    wrappingTable = false,
+    keepCitedReplies = false
+  ) => {
     const cloned = replyElement.cloneNode(true)
     const floorNumber = $(".no", cloned)
     const toolbox = $(".fr", cloned)
@@ -823,6 +822,9 @@
     }
     const cells = $$(".cell,.v2p-topic-reply-ref,.nested", cloned)
     for (const cell of cells) {
+      if (keepCitedReplies && hasClass(cell, "cited_reply")) {
+        continue
+      }
       cell.remove()
     }
     if (wrappingTable) {
@@ -1154,11 +1156,15 @@
     await updateOnce()
   }
   var timeoutId
+  var scrollPositionStack = []
   var showModalReplies = (replies, referElement, memberId, type) => {
     var _a
     const main2 = $("#Main") || $(".content")
     if (!main2) {
       return
+    }
+    if (doc.scrollingElement) {
+      scrollPositionStack.push(doc.scrollingElement.scrollTop)
     }
     setStyle(main2, "position: relative;")
     const replyElement = $("#Main")
@@ -1241,6 +1247,7 @@
           "mouseout",
           () => {
             container.remove()
+            scrollPositionStack.pop()
           },
           { once: true }
         )
@@ -1296,7 +1303,7 @@
           top: offsetTop + "px",
           width,
         })
-        box2.scrollIntoView({ block: "nearest" })
+        box2.scrollIntoView({ block: "start" })
       }
     } else {
       box.remove()
@@ -1313,7 +1320,7 @@
       }
       const memberId = (/member\/(\w+)/.exec(memberLink.href) || [])[1]
       if (memberIds.includes(memberId)) {
-        const cloned = cloneReplyElement(replyElement, true)
+        const cloned = cloneReplyElement(replyElement, true, true)
         cloned.id = "related_" + replyElement.id
         replies.push(cloned)
       }
@@ -1328,11 +1335,12 @@
       if (!memberLink) {
         continue
       }
-      const cloned = cloneReplyElement(replyElement, true)
+      let cloned = cloneReplyElement(replyElement, true)
       const memberLink2 = $(`a[href^="/member/${memberId}"]`, cloned)
       if (!memberLink2) {
         continue
       }
+      cloned = cloneReplyElement(replyElement, true, true)
       cloned.id = "related_" + replyElement.id
       replies.push(cloned)
     }
@@ -1367,6 +1375,10 @@
   var closeModal2 = (closeLast = false) => {
     for (const element of $$(".related_replies_container").reverse()) {
       element.remove()
+      const scrollPosition = scrollPositionStack.pop()
+      if (scrollPosition !== void 0 && doc.scrollingElement) {
+        doc.scrollingElement.scrollTop = scrollPosition
+      }
       if (closeLast) {
         break
       }
@@ -1408,16 +1420,9 @@
     if (event.defaultPrevented) {
       return
     }
-    switch (event.key) {
-      case "Escape": {
-        closeModal2(true)
-        break
-      }
-      default: {
-        return
-      }
+    if (event.key === "Escape") {
+      closeModal2(true)
     }
-    event.preventDefault()
   }
   var filterRepliesByUser = (toogle) => {
     if (toogle) {
@@ -1434,13 +1439,13 @@
       }
       if (!doc.boundEvent) {
         addEventListener(doc, "click", onDocumentClick2, true)
-        addEventListener(doc, "keydown", onDocumentKeyDown2, true)
+        addEventListener(doc, "keydown", onDocumentKeyDown2)
         doc.boundEvent = true
       }
     } else if (doc.boundEvent) {
       closeModal2()
       removeEventListener(doc, "click", onDocumentClick2, true)
-      removeEventListener(doc, "keydown", onDocumentKeyDown2, true)
+      removeEventListener(doc, "keydown", onDocumentKeyDown2)
       doc.boundEvent = false
       const memberLinks = $$('a[href^="/member/"]')
       for (const memberLink of memberLinks) {
