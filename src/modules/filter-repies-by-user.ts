@@ -327,20 +327,9 @@ const onDocumentKeyDown = (event) => {
     return // 如果事件已经在进行中，则不做任何事。
   }
 
-  switch (event.key) {
-    case "Escape": {
-      // 按“ESC”键时要做的事。
-      closeModal(true)
-      break
-    }
-
-    default: {
-      return
-    } // 什么都没按就退出吧。
+  if (event.key === "Escape") {
+    closeModal(true)
   }
-
-  // 取消默认动作，从而避免处理两次。
-  event.preventDefault()
 }
 
 export const filterRepliesByUser = (toogle: boolean) => {
@@ -360,14 +349,14 @@ export const filterRepliesByUser = (toogle: boolean) => {
 
     if (!doc.boundEvent) {
       addEventListener(doc, "click", onDocumentClick, true)
-      addEventListener(doc, "keydown", onDocumentKeyDown, true)
+      addEventListener(doc, "keydown", onDocumentKeyDown)
       doc.boundEvent = true
     }
   } else if (doc.boundEvent) {
     // if toogle === false
     closeModal()
     removeEventListener(doc, "click", onDocumentClick, true)
-    removeEventListener(doc, "keydown", onDocumentKeyDown, true)
+    removeEventListener(doc, "keydown", onDocumentKeyDown)
     doc.boundEvent = false
 
     const memberLinks = $$('a[href^="/member/"]')
