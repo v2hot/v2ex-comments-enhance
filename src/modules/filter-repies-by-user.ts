@@ -23,6 +23,7 @@ import {
 
 let timeoutId: number | undefined
 
+const scrollPositionStack: number[] = []
 const showModalReplies = (
   replies: HTMLElement[],
   referElement: HTMLElement,
@@ -32,6 +33,10 @@ const showModalReplies = (
   const main = $("#Main") || $(".content")
   if (!main) {
     return
+  }
+
+  if (doc.scrollingElement) {
+    scrollPositionStack.push(doc.scrollingElement.scrollTop)
   }
 
   setStyle(main, "position: relative;")
@@ -127,6 +132,7 @@ const showModalReplies = (
         "mouseout",
         () => {
           container.remove()
+          scrollPositionStack.pop()
         },
         { once: true }
       )
@@ -189,7 +195,7 @@ const showModalReplies = (
         top: offsetTop + "px",
         width,
       })
-      box2.scrollIntoView({ block: "nearest" })
+      box2.scrollIntoView({ block: "start" })
     }
   } else {
     box.remove()
@@ -283,6 +289,11 @@ const onMouseOut = () => {
 const closeModal = (closeLast = false) => {
   for (const element of $$(".related_replies_container").reverse()) {
     element.remove()
+    const scrollPosition = scrollPositionStack.pop()
+    if (scrollPosition !== undefined && doc.scrollingElement) {
+      doc.scrollingElement.scrollTop = scrollPosition
+    }
+
     if (closeLast) {
       break
     }
