@@ -153,7 +153,11 @@ const updateReplyElements = (
 let isRunning = false
 
 const splitArrayPerPages = (replyElements: HTMLElement[]) => {
-  if (!replyElements[0].dataset.page) {
+  if (
+    !replyElements ||
+    replyElements.length === 0 ||
+    !replyElements[0].dataset.page
+  ) {
     return
   }
 
@@ -202,9 +206,10 @@ const process = async (
 
         if (
           !replyElementsPerPage ||
-          displayNumber === replyElementsPerPage.length ||
-          displayNumber % 100 === replyElementsPerPage.length % 100 ||
-          replyElementsPerPage.length % 100 === 0
+          (replyElementsPerPage.length > 0 &&
+            (displayNumber === replyElementsPerPage.length ||
+              displayNumber % 100 === replyElementsPerPage.length % 100 ||
+              replyElementsPerPage.length % 100 === 0))
         ) {
           continue
         }
@@ -242,9 +247,10 @@ export const fixReplyFloorNumbers = async (replyElements: HTMLElement[]) => {
   const displayNumber = getRepliesCount()
 
   if (
-    displayNumber === replyElements.length ||
-    displayNumber % 100 === replyElements.length % 100 ||
-    replyElements.length % 100 === 0
+    replyElements.length > 0 &&
+    (displayNumber === replyElements.length /* 只有一页时 */ ||
+      displayNumber % 100 === replyElements.length % 100 /* 多页的最后一页 */ ||
+      replyElements.length % 100 === 0) /* 多页的非最后一页 */
   ) {
     return
   }
