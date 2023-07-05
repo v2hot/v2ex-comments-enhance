@@ -5,6 +5,7 @@ import {
   getFloorNumberElement,
   getRepliesCount,
   getReplyId,
+  isVisible,
   parseUrl,
   sleep,
 } from "../utils"
@@ -95,6 +96,13 @@ const updateReplyElements = (
       )
       hideCount++
       continue
+    }
+
+    if (!isVisible(element)) {
+      console.info(
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        `[V2EX.REP] 屏蔽或隐藏的回复: #${realFloorNumber}, 用户 ID: ${reply.member?.username}, 回复 ID: ${reply.id}, 回复内容: ${reply.content}`
+      )
     }
 
     element.found = true
