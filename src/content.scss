@@ -207,8 +207,9 @@ a.no {
 .sticky_paging {
   position: sticky;
   bottom: 0;
-  background-color: var(--box-background-color);
+  background-color: var(--box-background-color) !important;
   border-top: 1px solid var(--box-border-color);
+  z-index: 100;
 }
 
 .Night {
@@ -233,7 +234,7 @@ a.no {
   .topic_buttons_mobile {
     position: sticky;
     bottom: 0;
-    background-color: var(--box-background-color);
+    background-color: var(--box-background-color) !important;
     border-top: 1px solid var(--box-border-color);
   }
 
