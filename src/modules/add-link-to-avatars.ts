@@ -8,6 +8,10 @@ export const addLinkToAvatars = (replyElement: HTMLElement) => {
 
   const avatar = $("img.avatar", replyElement)
   if (memberLink && avatar) {
+    if (avatar.parentElement?.tagName === "A") {
+      return
+    }
+
     const memberLink2 = createElement("a", {
       href: getAttribute(memberLink, "href"),
     })
