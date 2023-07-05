@@ -13,8 +13,7 @@ export const getReplyElements = () => {
   if (firstReply?.parentElement) {
     const v2exPolishModel = $(".v2p-model-mask")
     return $$('.cell[id^="r_"]', firstReply.parentElement).filter((reply) => {
-      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-      if (v2exPolishModel && v2exPolishModel.contains(reply)) {
+      if (v2exPolishModel && reply.closest(".v2p-model-mask")) {
         return false
       }
 
