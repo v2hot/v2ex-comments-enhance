@@ -11,10 +11,8 @@ import {
 export const getReplyElements = () => {
   const firstReply = $('.box .cell[id^="r_"]')
   if (firstReply?.parentElement) {
-    const v2exPolishModel = $(".v2p-model-mask")
     return $$('.cell[id^="r_"]', firstReply.parentElement).filter((reply) => {
-      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
-      if (v2exPolishModel && v2exPolishModel.contains(reply)) {
+      if (reply.closest(".v2p-model-mask")) {
         return false
       }
 
