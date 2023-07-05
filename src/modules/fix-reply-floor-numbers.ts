@@ -153,7 +153,11 @@ const updateReplyElements = (
 let isRunning = false
 
 const splitArrayPerPages = (replyElements: HTMLElement[]) => {
-  if (!replyElements[0].dataset.page) {
+  if (
+    !replyElements ||
+    replyElements.length === 0 ||
+    !replyElements[0].dataset.page
+  ) {
     return
   }
 
@@ -242,9 +246,9 @@ export const fixReplyFloorNumbers = async (replyElements: HTMLElement[]) => {
   const displayNumber = getRepliesCount()
 
   if (
-    displayNumber === replyElements.length ||
-    displayNumber % 100 === replyElements.length % 100 ||
-    replyElements.length % 100 === 0
+    replyElements.length > 0 &&
+    (displayNumber === replyElements.length ||
+      displayNumber % 100 === replyElements.length % 100)
   ) {
     return
   }
