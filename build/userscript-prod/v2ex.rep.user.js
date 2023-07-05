@@ -4,7 +4,7 @@
 // @namespace            https://github.com/v2hot/v2ex.rep
 // @homepageURL          https://github.com/v2hot/v2ex.rep#readme
 // @supportURL           https://github.com/v2hot/v2ex.rep/issues
-// @version              1.4.5
+// @version              1.4.7
 // @description          专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 自动预加载所有分页，支持解析显示跨页面引用；✅ 回复时上传图片；✅ 无感自动签到；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
 // @description:zh-CN    专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 自动预加载所有分页，支持解析显示跨页面引用；✅ 回复时上传图片；✅ 无感自动签到；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
 // @icon                 https://www.v2ex.com/favicon.ico
@@ -984,6 +984,12 @@
     const once = (/once=(\d+)/.exec(html) || [])[1]
     return once
   }
+  var isVisible = (element) => {
+    if (typeof element.checkVisibility === "function") {
+      return element.checkVisibility()
+    }
+    return element.offsetParent !== null
+  }
   var addlinkToCitedFloorNumbers = (replyElement) => {
     const content = $(".reply_content", replyElement)
     const memberLinks = $$('a[href^="/member/"]', content)
@@ -1513,30 +1519,49 @@
       updateFloorNumber(replyElement, newFloorNumber)
     }
   }
+  var printHiddenReplies = (hiddenReplies) => {
+    for (const reply of hiddenReplies) {
+      console.group(
+        `[V2EX.REP] \u5C4F\u853D\u6216\u9690\u85CF\u7684\u56DE\u590D: #${reply.floorNumber}, \u7528\u6237 ID: ${reply.userId}, \u56DE\u590D ID: ${reply.replyId}, \u56DE\u590D\u5185\u5BB9: `
+      )
+      console.info(reply.replyContent)
+      console.groupEnd()
+    }
+  }
   var updateReplyElements = (replies, replyElements, page = 1) => {
-    var _a
     let floorNumberOffset = 0
-    let hideCount = 0
+    let hiddenCount = 0
+    let hiddenCount2 = 0
     const dataOffSet = (page - 1) * 100
     const length = Math.min(replies.length - (page - 1) * 100, 100)
+    const hiddenReplies = []
     for (let i = 0; i < length; i++) {
       const realFloorNumber = i + dataOffSet + 1
       const reply = replies[i + dataOffSet]
       const id = reply.id
       const element = $("#r_" + id)
+      const member = reply.member || {}
       if (!element) {
-        console.info(
-          `[V2EX.REP] \u5C4F\u853D\u6216\u9690\u85CF\u7684\u56DE\u590D: #${realFloorNumber}, \u7528\u6237 ID: ${
-            (_a = reply.member) == null ? void 0 : _a.username
-          }, \u56DE\u590D ID: ${reply.id}, \u56DE\u590D\u5185\u5BB9: ${
-            reply.content
-          }`
-        )
-        hideCount++
+        hiddenReplies.push({
+          floorNumber: realFloorNumber,
+          userId: member.username,
+          replyId: reply.id,
+          replyContent: reply.content,
+        })
+        hiddenCount++
         continue
       }
+      if (!isVisible(element)) {
+        hiddenReplies.push({
+          floorNumber: realFloorNumber,
+          userId: member.username,
+          replyId: reply.id,
+          replyContent: reply.content,
+        })
+        hiddenCount2++
+      }
       element.found = true
-      if (hideCount > 0) {
+      if (hiddenCount > 0) {
         const numberElement = getFloorNumberElement(element)
         if (numberElement) {
           const orgNumber = Number.parseInt(
@@ -1553,7 +1578,9 @@
       }
     }
     console.info(
-      `[V2EX.REP] page: ${page}, floorNumberOffset: ${floorNumberOffset}, hideCount: ${hideCount}`
+      `[V2EX.REP] page: ${page}, floorNumberOffset: ${floorNumberOffset}, hiddenCount: ${
+        hiddenCount + hiddenCount2
+      }`
     )
     if (floorNumberOffset > 0) {
       for (const element of replyElements) {
@@ -1575,11 +1602,16 @@
         }
       }
     }
+    printHiddenReplies(hiddenReplies)
     win.dispatchEvent(new Event("floorNumberUpdated"))
   }
   var isRunning = false
   var splitArrayPerPages = (replyElements) => {
-    if (!replyElements[0].dataset.page) {
+    if (
+      !replyElements ||
+      replyElements.length === 0 ||
+      !replyElements[0].dataset.page
+    ) {
       return
     }
     const replyElementsPerPages = []
@@ -1618,9 +1650,10 @@
           const replyElementsPerPage = replyElementsPerPages[i]
           if (
             !replyElementsPerPage ||
-            displayNumber === replyElementsPerPage.length ||
-            displayNumber % 100 === replyElementsPerPage.length % 100 ||
-            replyElementsPerPage.length % 100 === 0
+            (replyElementsPerPage.length > 0 &&
+              (displayNumber === replyElementsPerPage.length ||
+                displayNumber % 100 === replyElementsPerPage.length % 100 ||
+                replyElementsPerPage.length % 100 === 0))
           ) {
             continue
           }
@@ -1650,9 +1683,10 @@
     }
     const displayNumber = getRepliesCount()
     if (
-      displayNumber === replyElements.length ||
-      displayNumber % 100 === replyElements.length % 100 ||
-      replyElements.length % 100 === 0
+      replyElements.length > 0 &&
+      (displayNumber === replyElements.length ||
+        displayNumber % 100 === replyElements.length % 100 ||
+        replyElements.length % 100 === 0)
     ) {
       return
     }
