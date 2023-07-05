@@ -327,3 +327,11 @@ export const getOnce = () => {
   const once = (/once=(\d+)/.exec(html) || [])[1]
   return once
 }
+
+export const isVisible = (element: HTMLElement) => {
+  if (typeof element.checkVisibility === "function") {
+    return element.checkVisibility()
+  }
+
+  return element.offsetParent !== null
+}
