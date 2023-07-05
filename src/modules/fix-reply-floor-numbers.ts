@@ -75,39 +75,60 @@ const updateAllFloorNumberById = (id: string, newFloorNumber: number) => {
   }
 }
 
+const printHiddenReplies = (hiddenReplies: Array<Record<string, any>>) => {
+  for (const reply of hiddenReplies) {
+    console.group(
+      `[V2EX.REP] 屏蔽或隐藏的回复: #${reply.floorNumber as string}, 用户 ID: ${
+        reply.userId as string
+      }, 回复 ID: ${reply.replyId as string}, 回复内容: `
+    )
+    console.info(reply.replyContent)
+    console.groupEnd()
+  }
+}
+
 const updateReplyElements = (
   replies: Array<Record<string, unknown>>,
   replyElements: HTMLElement[],
   page = 1
 ) => {
   let floorNumberOffset = 0
-  let hideCount = 0
+  let hiddenCount = 0
+  let hiddenCount2 = 0
   const dataOffSet = (page - 1) * 100
   const length = Math.min(replies.length - (page - 1) * 100, 100)
+  const hiddenReplies: Array<Record<string, any>> = []
+
   for (let i = 0; i < length; i++) {
     const realFloorNumber = i + dataOffSet + 1
     const reply = replies[i + dataOffSet]
     const id = reply.id as string
     const element = $("#r_" + id)
+    const member = (reply.member as Record<string, any>) || {}
     if (!element) {
-      console.info(
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        `[V2EX.REP] 屏蔽或隐藏的回复: #${realFloorNumber}, 用户 ID: ${reply.member?.username}, 回复 ID: ${reply.id}, 回复内容: ${reply.content}`
-      )
-      hideCount++
+      hiddenReplies.push({
+        floorNumber: realFloorNumber,
+        userId: member.username as string,
+        replyId: reply.id,
+        replyContent: reply.content,
+      })
+      hiddenCount++
       continue
     }
 
     if (!isVisible(element)) {
-      console.info(
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        `[V2EX.REP] 屏蔽或隐藏的回复: #${realFloorNumber}, 用户 ID: ${reply.member?.username}, 回复 ID: ${reply.id}, 回复内容: ${reply.content}`
-      )
+      hiddenReplies.push({
+        floorNumber: realFloorNumber,
+        userId: member.username as string,
+        replyId: reply.id,
+        replyContent: reply.content,
+      })
+      hiddenCount2++
     }
 
     element.found = true
 
-    if (hideCount > 0) {
+    if (hiddenCount > 0) {
       const numberElement = getFloorNumberElement(element)
       if (numberElement) {
         const orgNumber = Number.parseInt(
@@ -127,7 +148,9 @@ const updateReplyElements = (
   }
 
   console.info(
-    `[V2EX.REP] page: ${page}, floorNumberOffset: ${floorNumberOffset}, hideCount: ${hideCount}`
+    `[V2EX.REP] page: ${page}, floorNumberOffset: ${floorNumberOffset}, hiddenCount: ${
+      hiddenCount + hiddenCount2
+    }`
   )
 
   if (floorNumberOffset > 0) {
@@ -154,6 +177,7 @@ const updateReplyElements = (
     }
   }
 
+  printHiddenReplies(hiddenReplies)
   // 触发更新事件
   window.dispatchEvent(new Event("floorNumberUpdated"))
 }
