@@ -5,6 +5,7 @@ import {
   createElement,
   doc,
   hasClass,
+  parseInt10,
 } from "browser-extension-utils"
 
 // 从含有第一个评论的 box div 查询
@@ -64,14 +65,14 @@ export const getFloorNumber = (replyElement: HTMLElement | undefined) => {
     return 0
   }
 
-  let floorNumber = Number.parseInt(replyElement.dataset.floorNumber || "", 10)
+  let floorNumber = parseInt10(replyElement.dataset.floorNumber)
   if (floorNumber) {
     return floorNumber
   }
 
   const numberElement = getFloorNumberElement(replyElement)
   if (numberElement) {
-    floorNumber = Number.parseInt(numberElement.textContent || "", 10) || 0
+    floorNumber = parseInt10(numberElement.textContent as string | undefined, 0)
     replyElement.dataset.floorNumber = String(floorNumber)
     return floorNumber
   }
@@ -137,16 +138,14 @@ export const sortReplyElementsByFloorNumberCompareFn = (
 export const parseUrl = () => {
   const matched = /\/t\/(\d+)(?:.+\bp=(\d+))?/.exec(location.href) || []
   const topicId = matched[1]
-  const page = Number.parseInt(matched[2], 10) || 1
+  const page = parseInt10(matched[2], 1)
   return { topicId, page }
 }
 
 export const getRepliesCount = () => {
-  return (
-    Number.parseInt(
-      (/(\d+)\s条回复/.exec($(".box .cell .gray")?.textContent || "") || [])[1],
-      10
-    ) || 0
+  return parseInt10(
+    (/(\d+)\s条回复/.exec($(".box .cell .gray")?.textContent || "") || [])[1],
+    0
   )
 }
 

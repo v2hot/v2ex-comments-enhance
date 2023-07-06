@@ -4,6 +4,7 @@ import {
   addClass,
   createElement,
   hasClass,
+  parseInt10,
   removeClass,
 } from "browser-extension-utils"
 
@@ -61,9 +62,9 @@ export const showTopReplies = (
           }
         }
 
-        const thanked = Number.parseInt(
-          heartElement.nextSibling?.textContent || "0",
-          10
+        const thanked = parseInt10(
+          heartElement.nextSibling?.textContent as string | undefined,
+          0
         )
         if (thanked > 0) {
           reply.thanked = thanked
