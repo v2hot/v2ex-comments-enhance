@@ -5,6 +5,7 @@ import {
   createElement,
   doc,
   hasClass,
+  parseInt10,
   runOnce,
 } from "browser-extension-utils"
 
@@ -76,10 +77,7 @@ export const addlinkToCitedFloorNumbers = (replyElement: HTMLElement) => {
       const target = event.target as HTMLElement
       if (hasClass(target, "cited_floor_number")) {
         const memberId = target.dataset.memberId
-        const floorNumber = Number.parseInt(
-          target.dataset.floorNumber || "",
-          10
-        )
+        const floorNumber = parseInt10(target.dataset.floorNumber)
         const citedReplyElement = getReplyElementByMemberIdAndFloorNumber(
           memberId,
           floorNumber

@@ -6,6 +6,7 @@ import {
   addEventListener,
   createElement,
   hasClass,
+  parseInt10,
   removeClass,
   runOnce,
   sleep,
@@ -188,10 +189,7 @@ const updatePagingElements = () => {
         "click",
         (event) => {
           if (!hasClass(button, "disable_now")) {
-            const page = Number.parseInt(
-              ($(".page_input")?.value as string) || "",
-              10
-            )
+            const page = parseInt10($(".page_input")?.value as string)
             if (page) {
               if (hasClass(button, "normal_page_right")) {
                 gotoPage(page + 1, event)

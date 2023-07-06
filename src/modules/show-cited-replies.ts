@@ -1,4 +1,4 @@
-import { $, $$, addClass, hasClass } from "browser-extension-utils"
+import { $, $$, addClass, hasClass, parseInt10 } from "browser-extension-utils"
 
 import {
   cloneReplyElement,
@@ -63,10 +63,7 @@ export const showCitedReplies = (
 
       if (nextElement && hasClass(nextElement, "cited_floor_number")) {
         target = nextElement
-        citedFloorNumber = Number.parseInt(
-          nextElement.dataset.floorNumber || "",
-          10
-        )
+        citedFloorNumber = parseInt10(nextElement.dataset.floorNumber)
       }
 
       let citedReplyElement: HTMLElement | undefined

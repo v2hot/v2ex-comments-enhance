@@ -3,6 +3,7 @@ import {
   $$,
   cache,
   isVisible,
+  parseInt10,
   sleep,
   win as window,
 } from "browser-extension-utils"
@@ -56,7 +57,9 @@ const updateFloorNumber = (
   const numberElement = getFloorNumberElement(replyElement)
   if (numberElement) {
     if (!numberElement.dataset.orgNumber) {
-      const orgNumber = Number.parseInt(numberElement.textContent || "", 10)
+      const orgNumber = parseInt10(
+        numberElement.textContent as string | undefined
+      )
       if (orgNumber) {
         numberElement.dataset.orgNumber = String(orgNumber)
       }
@@ -135,9 +138,10 @@ const updateReplyElements = (
     if (hiddenCount > 0) {
       const numberElement = getFloorNumberElement(element)
       if (numberElement) {
-        const orgNumber = Number.parseInt(
-          numberElement.dataset.orgNumber || numberElement.textContent || "",
-          10
+        const orgNumber = parseInt10(
+          (numberElement.dataset.orgNumber || numberElement.textContent) as
+            | string
+            | undefined
         )
         if (orgNumber) {
           numberElement.dataset.orgNumber = String(orgNumber)
@@ -167,9 +171,10 @@ const updateReplyElements = (
       const id = getReplyId(element)
       const numberElement = getFloorNumberElement(element)
       if (numberElement) {
-        const orgNumber = Number.parseInt(
-          numberElement.dataset.orgNumber || numberElement.textContent || "",
-          10
+        const orgNumber = parseInt10(
+          (numberElement.dataset.orgNumber || numberElement.textContent) as
+            | string
+            | undefined
         )
         if (orgNumber) {
           numberElement.dataset.orgNumber = String(orgNumber)
@@ -203,7 +208,7 @@ const splitArrayPerPages = (replyElements: HTMLElement[]) => {
   for (const reply of replyElements) {
     if (reply.dataset.page !== lastPage) {
       lastPage = reply.dataset.page
-      const page = Number.parseInt(reply.dataset.page || "", 10)
+      const page = parseInt10(reply.dataset.page)
       replyElementsPerPage = replyElementsPerPages[page - 1] || []
       replyElementsPerPages[page - 1] = replyElementsPerPage
     }
