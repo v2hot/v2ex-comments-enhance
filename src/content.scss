@@ -209,7 +209,11 @@ a.no {
   bottom: 0;
   background-color: var(--box-background-color) !important;
   border-top: 1px solid var(--box-border-color);
-  z-index: 100;
+  z-index: 90;
+}
+
+.reply-box-sticky {
+  z-index: 91;
 }
 
 .Night {
