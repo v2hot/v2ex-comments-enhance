@@ -7,6 +7,7 @@ import {
   addEventListener,
   doc,
   getOffsetPosition,
+  isTouchScreen,
   removeEventListener,
   setStyle,
   win as window,
@@ -17,10 +18,10 @@ import {
   getCachedReplyElements,
   getFloorNumber,
   getReplyId,
-  isTouchScreen,
   sortReplyElementsByFloorNumberCompareFn,
 } from "../utils"
 
+const isTouchScreen1 = isTouchScreen()
 let timeoutId: number | undefined
 
 const scrollPositionStack: number[] = []
@@ -305,7 +306,7 @@ const closeModal = (closeLast = false) => {
 const onDocumentClick = (event) => {
   const target = event.target
 
-  if (isTouchScreen) {
+  if (isTouchScreen1) {
     const memberLink = target.closest('a[href^="/member/"]')
     if (memberLink && !$("img", memberLink)) {
       event.preventDefault()
@@ -352,7 +353,7 @@ export const filterRepliesByUser = (toogle: boolean) => {
       if (!memberLink.boundEvent) {
         addEventListener(memberLink, "mouseover", onMouseOver, true)
         addEventListener(memberLink, "mouseout", onMouseOut)
-        if (isTouchScreen) {
+        if (isTouchScreen1) {
           addEventListener(memberLink, "touchstart", onMouseOver, true)
         }
 
@@ -377,7 +378,7 @@ export const filterRepliesByUser = (toogle: boolean) => {
       if (memberLink.boundEvent) {
         removeEventListener(memberLink, "mouseover", onMouseOver, true)
         removeEventListener(memberLink, "mouseout", onMouseOut)
-        if (isTouchScreen) {
+        if (isTouchScreen1) {
           removeEventListener(memberLink, "touchstart", onMouseOver, true)
         }
 

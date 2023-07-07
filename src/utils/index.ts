@@ -149,8 +149,6 @@ export const getRepliesCount = () => {
   )
 }
 
-export const isTouchScreen = "ontouchstart" in document.documentElement
-
 export const getMemberIdFromMemberLink = (memberLink: HTMLAnchorElement) => {
   if (!memberLink) {
     return
