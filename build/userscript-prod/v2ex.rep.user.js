@@ -4,7 +4,7 @@
 // @namespace            https://github.com/v2hot/v2ex.rep
 // @homepageURL          https://github.com/v2hot/v2ex.rep#readme
 // @supportURL           https://github.com/v2hot/v2ex.rep/issues
-// @version              1.4.7
+// @version              1.4.8
 // @description          专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 自动预加载所有分页，支持解析显示跨页面引用；✅ 回复时上传图片；✅ 无感自动签到；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
 // @description:zh-CN    专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 自动预加载所有分页，支持解析显示跨页面引用；✅ 回复时上传图片；✅ 无感自动签到；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
 // @icon                 https://www.v2ex.com/favicon.ico
@@ -243,6 +243,50 @@
     runOnceCache[key] = result
     return result
   }
+  var cacheStore = {}
+  var makeKey = (key) => (Array.isArray(key) ? key.join(":") : key)
+  var cache = {
+    get: (key) => cacheStore[makeKey(key)],
+    add(key, value) {
+      cacheStore[makeKey(key)] = value
+    },
+  }
+  var sleep = async (time) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(1)
+      }, time)
+    })
+  }
+  var parseInt10 = (number, defaultValue) => {
+    if (typeof number === "number" && !Number.isNaN(number)) {
+      return number
+    }
+    if (typeof defaultValue !== "number") {
+      defaultValue = Number.NaN
+    }
+    if (!number) {
+      return defaultValue
+    }
+    const result = Number.parseInt(number, 10)
+    return Number.isNaN(result) ? defaultValue : result
+  }
+  var runWhenBodyExists = (func) => {
+    if (!doc.body) {
+      setTimeout(() => {
+        runWhenBodyExists(func)
+      }, 10)
+      return
+    }
+    func()
+  }
+  var isVisible = (element) => {
+    if (typeof element.checkVisibility === "function") {
+      return element.checkVisibility()
+    }
+    return element.offsetParent !== null
+  }
+  var isTouchScreen = () => "ontouchstart" in win
   var addElement2 =
     typeof GM_addElement === "function"
       ? (parentNode, tagName, attributes) => {
@@ -301,7 +345,7 @@
     div.append(createSwitch(options))
     return div
   }
-  var besVersion = 13
+  var besVersion = 14
   var openButton = `<svg viewBox="0 0 60.2601318359375 84.8134765625" version="1.1" xmlns="http://www.w3.org/2000/svg" class=" glyph-box" style="height: 9.62969px; width: 6.84191px;"><g transform="matrix(1 0 0 1 -6.194965820312518 77.63671875)"><path d="M66.4551-35.2539C66.4551-36.4746 65.9668-37.5977 65.0391-38.4766L26.3672-76.3672C25.4883-77.1973 24.4141-77.6367 23.1445-77.6367C20.6543-77.6367 18.7012-75.7324 18.7012-73.1934C18.7012-71.9727 19.1895-70.8496 19.9707-70.0195L55.5176-35.2539L19.9707-0.488281C19.1895 0.341797 18.7012 1.41602 18.7012 2.68555C18.7012 5.22461 20.6543 7.12891 23.1445 7.12891C24.4141 7.12891 25.4883 6.68945 26.3672 5.81055L65.0391-32.0312C65.9668-32.959 66.4551-34.0332 66.4551-35.2539Z"></path></g></svg>`
   var openInNewTabButton = `<svg viewBox="0 0 72.127685546875 72.2177734375" version="1.1" xmlns="http://www.w3.org/2000/svg" class=" glyph-box" style="height: 8.19958px; width: 8.18935px;"><g transform="matrix(1 0 0 1 -12.451127929687573 71.3388671875)"><path d="M84.5703-17.334L84.5215-66.4551C84.5215-69.2383 82.7148-71.1914 79.7852-71.1914L30.6641-71.1914C27.9297-71.1914 26.0742-69.0918 26.0742-66.748C26.0742-64.4043 28.1738-62.4023 30.4688-62.4023L47.4609-62.4023L71.2891-63.1836L62.207-55.2246L13.8184-6.73828C12.9395-5.85938 12.4512-4.73633 12.4512-3.66211C12.4512-1.31836 14.5508 0.878906 16.9922 0.878906C18.1152 0.878906 19.1895 0.488281 20.0684-0.439453L68.5547-48.877L76.6113-58.0078L75.7324-35.2051L75.7324-17.1387C75.7324-14.8438 77.7344-12.6953 80.127-12.6953C82.4707-12.6953 84.5703-14.6973 84.5703-17.334Z"></path></g></svg>`
   var relatedExtensions = [
@@ -529,10 +573,7 @@
   function getSettingsContainer() {
     const container = $(`.${prefix}container`)
     if (container) {
-      const theVersion = Number.parseInt(
-        container.dataset.besVersion || "0",
-        10
-      )
+      const theVersion = parseInt10(container.dataset.besVersion, 0)
       if (theVersion < besVersion) {
         container.id = settingsContainerId
         container.dataset.besVersion = String(besVersion)
@@ -556,10 +597,6 @@
     )
   }
   function initExtensionList() {
-    if (!doc.body) {
-      setTimeout(initExtensionList, 100)
-      return
-    }
     const wrapper = getSettingsWrapper()
     if (!$(".extension_list_container", wrapper)) {
       const list = createExtensionList([])
@@ -668,10 +705,6 @@
     return settingsMain
   }
   function addSideMenu() {
-    if (!doc.body) {
-      setTimeout(addSideMenu, 100)
-      return
-    }
     const menu =
       $("#browser_extension_side_menu") ||
       addElement2(doc.body, "div", {
@@ -680,7 +713,7 @@
       })
     const button = $("button[data-bes-version]", menu)
     if (button) {
-      const theVersion = Number.parseInt(button.dataset.besVersion || "0", 10)
+      const theVersion = parseInt10(button.dataset.besVersion, 0)
       if (theVersion >= besVersion) {
         return
       }
@@ -717,8 +750,10 @@
     })
     settings = await getSettings()
     addStyle2(getSettingsStyle())
-    initExtensionList()
-    addSideMenu()
+    runWhenBodyExists(() => {
+      initExtensionList()
+      addSideMenu()
+    })
   }
   var content_default =
     'a.icon_button{opacity:1 !important;visibility:visible;margin-right:14px}a.icon_button:last-child{margin-right:0}a.icon_button svg{vertical-align:text-top}body .v2p-controls{opacity:1}body .v2p-controls>a.icon_button{margin-right:0}body .v2p-controls div a{margin-right:15px}body .v2p-controls div a:last-child{margin-right:0}body .v2p-controls a[onclick^=replyOne]{opacity:1 !important}.sticky_rightbar #Rightbar{position:sticky;top:0;max-height:100vh;overflow-y:auto;overflow-x:hidden;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;scrollbar-color:rgba(0,0,0,0) rgba(0,0,0,0);scrollbar-width:thin}.sticky_rightbar #Rightbar:hover{scrollbar-color:var(--sb-thumb-color) var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar{width:var(--sb-size)}.sticky_rightbar #Rightbar::-webkit-scrollbar-track{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-track{background:var(--sb-track-color)}.sticky_rightbar #Rightbar::-webkit-scrollbar-thumb{background:rgba(0,0,0,0);border-radius:10px}.sticky_rightbar #Rightbar:hover::-webkit-scrollbar-thumb{background:var(--sb-thumb-color)}.sticky_rightbar #Rightbar .v2p-tool-box{position:unset}.related_replies_container .related_replies{position:absolute;z-index:10000;width:100%;-webkit-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);-moz-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);box-shadow:0px 10px 39px 10px rgba(62,66,66,.22) !important}.related_replies_container .related_replies_before::before{content:"";display:block;width:100%;height:10000px;position:absolute;margin-top:-10000px;background-color:#334;opacity:50%}.related_replies_container .related_replies_after::after{content:"";display:block;width:100%;height:10000px;position:absolute;background-color:#334;opacity:50%}.related_replies_container.no_replies .related_replies_before::before,.related_replies_container.no_replies .related_replies_after::after{display:none}.related_replies_container .tabs{position:sticky;top:0;display:flex;justify-content:center;z-index:10001}.related_replies_container .tabs a{cursor:pointer}a.no{background-color:rgba(0,0,0,0) !important;color:#1484cd !important;border:1px solid #1484cd;border-radius:3px !important;opacity:1 !important}.cited_floor_number{color:#1484cd !important;cursor:pointer}.reply_content .cell.cited_reply{scale:.85;opacity:.85;background-color:#f5f5f5;border:1px solid var(--box-border-color);white-space:initial}.reply_content .cell.cited_reply:hover{opacity:1}.reply_content .cell.cited_reply .vr_wrapper{max-height:150px;overflow:auto;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;scrollbar-color:var(--sb-thumb-color) var(--sb-track-color);scrollbar-width:thin}.reply_content .cell.cited_reply .vr_wrapper::-webkit-scrollbar{width:var(--sb-size)}.reply_content .cell.cited_reply .vr_wrapper::-webkit-scrollbar-track{background:var(--sb-track-color);border-radius:10px}.reply_content .cell.cited_reply .vr_wrapper::-webkit-scrollbar-thumb{background:var(--sb-thumb-color);border-radius:10px}.v2p-indent .cell.cited_reply,.v2p-indent .reply_content+.reply_content,.v2p-indent .reply_content+.reply_content+.v2p-expand-btn,.v2p-indent .v2p-collapsed:has(.reply_content+.reply_content)::before,.comment .comment .cell.cited_reply{display:none}#top_replies .cell .vr_wrapper{position:relative;max-height:150px;overflow:hidden}#top_replies .cell .vr_wrapper::after{content:"";display:block;position:absolute;bottom:0;width:100%;height:5px;opacity:.8;background-color:var(--box-background-color)}.sticky_paging{position:sticky;bottom:0;background-color:var(--box-background-color) !important;border-top:1px solid var(--box-border-color);z-index:100}.Night .reply_content .cell.cited_reply{background-color:#1d1f21}.vr_upload_image{cursor:pointer}.vr_upload_image.vr_button_disabled,.vr_upload_image.vr_button_disabled:hover{cursor:default;text-decoration:none;color:var(--color-fade)}.sticky_topic_buttons .topic_buttons,.sticky_topic_buttons .topic_buttons_mobile{position:sticky;bottom:0;background-color:var(--box-background-color) !important;border-top:1px solid var(--box-border-color)}.sticky_topic_buttons .header+.cell{border-bottom:none}'
@@ -787,16 +822,13 @@
     if (!replyElement) {
       return 0
     }
-    let floorNumber = Number.parseInt(
-      replyElement.dataset.floorNumber || "",
-      10
-    )
+    let floorNumber = parseInt10(replyElement.dataset.floorNumber)
     if (floorNumber) {
       return floorNumber
     }
     const numberElement = getFloorNumberElement(replyElement)
     if (numberElement) {
-      floorNumber = Number.parseInt(numberElement.textContent || "", 10) || 0
+      floorNumber = parseInt10(numberElement.textContent, 0)
       replyElement.dataset.floorNumber = String(floorNumber)
       return floorNumber
     }
@@ -847,21 +879,18 @@
   var parseUrl = () => {
     const matched = /\/t\/(\d+)(?:.+\bp=(\d+))?/.exec(location.href) || []
     const topicId = matched[1]
-    const page = Number.parseInt(matched[2], 10) || 1
+    const page = parseInt10(matched[2], 1)
     return { topicId, page }
   }
   var getRepliesCount = () => {
     var _a
-    return (
-      Number.parseInt(
-        (/(\d+)\s条回复/.exec(
-          ((_a = $(".box .cell .gray")) == null ? void 0 : _a.textContent) || ""
-        ) || [])[1],
-        10
-      ) || 0
+    return parseInt10(
+      (/(\d+)\s条回复/.exec(
+        ((_a = $(".box .cell .gray")) == null ? void 0 : _a.textContent) || ""
+      ) || [])[1],
+      0
     )
   }
-  var isTouchScreen = "ontouchstart" in document.documentElement
   var getMemberIdFromMemberLink = (memberLink) => {
     if (!memberLink) {
       return
@@ -917,21 +946,6 @@
   var getPagingPreviousButtons = () =>
     $$(".normal_page_right").map((right) => right.previousElementSibling)
   var getPagingNextButtons = () => $$(".normal_page_right")
-  var cacheStore = {}
-  var makeKey = (key) => (Array.isArray(key) ? key.join(":") : key)
-  var Cache = {
-    get: (key) => cacheStore[makeKey(key)],
-    add(key, value) {
-      cacheStore[makeKey(key)] = value
-    },
-  }
-  var sleep = async (time) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(1)
-      }, time)
-    })
-  }
   var getReplyInputElement = () => {
     return $("#reply_content")
   }
@@ -983,12 +997,6 @@
     const html = doc.body.innerHTML
     const once = (/once=(\d+)/.exec(html) || [])[1]
     return once
-  }
-  var isVisible = (element) => {
-    if (typeof element.checkVisibility === "function") {
-      return element.checkVisibility()
-    }
-    return element.offsetParent !== null
   }
   var addlinkToCitedFloorNumbers = (replyElement) => {
     const content = $(".reply_content", replyElement)
@@ -1047,10 +1055,7 @@
         const target = event.target
         if (hasClass(target, "cited_floor_number")) {
           const memberId = target.dataset.memberId
-          const floorNumber = Number.parseInt(
-            target.dataset.floorNumber || "",
-            10
-          )
+          const floorNumber = parseInt10(target.dataset.floorNumber)
           const citedReplyElement = getReplyElementByMemberIdAndFloorNumber(
             memberId,
             floorNumber
@@ -1164,6 +1169,7 @@
     }
     await updateOnce()
   }
+  var isTouchScreen1 = isTouchScreen()
   var timeoutId
   var scrollPositionStack = []
   var showModalReplies = (replies, referElement, memberId, type) => {
@@ -1395,7 +1401,7 @@
   }
   var onDocumentClick2 = (event) => {
     const target = event.target
-    if (isTouchScreen) {
+    if (isTouchScreen1) {
       const memberLink = target.closest('a[href^="/member/"]')
       if (memberLink && !$("img", memberLink)) {
         event.preventDefault()
@@ -1440,7 +1446,7 @@
         if (!memberLink.boundEvent) {
           addEventListener(memberLink, "mouseover", onMouseOver, true)
           addEventListener(memberLink, "mouseout", onMouseOut)
-          if (isTouchScreen) {
+          if (isTouchScreen1) {
             addEventListener(memberLink, "touchstart", onMouseOver, true)
           }
           memberLink.boundEvent = true
@@ -1461,7 +1467,7 @@
         if (memberLink.boundEvent) {
           removeEventListener(memberLink, "mouseover", onMouseOver, true)
           removeEventListener(memberLink, "mouseout", onMouseOut)
-          if (isTouchScreen) {
+          if (isTouchScreen1) {
             removeEventListener(memberLink, "touchstart", onMouseOver, true)
           }
           memberLink.boundEvent = false
@@ -1471,7 +1477,7 @@
   }
   var retryCount2 = 0
   var getTopicReplies = async (topicId, replyCount) => {
-    const cached = Cache.get(["getTopicReplies", topicId, replyCount])
+    const cached = cache.get(["getTopicReplies", topicId, replyCount])
     if (cached) {
       return cached
     }
@@ -1484,7 +1490,7 @@
       const response = await fetch(url)
       if (response.status === 200) {
         const result = await response.json()
-        Cache.add(["getTopicReplies", topicId, replyCount], result)
+        cache.add(["getTopicReplies", topicId, replyCount], result)
         return result
       }
     } catch (error) {
@@ -1500,7 +1506,7 @@
     const numberElement = getFloorNumberElement(replyElement)
     if (numberElement) {
       if (!numberElement.dataset.orgNumber) {
-        const orgNumber = Number.parseInt(numberElement.textContent || "", 10)
+        const orgNumber = parseInt10(numberElement.textContent)
         if (orgNumber) {
           numberElement.dataset.orgNumber = String(orgNumber)
         }
@@ -1564,9 +1570,8 @@
       if (hiddenCount > 0) {
         const numberElement = getFloorNumberElement(element)
         if (numberElement) {
-          const orgNumber = Number.parseInt(
-            numberElement.dataset.orgNumber || numberElement.textContent || "",
-            10
+          const orgNumber = parseInt10(
+            numberElement.dataset.orgNumber || numberElement.textContent
           )
           if (orgNumber) {
             numberElement.dataset.orgNumber = String(orgNumber)
@@ -1590,9 +1595,8 @@
         const id = getReplyId(element)
         const numberElement = getFloorNumberElement(element)
         if (numberElement) {
-          const orgNumber = Number.parseInt(
-            numberElement.dataset.orgNumber || numberElement.textContent || "",
-            10
+          const orgNumber = parseInt10(
+            numberElement.dataset.orgNumber || numberElement.textContent
           )
           if (orgNumber) {
             numberElement.dataset.orgNumber = String(orgNumber)
@@ -1620,7 +1624,7 @@
     for (const reply of replyElements) {
       if (reply.dataset.page !== lastPage) {
         lastPage = reply.dataset.page
-        const page = Number.parseInt(reply.dataset.page || "", 10)
+        const page = parseInt10(reply.dataset.page)
         replyElementsPerPage = replyElementsPerPages[page - 1] || []
         replyElementsPerPages[page - 1] = replyElementsPerPage
       }
@@ -1864,9 +1868,8 @@
           (event) => {
             var _a
             if (!hasClass(button, "disable_now")) {
-              const page = Number.parseInt(
-                ((_a = $(".page_input")) == null ? void 0 : _a.value) || "",
-                10
+              const page = parseInt10(
+                (_a = $(".page_input")) == null ? void 0 : _a.value
               )
               if (page) {
                 if (hasClass(button, "normal_page_right")) {
@@ -2111,10 +2114,7 @@
         }
         if (nextElement && hasClass(nextElement, "cited_floor_number")) {
           target = nextElement
-          citedFloorNumber = Number.parseInt(
-            nextElement.dataset.floorNumber || "",
-            10
-          )
+          citedFloorNumber = parseInt10(nextElement.dataset.floorNumber)
         }
         let citedReplyElement
         if (citedFloorNumber) {
@@ -2181,11 +2181,9 @@
               return false
             }
           }
-          const thanked = Number.parseInt(
-            ((_a = heartElement.nextSibling) == null
-              ? void 0
-              : _a.textContent) || "0",
-            10
+          const thanked = parseInt10(
+            (_a = heartElement.nextSibling) == null ? void 0 : _a.textContent,
+            0
           )
           if (thanked > 0) {
             reply.thanked = thanked
