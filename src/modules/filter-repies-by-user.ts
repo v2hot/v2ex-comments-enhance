@@ -279,7 +279,7 @@ const onMouseOver = (event) => {
       // console.log(memberId)
       showRelatedReplies(memberLink, memberId)
     }
-  }, 500)
+  }, 700)
 }
 
 const onMouseOut = () => {
