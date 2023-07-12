@@ -185,7 +185,7 @@ a.no {
 .v2p-indent .v2p-collapsed:has(.reply_content + .reply_content)::before,
 /* V2EX - 超级增强 */
 .comment .comment .cell.cited_reply {
-  display: none;
+  display: none !important;
 }
 
 #top_replies .cell .vr_wrapper {
