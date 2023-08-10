@@ -112,7 +112,7 @@ const settingsTable = {
   },
   quickNavigation: {
     title: "双击空白处快速导航",
-    defaultValue: true,
+    defaultValue: false,
   },
 }
 
