@@ -27,6 +27,11 @@ const fetchCheckInApi = async (once: string) => {
 }
 
 export const dailyCheckIn = async () => {
+  // 未登录
+  if ($('a[href*="/signin"]')) {
+    return
+  }
+
   const once = getOnce()
   if (!once) {
     return
