@@ -117,6 +117,7 @@ const gotoPage = (page: string | number | undefined, event: Event) => {
 }
 
 const updatePagingElements = () => {
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   runOnce("loadMultiPages:updatePagingElements", () => {
     for (const pagingElement of $$(".page_current,.page_normal")) {
       addEventListener(pagingElement, "click", (event) => {
@@ -221,7 +222,7 @@ export const loadMultiPages = async () => {
     const totalPage = Math.ceil(repliesCount / 100)
     const orgReplyElements = getCachedReplyElements()
     const firstReply = orgReplyElements[0]
-    const pageElement = orgReplyElements[orgReplyElements.length - 1]
+    const pageElement = orgReplyElements.at(-1)
       .nextElementSibling as HTMLElement
 
     addClass(pageElement, "sticky_paging")

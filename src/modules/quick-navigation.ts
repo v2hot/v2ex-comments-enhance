@@ -16,6 +16,7 @@ const scrollIntoView = (element: HTMLElement | undefined) => {
 }
 
 export const quickNavigation = () => {
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   runOnce("quickNavigation", () => {
     const main = $("#Main") || $(".content")
     if (!main) {

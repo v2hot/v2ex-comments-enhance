@@ -264,5 +264,6 @@ const init = () => {
 }
 
 export const uploadImage = () => {
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   runOnce("uploadImage:init", init)
 }

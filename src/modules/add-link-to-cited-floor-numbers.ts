@@ -72,6 +72,7 @@ export const addlinkToCitedFloorNumbers = (replyElement: HTMLElement) => {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   runOnce("addlinkToCitedFloorNumbers:document-onclick", () => {
     addEventListener(doc, "click", (event) => {
       const target = event.target as HTMLElement

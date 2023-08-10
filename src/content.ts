@@ -10,6 +10,7 @@ import {
   doc,
   registerMenuCommand,
   runOnce,
+  runWhenBodyExists,
   throttle,
   win as window,
 } from "browser-extension-utils"
@@ -127,6 +128,7 @@ async function process() {
 
   if (doc.readyState === "complete" && getSettingsValue("dailyCheckIn")) {
     // Run on every page
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     runOnce("dailyCheckIn", () => {
       setTimeout(dailyCheckIn, 1000)
     })
@@ -197,6 +199,7 @@ async function process() {
     }
 
     if (domReady && getSettingsValue("removeLocationHash")) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       runOnce("main:removeLocationHash", removeLocationHash)
     }
 
@@ -205,6 +208,7 @@ async function process() {
     }
 
     if (doc.readyState === "complete" && getSettingsValue("loadMultiPages")) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       runOnce("main:loadMultiPages", () => {
         setTimeout(loadMultiPages, 1000)
       })
@@ -213,11 +217,6 @@ async function process() {
 }
 
 async function main() {
-  if (!document.body) {
-    setTimeout(main, 100)
-    return
-  }
-
   await initSettings({
     id: "v2ex.rep",
     title: "V2EX.REP",
@@ -303,5 +302,4 @@ async function main() {
   })
 }
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises, unicorn/prefer-top-level-await
-main()
+runWhenBodyExists(main)
