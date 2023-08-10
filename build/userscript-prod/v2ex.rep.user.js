@@ -4,7 +4,7 @@
 // @namespace            https://github.com/v2hot/v2ex.rep
 // @homepageURL          https://github.com/v2hot/v2ex.rep#readme
 // @supportURL           https://github.com/v2hot/v2ex.rep/issues
-// @version              1.4.9
+// @version              1.4.10
 // @description          专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 自动预加载所有分页，支持解析显示跨页面引用；✅ 回复时上传图片；✅ 无感自动签到；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
 // @description:zh-CN    专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 自动预加载所有分页，支持解析显示跨页面引用；✅ 回复时上传图片；✅ 无感自动签到；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
 // @icon                 https://www.v2ex.com/favicon.ico
@@ -17,7 +17,6 @@
 // @grant                GM_addValueChangeListener
 // @grant                GM_removeValueChangeListener
 // @grant                GM_addElement
-// @grant                GM_addStyle
 // @grant                GM.registerMenuCommand
 // ==/UserScript==
 //
@@ -69,20 +68,32 @@
   }
   var doc = document
   var win = window
+  if (typeof String.prototype.replaceAll !== "function") {
+    String.prototype.replaceAll = String.prototype.replace
+  }
   var $ = (selectors, element) => (element || doc).querySelector(selectors)
   var $$ = (selectors, element) => [
     ...(element || doc).querySelectorAll(selectors),
   ]
+  var getRootElement = (type) =>
+    type === 1
+      ? doc.head || doc.body || doc.documentElement
+      : type === 2
+      ? doc.body || doc.documentElement
+      : doc.documentElement
   var createElement = (tagName, attributes) =>
     setAttributes(doc.createElement(tagName), attributes)
   var addElement = (parentNode, tagName, attributes) => {
-    if (!parentNode) {
+    if (typeof parentNode === "string") {
+      return addElement(null, parentNode, tagName)
+    }
+    if (!tagName) {
       return
     }
-    if (typeof parentNode === "string") {
-      attributes = tagName
-      tagName = parentNode
-      parentNode = doc.head
+    if (!parentNode) {
+      parentNode = /^(script|link|style|meta)$/.test(tagName)
+        ? getRootElement(1)
+        : getRootElement(2)
     }
     if (typeof tagName === "string") {
       const element = createElement(tagName, attributes)
@@ -92,11 +103,6 @@
     setAttributes(tagName, attributes)
     parentNode.append(tagName)
     return tagName
-  }
-  var addStyle = (styleText) => {
-    const element = createElement("style", { textContent: styleText })
-    doc.head.append(element)
-    return element
   }
   var addEventListener = (element, type, listener, options) => {
     if (!element) {
@@ -138,8 +144,10 @@
           if (value === void 0) {
             continue
           }
-          if (/^(value|textContent|innerText|innerHTML)$/.test(name)) {
+          if (/^(value|textContent|innerText)$/.test(name)) {
             element[name] = value
+          } else if (/^(innerHTML)$/.test(name)) {
+            element[name] = createHTML(value)
           } else if (name === "style") {
             setStyle(element, value, true)
           } else if (/on\w+/.test(name)) {
@@ -232,15 +240,14 @@
     return position
   }
   var runOnceCache = {}
-  var runOnce = (key, func) => {
-    if (!key) {
-      return func()
-    }
+  var runOnce = async (key, func) => {
     if (Object.hasOwn(runOnceCache, key)) {
       return runOnceCache[key]
     }
-    const result = func()
-    runOnceCache[key] = result
+    const result = await func()
+    if (key) {
+      runOnceCache[key] = result
+    }
     return result
   }
   var cacheStore = {}
@@ -271,11 +278,47 @@
     const result = Number.parseInt(number, 10)
     return Number.isNaN(result) ? defaultValue : result
   }
+  var headFuncArray = []
+  var bodyFuncArray = []
+  var headBodyObserver
+  var startObserveHeadBodyExists = () => {
+    if (headBodyObserver) {
+      return
+    }
+    headBodyObserver = new MutationObserver(() => {
+      if (doc.head && doc.body) {
+        headBodyObserver.disconnect()
+      }
+      if (doc.head && headFuncArray.length > 0) {
+        for (const func of headFuncArray) {
+          func()
+        }
+        headFuncArray.length = 0
+      }
+      if (doc.body && bodyFuncArray.length > 0) {
+        for (const func of bodyFuncArray) {
+          func()
+        }
+        bodyFuncArray.length = 0
+      }
+    })
+    headBodyObserver.observe(doc, {
+      childList: true,
+      subtree: true,
+    })
+  }
+  var runWhenHeadExists = (func) => {
+    if (!doc.head) {
+      headFuncArray.push(func)
+      startObserveHeadBodyExists()
+      return
+    }
+    func()
+  }
   var runWhenBodyExists = (func) => {
     if (!doc.body) {
-      setTimeout(() => {
-        runWhenBodyExists(func)
-      }, 10)
+      bodyFuncArray.push(func)
+      startObserveHeadBodyExists()
       return
     }
     func()
@@ -287,20 +330,47 @@
     return element.offsetParent !== null
   }
   var isTouchScreen = () => "ontouchstart" in win
+  var escapeHTMLPolicy =
+    typeof trustedTypes !== "undefined" &&
+    typeof trustedTypes.createPolicy === "function"
+      ? trustedTypes.createPolicy("beuEscapePolicy", {
+          createHTML: (string) => string,
+        })
+      : void 0
+  var createHTML = (html) => {
+    return escapeHTMLPolicy ? escapeHTMLPolicy.createHTML(html) : html
+  }
   var addElement2 =
     typeof GM_addElement === "function"
       ? (parentNode, tagName, attributes) => {
-          if (!parentNode) {
+          if (typeof parentNode === "string") {
+            return addElement2(null, parentNode, tagName)
+          }
+          if (!tagName) {
             return
           }
-          if (typeof parentNode === "string") {
-            attributes = tagName
-            tagName = parentNode
-            parentNode = doc.head
+          if (!parentNode) {
+            parentNode = /^(script|link|style|meta)$/.test(tagName)
+              ? getRootElement(1)
+              : getRootElement(2)
           }
           if (typeof tagName === "string") {
-            const element = GM_addElement(tagName)
-            setAttributes(element, attributes)
+            let attributes2
+            if (attributes) {
+              const entries1 = []
+              const entries2 = []
+              for (const entry of Object.entries(attributes)) {
+                if (/^(on\w+|innerHTML)$/.test(entry[0])) {
+                  entries2.push(entry)
+                } else {
+                  entries1.push(entry)
+                }
+              }
+              attributes = Object.fromEntries(entries1)
+              attributes2 = Object.fromEntries(entries2)
+            }
+            const element = GM_addElement(null, tagName, attributes)
+            setAttributes(element, attributes2)
             parentNode.append(element)
             return element
           }
@@ -309,10 +379,8 @@
           return tagName
         }
       : addElement
-  var addStyle2 =
-    typeof GM_addStyle === "function"
-      ? (styleText) => GM_addStyle(styleText)
-      : addStyle
+  var addStyle = (styleText) =>
+    addElement2(null, "style", { textContent: styleText })
   var registerMenuCommand = (name, callback, accessKey) => {
     if (window !== top) {
       return
@@ -323,7 +391,8 @@
     }
     GM.registerMenuCommand(name, callback, accessKey)
   }
-  var style_default = `#browser_extension_settings_container{--browser-extension-settings-background-color: #f2f2f7;--browser-extension-settings-text-color: #444444;--browser-extension-settings-link-color: #217dfc;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;position:fixed;top:10px;right:30px;max-height:90%;height:600px;overflow:hidden;display:none;z-index:100000;border-radius:5px;-webkit-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);-moz-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);box-shadow:0px 10px 39px 10px rgba(62,66,66,.22) !important}#browser_extension_settings_container .browser_extension_settings_wrapper{display:flex;height:100%;overflow:hidden;background-color:var(--browser-extension-settings-background-color)}#browser_extension_settings_container .browser_extension_settings_wrapper h1{font-size:26px;font-weight:800;border:none}#browser_extension_settings_container .browser_extension_settings_wrapper h2{font-size:18px;font-weight:600;border:none}#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container{overflow-x:auto;box-sizing:border-box;padding:10px 15px;background-color:var(--browser-extension-settings-background-color);color:var(--browser-extension-settings-text-color)}#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .installed_extension_list div,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .related_extension_list div{background-color:#fff;font-size:14px;border-top:1px solid #ccc;padding:6px 15px 6px 15px}#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .installed_extension_list div a,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .installed_extension_list div a:visited,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .related_extension_list div a,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .related_extension_list div a:visited{display:flex;justify-content:space-between;align-items:center;cursor:pointer;text-decoration:none;color:var(--browser-extension-settings-text-color)}#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .installed_extension_list div a:hover,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .installed_extension_list div a:visited:hover,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .related_extension_list div a:hover,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .related_extension_list div a:visited:hover{text-decoration:none;color:var(--browser-extension-settings-text-color)}#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .installed_extension_list div a span,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .installed_extension_list div a:visited span,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .related_extension_list div a span,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .related_extension_list div a:visited span{margin-right:10px;line-height:24px}#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .installed_extension_list div.active,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .installed_extension_list div:hover,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .related_extension_list div.active,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .related_extension_list div:hover{background-color:#e4e4e6}#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .installed_extension_list div.active a,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .related_extension_list div.active a{cursor:default}#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .installed_extension_list div:first-of-type,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .related_extension_list div:first-of-type{border-top:none;border-top-right-radius:10px;border-top-left-radius:10px}#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .installed_extension_list div:last-of-type,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .related_extension_list div:last-of-type{border-bottom-right-radius:10px;border-bottom-left-radius:10px}#browser_extension_settings_container .thin_scrollbar{scrollbar-color:var(--sb-thumb-color) var(--sb-track-color);scrollbar-width:thin}#browser_extension_settings_container .thin_scrollbar::-webkit-scrollbar{width:var(--sb-size)}#browser_extension_settings_container .thin_scrollbar::-webkit-scrollbar-track{background:var(--sb-track-color);border-radius:10px}#browser_extension_settings_container .thin_scrollbar::-webkit-scrollbar-thumb{background:var(--sb-thumb-color);border-radius:10px}#browser_extension_settings_main{min-width:250px;overflow-y:auto;overflow-x:hidden;box-sizing:border-box;padding:10px 15px;background-color:var(--browser-extension-settings-background-color);color:var(--browser-extension-settings-text-color)}#browser_extension_settings_main h2{text-align:center;margin:5px 0 0;font-size:18px;font-weight:600;border:none}#browser_extension_settings_main footer{display:flex;justify-content:center;flex-direction:column;font-size:11px;margin:10px auto 0px;background-color:var(--browser-extension-settings-background-color);color:var(--browser-extension-settings-text-color)}#browser_extension_settings_main footer a{color:var(--browser-extension-settings-link-color) !important;text-decoration:none;padding:0}#browser_extension_settings_main footer p{text-align:center;padding:0;margin:2px;line-height:13px}#browser_extension_settings_main a.navigation_go_previous{color:var(--browser-extension-settings-link-color);cursor:pointer;display:none}#browser_extension_settings_main a.navigation_go_previous::before{content:"< "}#browser_extension_settings_main .option_groups{background-color:#fff;padding:6px 15px 6px 15px;border-radius:10px;display:flex;flex-direction:column;margin:10px 0 0}#browser_extension_settings_main .option_groups .action{font-size:14px;border-top:1px solid #ccc;padding:6px 0 6px 0;color:var(--browser-extension-settings-link-color);cursor:pointer}#browser_extension_settings_main .option_groups textarea{font-size:12px;margin:10px 0 10px 0;height:100px;width:100%;border:1px solid #a9a9a9;border-radius:4px;box-sizing:border-box}#browser_extension_settings_main .switch_option{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #ccc;padding:6px 0 6px 0;font-size:14px}#browser_extension_settings_main .switch_option:first-of-type,#browser_extension_settings_main .option_groups .action:first-of-type{border-top:none}#browser_extension_settings_main .switch_option>span{margin-right:10px}#browser_extension_settings_main .option_groups .bes_tip{position:relative;margin:0;padding:0 15px 0 0;border:none;max-width:none;font-size:14px}#browser_extension_settings_main .option_groups .bes_tip .bes_tip_anchor{cursor:help;text-decoration:underline}#browser_extension_settings_main .option_groups .bes_tip .bes_tip_content{position:absolute;bottom:15px;left:0;background-color:#fff;color:var(--browser-extension-settings-text-color);text-align:left;padding:10px;display:none;border-radius:5px;-webkit-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);-moz-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);box-shadow:0px 10px 39px 10px rgba(62,66,66,.22) !important}#browser_extension_settings_main .option_groups .bes_tip .bes_tip_anchor:hover+.bes_tip_content,#browser_extension_settings_main .option_groups .bes_tip .bes_tip_content:hover{display:block}#browser_extension_settings_main .option_groups .bes_tip p,#browser_extension_settings_main .option_groups .bes_tip pre{margin:revert;padding:revert}#browser_extension_settings_main .option_groups .bes_tip pre{font-family:Consolas,panic sans,bitstream vera sans mono,Menlo,microsoft yahei,monospace;font-size:13px;letter-spacing:.015em;line-height:120%;white-space:pre;overflow:auto;background-color:#f5f5f5;word-break:normal;overflow-wrap:normal;padding:.5em;border:none}#browser_extension_settings_main .container{--button-width: 51px;--button-height: 24px;--toggle-diameter: 20px;--color-off: #e9e9eb;--color-on: #34c759;width:var(--button-width);height:var(--button-height);position:relative;padding:0;margin:0;flex:none}#browser_extension_settings_main input[type=checkbox]{opacity:0;width:0;height:0;position:absolute}#browser_extension_settings_main .switch{width:100%;height:100%;display:block;background-color:var(--color-off);border-radius:calc(var(--button-height)/2);border:none;cursor:pointer;transition:all .2s ease-out}#browser_extension_settings_main .switch::before{display:none}#browser_extension_settings_main .slider{width:var(--toggle-diameter);height:var(--toggle-diameter);position:absolute;left:2px;top:calc(50% - var(--toggle-diameter)/2);border-radius:50%;background:#fff;box-shadow:0px 3px 8px rgba(0,0,0,.15),0px 3px 1px rgba(0,0,0,.06);transition:all .2s ease-out;cursor:pointer}#browser_extension_settings_main input[type=checkbox]:checked+.switch{background-color:var(--color-on)}#browser_extension_settings_main input[type=checkbox]:checked+.switch .slider{left:calc(var(--button-width) - var(--toggle-diameter) - 2px)}#browser_extension_side_menu{min-height:200px;width:40px;opacity:0;position:fixed;top:80px;right:0;padding-top:20px;z-index:10000}#browser_extension_side_menu:hover{opacity:1}#browser_extension_side_menu button{cursor:pointer;width:24px;height:24px;border:none;background-color:rgba(0,0,0,0);background-image:url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M12.0002 16C14.2094 16 16.0002 14.2091 16.0002 12C16.0002 9.79086 14.2094 8 12.0002 8C9.79109 8 8.00023 9.79086 8.00023 12C8.00023 14.2091 9.79109 16 12.0002 16ZM12.0002 14C13.1048 14 14.0002 13.1046 14.0002 12C14.0002 10.8954 13.1048 10 12.0002 10C10.8957 10 10.0002 10.8954 10.0002 12C10.0002 13.1046 10.8957 14 12.0002 14Z' fill='black'/%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M15.1182 1.86489L15.5203 4.81406C15.8475 4.97464 16.1621 5.1569 16.4623 5.35898L19.2185 4.23223C19.6814 4.043 20.2129 4.2248 20.463 4.65787L22.5901 8.34213C22.8401 8.77521 22.7318 9.3264 22.3365 9.63266L19.9821 11.4566C19.9941 11.6362 20.0002 11.8174 20.0002 12C20.0002 12.1826 19.9941 12.3638 19.9821 12.5434L22.3365 14.3673C22.7318 14.6736 22.8401 15.2248 22.5901 15.6579L20.463 19.3421C20.2129 19.7752 19.6814 19.957 19.2185 19.7678L16.4623 18.641C16.1621 18.8431 15.8475 19.0254 15.5203 19.1859L15.1182 22.1351C15.0506 22.6306 14.6274 23 14.1273 23H9.87313C9.37306 23 8.94987 22.6306 8.8823 22.1351L8.48014 19.1859C8.15296 19.0254 7.83835 18.8431 7.53818 18.641L4.78195 19.7678C4.31907 19.957 3.78756 19.7752 3.53752 19.3421L1.41042 15.6579C1.16038 15.2248 1.26869 14.6736 1.66401 14.3673L4.01841 12.5434C4.00636 12.3638 4.00025 12.1826 4.00025 12C4.00025 11.8174 4.00636 11.6362 4.01841 11.4566L1.66401 9.63266C1.26869 9.3264 1.16038 8.77521 1.41041 8.34213L3.53752 4.65787C3.78755 4.2248 4.31906 4.043 4.78195 4.23223L7.53818 5.35898C7.83835 5.1569 8.15296 4.97464 8.48014 4.81406L8.8823 1.86489C8.94987 1.3694 9.37306 1 9.87313 1H14.1273C14.6274 1 15.0506 1.3694 15.1182 1.86489ZM13.6826 6.14004L14.6392 6.60948C14.8842 6.72975 15.1201 6.86639 15.3454 7.01805L16.231 7.61423L19.1674 6.41382L20.4216 8.58619L17.9153 10.5278L17.9866 11.5905C17.9956 11.7255 18.0002 11.8621 18.0002 12C18.0002 12.1379 17.9956 12.2745 17.9866 12.4095L17.9153 13.4722L20.4216 15.4138L19.1674 17.5862L16.231 16.3858L15.3454 16.982C15.1201 17.1336 14.8842 17.2702 14.6392 17.3905L13.6826 17.86L13.2545 21H10.746L10.3178 17.86L9.36131 17.3905C9.11626 17.2702 8.88037 17.1336 8.6551 16.982L7.76954 16.3858L4.83313 17.5862L3.57891 15.4138L6.0852 13.4722L6.01392 12.4095C6.00487 12.2745 6.00024 12.1379 6.00024 12C6.00024 11.8621 6.00487 11.7255 6.01392 11.5905L6.0852 10.5278L3.57891 8.58619L4.83312 6.41382L7.76953 7.61423L8.6551 7.01805C8.88037 6.86639 9.11625 6.72976 9.36131 6.60949L10.3178 6.14004L10.746 3H13.2545L13.6826 6.14004Z' fill='black'/%3E%3C/svg%3E")}#browser_extension_side_menu button:hover{opacity:70%}#browser_extension_side_menu button:active{opacity:100%}@media(max-width: 500px){#browser_extension_settings_container{right:10px}#browser_extension_settings_container .extension_list_container{display:none}#browser_extension_settings_container .extension_list_container.bes_active{display:block}#browser_extension_settings_container .extension_list_container.bes_active+div{display:none}#browser_extension_settings_main a.navigation_go_previous{display:block}}`
+  var style_default =
+    '#browser_extension_settings_container{--browser-extension-settings-background-color: #f2f2f7;--browser-extension-settings-text-color: #444444;--browser-extension-settings-link-color: #217dfc;--sb-track-color: #00000000;--sb-thumb-color: #33334480;--sb-size: 2px;position:fixed;top:10px;right:30px;max-height:90%;height:600px;overflow:hidden;display:none;z-index:100000;border-radius:5px;-webkit-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);-moz-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);box-shadow:0px 10px 39px 10px rgba(62,66,66,.22) !important}#browser_extension_settings_container .browser_extension_settings_wrapper{display:flex;height:100%;overflow:hidden;background-color:var(--browser-extension-settings-background-color)}#browser_extension_settings_container .browser_extension_settings_wrapper h1{font-size:26px;font-weight:800;border:none}#browser_extension_settings_container .browser_extension_settings_wrapper h2{font-size:18px;font-weight:600;border:none}#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container{overflow-x:auto;box-sizing:border-box;padding:10px 15px;background-color:var(--browser-extension-settings-background-color);color:var(--browser-extension-settings-text-color)}#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .installed_extension_list div,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .related_extension_list div{background-color:#fff;font-size:14px;border-top:1px solid #ccc;padding:6px 15px 6px 15px}#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .installed_extension_list div a,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .installed_extension_list div a:visited,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .related_extension_list div a,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .related_extension_list div a:visited{display:flex;justify-content:space-between;align-items:center;cursor:pointer;text-decoration:none;color:var(--browser-extension-settings-text-color)}#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .installed_extension_list div a:hover,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .installed_extension_list div a:visited:hover,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .related_extension_list div a:hover,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .related_extension_list div a:visited:hover{text-decoration:none;color:var(--browser-extension-settings-text-color)}#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .installed_extension_list div a span,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .installed_extension_list div a:visited span,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .related_extension_list div a span,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .related_extension_list div a:visited span{margin-right:10px;line-height:24px}#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .installed_extension_list div.active,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .installed_extension_list div:hover,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .related_extension_list div.active,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .related_extension_list div:hover{background-color:#e4e4e6}#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .installed_extension_list div.active a,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .related_extension_list div.active a{cursor:default}#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .installed_extension_list div:first-of-type,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .related_extension_list div:first-of-type{border-top:none;border-top-right-radius:10px;border-top-left-radius:10px}#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .installed_extension_list div:last-of-type,#browser_extension_settings_container .browser_extension_settings_wrapper .extension_list_container .related_extension_list div:last-of-type{border-bottom-right-radius:10px;border-bottom-left-radius:10px}#browser_extension_settings_container .thin_scrollbar{scrollbar-color:var(--sb-thumb-color) var(--sb-track-color);scrollbar-width:thin}#browser_extension_settings_container .thin_scrollbar::-webkit-scrollbar{width:var(--sb-size)}#browser_extension_settings_container .thin_scrollbar::-webkit-scrollbar-track{background:var(--sb-track-color);border-radius:10px}#browser_extension_settings_container .thin_scrollbar::-webkit-scrollbar-thumb{background:var(--sb-thumb-color);border-radius:10px}#browser_extension_settings_main{min-width:250px;overflow-y:auto;overflow-x:hidden;box-sizing:border-box;padding:10px 15px;background-color:var(--browser-extension-settings-background-color);color:var(--browser-extension-settings-text-color)}#browser_extension_settings_main h2{text-align:center;margin:5px 0 0;font-size:18px;font-weight:600;border:none}#browser_extension_settings_main footer{display:flex;justify-content:center;flex-direction:column;font-size:11px;margin:10px auto 0px;background-color:var(--browser-extension-settings-background-color);color:var(--browser-extension-settings-text-color)}#browser_extension_settings_main footer a{color:var(--browser-extension-settings-link-color) !important;text-decoration:none;padding:0}#browser_extension_settings_main footer p{text-align:center;padding:0;margin:2px;line-height:13px}#browser_extension_settings_main a.navigation_go_previous{color:var(--browser-extension-settings-link-color);cursor:pointer;display:none}#browser_extension_settings_main a.navigation_go_previous::before{content:"< "}#browser_extension_settings_main .option_groups{background-color:#fff;padding:6px 15px 6px 15px;border-radius:10px;display:flex;flex-direction:column;margin:10px 0 0}#browser_extension_settings_main .option_groups .action{font-size:14px;padding:6px 0 6px 0;color:var(--browser-extension-settings-link-color);cursor:pointer}#browser_extension_settings_main .bes_external_link{font-size:14px;padding:6px 0 6px 0}#browser_extension_settings_main .bes_external_link a,#browser_extension_settings_main .bes_external_link a:visited,#browser_extension_settings_main .bes_external_link a:hover{color:var(--browser-extension-settings-link-color);text-decoration:none;cursor:pointer}#browser_extension_settings_main .option_groups textarea{font-size:12px;margin:10px 0 10px 0;height:100px;width:100%;border:1px solid #a9a9a9;border-radius:4px;box-sizing:border-box}#browser_extension_settings_main .switch_option{display:flex;justify-content:space-between;align-items:center;padding:6px 0 6px 0;font-size:14px}#browser_extension_settings_main .option_groups>*{border-top:1px solid #ccc}#browser_extension_settings_main .option_groups>*:first-child{border-top:none}#browser_extension_settings_main .switch_option>img{width:24px;height:24px;margin-right:10px}#browser_extension_settings_main .switch_option>span{margin-right:10px;flex-grow:1}#browser_extension_settings_main .option_groups .bes_tip{position:relative;margin:0;padding:0 15px 0 0;border:none;max-width:none;font-size:14px}#browser_extension_settings_main .option_groups .bes_tip .bes_tip_anchor{cursor:help;text-decoration:underline}#browser_extension_settings_main .option_groups .bes_tip .bes_tip_content{position:absolute;bottom:15px;left:0;background-color:#fff;color:var(--browser-extension-settings-text-color);text-align:left;padding:10px;display:none;border-radius:5px;-webkit-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);-moz-box-shadow:0px 10px 39px 10px rgba(62,66,66,.22);box-shadow:0px 10px 39px 10px rgba(62,66,66,.22) !important}#browser_extension_settings_main .option_groups .bes_tip .bes_tip_anchor:hover+.bes_tip_content,#browser_extension_settings_main .option_groups .bes_tip .bes_tip_content:hover{display:block}#browser_extension_settings_main .option_groups .bes_tip p,#browser_extension_settings_main .option_groups .bes_tip pre{margin:revert;padding:revert}#browser_extension_settings_main .option_groups .bes_tip pre{font-family:Consolas,panic sans,bitstream vera sans mono,Menlo,microsoft yahei,monospace;font-size:13px;letter-spacing:.015em;line-height:120%;white-space:pre;overflow:auto;background-color:#f5f5f5;word-break:normal;overflow-wrap:normal;padding:.5em;border:none}#browser_extension_settings_main .container{--button-width: 51px;--button-height: 24px;--toggle-diameter: 20px;--color-off: #e9e9eb;--color-on: #34c759;width:var(--button-width);height:var(--button-height);position:relative;padding:0;margin:0;flex:none;user-select:none}#browser_extension_settings_main input[type=checkbox]{opacity:0;width:0;height:0;position:absolute}#browser_extension_settings_main .switch{width:100%;height:100%;display:block;background-color:var(--color-off);border-radius:calc(var(--button-height)/2);border:none;cursor:pointer;transition:all .2s ease-out}#browser_extension_settings_main .switch::before{display:none}#browser_extension_settings_main .slider{width:var(--toggle-diameter);height:var(--toggle-diameter);position:absolute;left:2px;top:calc(50% - var(--toggle-diameter)/2);border-radius:50%;background:#fff;box-shadow:0px 3px 8px rgba(0,0,0,.15),0px 3px 1px rgba(0,0,0,.06);transition:all .2s ease-out;cursor:pointer}#browser_extension_settings_main input[type=checkbox]:checked+.switch{background-color:var(--color-on)}#browser_extension_settings_main input[type=checkbox]:checked+.switch .slider{left:calc(var(--button-width) - var(--toggle-diameter) - 2px)}#browser_extension_side_menu{min-height:80px;width:30px;opacity:0;position:fixed;top:80px;right:0;padding-top:20px;z-index:10000}#browser_extension_side_menu:hover{opacity:1}#browser_extension_side_menu button{cursor:pointer;width:24px;height:24px;padding:0;border:none;background-color:rgba(0,0,0,0);background-image:none}#browser_extension_side_menu button svg{width:24px;height:24px}#browser_extension_side_menu button:hover{opacity:70%}#browser_extension_side_menu button:active{opacity:100%}@media(max-width: 500px){#browser_extension_settings_container{right:10px}#browser_extension_settings_container .extension_list_container{display:none}#browser_extension_settings_container .extension_list_container.bes_active{display:block}#browser_extension_settings_container .extension_list_container.bes_active+div{display:none}#browser_extension_settings_main a.navigation_go_previous{display:block}}'
   function createSwitch(options = {}) {
     const container = createElement("label", { class: "container" })
     const checkbox = createElement(
@@ -339,38 +408,58 @@
     }
     return container
   }
-  function createSwitchOption(text, options) {
+  function createSwitchOption(icon, text, options) {
+    if (typeof text !== "string") {
+      return createSwitchOption(void 0, icon, text)
+    }
     const div = createElement("div", { class: "switch_option" })
+    if (icon) {
+      addElement2(div, "img", { src: icon })
+    }
     addElement2(div, "span", { textContent: text })
     div.append(createSwitch(options))
     return div
   }
-  var besVersion = 15
-  var openButton = `<svg viewBox="0 0 60.2601318359375 84.8134765625" version="1.1" xmlns="http://www.w3.org/2000/svg" class=" glyph-box" style="height: 9.62969px; width: 6.84191px;"><g transform="matrix(1 0 0 1 -6.194965820312518 77.63671875)"><path d="M66.4551-35.2539C66.4551-36.4746 65.9668-37.5977 65.0391-38.4766L26.3672-76.3672C25.4883-77.1973 24.4141-77.6367 23.1445-77.6367C20.6543-77.6367 18.7012-75.7324 18.7012-73.1934C18.7012-71.9727 19.1895-70.8496 19.9707-70.0195L55.5176-35.2539L19.9707-0.488281C19.1895 0.341797 18.7012 1.41602 18.7012 2.68555C18.7012 5.22461 20.6543 7.12891 23.1445 7.12891C24.4141 7.12891 25.4883 6.68945 26.3672 5.81055L65.0391-32.0312C65.9668-32.959 66.4551-34.0332 66.4551-35.2539Z"></path></g></svg>`
-  var openInNewTabButton = `<svg viewBox="0 0 72.127685546875 72.2177734375" version="1.1" xmlns="http://www.w3.org/2000/svg" class=" glyph-box" style="height: 8.19958px; width: 8.18935px;"><g transform="matrix(1 0 0 1 -12.451127929687573 71.3388671875)"><path d="M84.5703-17.334L84.5215-66.4551C84.5215-69.2383 82.7148-71.1914 79.7852-71.1914L30.6641-71.1914C27.9297-71.1914 26.0742-69.0918 26.0742-66.748C26.0742-64.4043 28.1738-62.4023 30.4688-62.4023L47.4609-62.4023L71.2891-63.1836L62.207-55.2246L13.8184-6.73828C12.9395-5.85938 12.4512-4.73633 12.4512-3.66211C12.4512-1.31836 14.5508 0.878906 16.9922 0.878906C18.1152 0.878906 19.1895 0.488281 20.0684-0.439453L68.5547-48.877L76.6113-58.0078L75.7324-35.2051L75.7324-17.1387C75.7324-14.8438 77.7344-12.6953 80.127-12.6953C82.4707-12.6953 84.5703-14.6973 84.5703-17.334Z"></path></g></svg>`
+  var besVersion = 30
+  var openButton =
+    '<svg viewBox="0 0 60.2601318359375 84.8134765625" version="1.1" xmlns="http://www.w3.org/2000/svg" class=" glyph-box" style="height: 9.62969px; width: 6.84191px;"><g transform="matrix(1 0 0 1 -6.194965820312518 77.63671875)"><path d="M66.4551-35.2539C66.4551-36.4746 65.9668-37.5977 65.0391-38.4766L26.3672-76.3672C25.4883-77.1973 24.4141-77.6367 23.1445-77.6367C20.6543-77.6367 18.7012-75.7324 18.7012-73.1934C18.7012-71.9727 19.1895-70.8496 19.9707-70.0195L55.5176-35.2539L19.9707-0.488281C19.1895 0.341797 18.7012 1.41602 18.7012 2.68555C18.7012 5.22461 20.6543 7.12891 23.1445 7.12891C24.4141 7.12891 25.4883 6.68945 26.3672 5.81055L65.0391-32.0312C65.9668-32.959 66.4551-34.0332 66.4551-35.2539Z"></path></g></svg>'
+  var openInNewTabButton =
+    '<svg viewBox="0 0 72.127685546875 72.2177734375" version="1.1" xmlns="http://www.w3.org/2000/svg" class=" glyph-box" style="height: 8.19958px; width: 8.18935px;"><g transform="matrix(1 0 0 1 -12.451127929687573 71.3388671875)"><path d="M84.5703-17.334L84.5215-66.4551C84.5215-69.2383 82.7148-71.1914 79.7852-71.1914L30.6641-71.1914C27.9297-71.1914 26.0742-69.0918 26.0742-66.748C26.0742-64.4043 28.1738-62.4023 30.4688-62.4023L47.4609-62.4023L71.2891-63.1836L62.207-55.2246L13.8184-6.73828C12.9395-5.85938 12.4512-4.73633 12.4512-3.66211C12.4512-1.31836 14.5508 0.878906 16.9922 0.878906C18.1152 0.878906 19.1895 0.488281 20.0684-0.439453L68.5547-48.877L76.6113-58.0078L75.7324-35.2051L75.7324-17.1387C75.7324-14.8438 77.7344-12.6953 80.127-12.6953C82.4707-12.6953 84.5703-14.6973 84.5703-17.334Z"></path></g></svg>'
+  var settingButton =
+    '<svg viewBox="0 0 16 16" version="1.1">\n<path d="M8 0a8.2 8.2 0 0 1 .701.031C9.444.095 9.99.645 10.16 1.29l.288 1.107c.018.066.079.158.212.224.231.114.454.243.668.386.123.082.233.09.299.071l1.103-.303c.644-.176 1.392.021 1.82.63.27.385.506.792.704 1.218.315.675.111 1.422-.364 1.891l-.814.806c-.049.048-.098.147-.088.294.016.257.016.515 0 .772-.01.147.038.246.088.294l.814.806c.475.469.679 1.216.364 1.891a7.977 7.977 0 0 1-.704 1.217c-.428.61-1.176.807-1.82.63l-1.102-.302c-.067-.019-.177-.011-.3.071a5.909 5.909 0 0 1-.668.386c-.133.066-.194.158-.211.224l-.29 1.106c-.168.646-.715 1.196-1.458 1.26a8.006 8.006 0 0 1-1.402 0c-.743-.064-1.289-.614-1.458-1.26l-.289-1.106c-.018-.066-.079-.158-.212-.224a5.738 5.738 0 0 1-.668-.386c-.123-.082-.233-.09-.299-.071l-1.103.303c-.644.176-1.392-.021-1.82-.63a8.12 8.12 0 0 1-.704-1.218c-.315-.675-.111-1.422.363-1.891l.815-.806c.05-.048.098-.147.088-.294a6.214 6.214 0 0 1 0-.772c.01-.147-.038-.246-.088-.294l-.815-.806C.635 6.045.431 5.298.746 4.623a7.92 7.92 0 0 1 .704-1.217c.428-.61 1.176-.807 1.82-.63l1.102.302c.067.019.177.011.3-.071.214-.143.437-.272.668-.386.133-.066.194-.158.211-.224l.29-1.106C6.009.645 6.556.095 7.299.03 7.53.01 7.764 0 8 0Zm-.571 1.525c-.036.003-.108.036-.137.146l-.289 1.105c-.147.561-.549.967-.998 1.189-.173.086-.34.183-.5.29-.417.278-.97.423-1.529.27l-1.103-.303c-.109-.03-.175.016-.195.045-.22.312-.412.644-.573.99-.014.031-.021.11.059.19l.815.806c.411.406.562.957.53 1.456a4.709 4.709 0 0 0 0 .582c.032.499-.119 1.05-.53 1.456l-.815.806c-.081.08-.073.159-.059.19.162.346.353.677.573.989.02.03.085.076.195.046l1.102-.303c.56-.153 1.113-.008 1.53.27.161.107.328.204.501.29.447.222.85.629.997 1.189l.289 1.105c.029.109.101.143.137.146a6.6 6.6 0 0 0 1.142 0c.036-.003.108-.036.137-.146l.289-1.105c.147-.561.549-.967.998-1.189.173-.086.34-.183.5-.29.417-.278.97-.423 1.529-.27l1.103.303c.109.029.175-.016.195-.045.22-.313.411-.644.573-.99.014-.031.021-.11-.059-.19l-.815-.806c-.411-.406-.562-.957-.53-1.456a4.709 4.709 0 0 0 0-.582c-.032-.499.119-1.05.53-1.456l.815-.806c.081-.08.073-.159.059-.19a6.464 6.464 0 0 0-.573-.989c-.02-.03-.085-.076-.195-.046l-1.102.303c-.56.153-1.113.008-1.53-.27a4.44 4.44 0 0 0-.501-.29c-.447-.222-.85-.629-.997-1.189l-.289-1.105c-.029-.11-.101-.143-.137-.146a6.6 6.6 0 0 0-1.142 0ZM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM9.5 8a1.5 1.5 0 1 0-3.001.001A1.5 1.5 0 0 0 9.5 8Z"></path>\n</svg>'
   var relatedExtensions = [
     {
       id: "utags",
       title: "\u{1F3F7}\uFE0F UTags - Add usertags to links",
-      url: "https://greasyfork.org/scripts/460718",
+      url: "https://greasyfork.org/zh-CN/scripts/460718-utags-add-usertags-to-links",
     },
     {
       id: "links-helper",
       title: "\u{1F517} \u94FE\u63A5\u52A9\u624B",
       description:
         "\u5728\u65B0\u6807\u7B7E\u9875\u4E2D\u6253\u5F00\u7B2C\u4E09\u65B9\u7F51\u7AD9\u94FE\u63A5\uFF0C\u56FE\u7247\u94FE\u63A5\u8F6C\u56FE\u7247\u6807\u7B7E\u7B49",
-      url: "https://greasyfork.org/scripts/464541",
+      url: "https://greasyfork.org/zh-CN/scripts/464541-links-helper",
     },
     {
       id: "v2ex.rep",
       title:
         "V2EX.REP - \u4E13\u6CE8\u63D0\u5347 V2EX \u4E3B\u9898\u56DE\u590D\u6D4F\u89C8\u4F53\u9A8C",
-      url: "https://greasyfork.org/scripts/466589",
+      url: "https://greasyfork.org/zh-CN/scripts/466589-v2ex-rep-%E4%B8%93%E6%B3%A8%E6%8F%90%E5%8D%87-v2ex-%E4%B8%BB%E9%A2%98%E5%9B%9E%E5%A4%8D%E6%B5%8F%E8%A7%88%E4%BD%93%E9%AA%8C",
     },
     {
       id: "v2ex.min",
       title: "v2ex.min - V2EX \u6781\u7B80\u98CE\u683C",
-      url: "https://greasyfork.org/scripts/463552",
+      url: "https://greasyfork.org/zh-CN/scripts/463552-v2ex-min-v2ex-%E6%9E%81%E7%AE%80%E9%A3%8E%E6%A0%BC",
+    },
+    {
+      id: "replace-ugly-avatars",
+      title: "\u8D50\u4F60\u4E2A\u5934\u50CF\u5427",
+      url: "https://greasyfork.org/zh-CN/scripts/472616-replace-ugly-avatars",
+    },
+    {
+      id: "more-by-pipecraft",
+      title: "\u66F4\u591A\u6709\u8DA3\u7684\u811A\u672C",
+      url: "https://greasyfork.org/zh-CN/users/1030884-pipecraft",
     },
   ]
   var getInstalledExtesionList = () => {
@@ -384,7 +473,7 @@
     if (!list) {
       return false
     }
-    const installed = $(`[data-extension-id="${id}"]`, list)
+    const installed = $('[data-extension-id="'.concat(id, '"]'), list)
     return Boolean(installed)
   }
   var addCurrentExtension = (extension) => {
@@ -410,7 +499,7 @@
     for (const element of $$(".active", list)) {
       removeClass(element, "active")
     }
-    const installed = $(`[data-extension-id="${id}"]`, list)
+    const installed = $('[data-extension-id="'.concat(id, '"]'), list)
     if (installed) {
       addClass(installed, "active")
     }
@@ -439,17 +528,37 @@
       textContent: installedExtension.title,
     })
     const svg = addElement2(a, "svg")
-    svg.outerHTML = openButton
+    svg.outerHTML = createHTML(openButton)
     return div
   }
   var updateRelatedExtensions = (container) => {
-    container.innerHTML = ""
+    const relatedExtensionElements = $$("[data-extension-id]", container)
+    if (relatedExtensionElements.length > 0) {
+      for (const relatedExtensionElement of relatedExtensionElements) {
+        if (
+          isInstalledExtension(
+            relatedExtensionElement.dataset.extensionId || "noid"
+          )
+        ) {
+          relatedExtensionElement.remove()
+        }
+      }
+    } else {
+      container.innerHTML = createHTML("")
+    }
     for (const relatedExtension of relatedExtensions) {
-      if (isInstalledExtension(relatedExtension.id)) {
+      if (
+        isInstalledExtension(relatedExtension.id) ||
+        $('[data-extension-id="'.concat(relatedExtension.id, '"]'), container)
+      ) {
         continue
+      }
+      if ($$("[data-extension-id]", container).length >= 4) {
+        return
       }
       const div4 = addElement2(container, "div", {
         class: "related_extension",
+        "data-extension-id": relatedExtension.id,
       })
       const a = addElement2(div4, "a", {
         href: relatedExtension.url,
@@ -459,7 +568,7 @@
         textContent: relatedExtension.title,
       })
       const svg = addElement2(a, "svg")
-      svg.outerHTML = openInNewTabButton
+      svg.outerHTML = createHTML(openInNewTabButton)
     }
   }
   function createExtensionList(installedExtensions) {
@@ -491,8 +600,8 @@
   var getSettingsElement = () => $("#" + settingsElementId)
   var getSettingsStyle = () =>
     style_default
-      .replace(/browser_extension_settings_container/gm, settingsContainerId)
-      .replace(/browser_extension_settings_main/gm, settingsElementId)
+      .replaceAll(/browser_extension_settings_container/gm, settingsContainerId)
+      .replaceAll(/browser_extension_settings_main/gm, settingsElementId)
   var storageKey = "settings"
   var settingsOptions
   var settingsTable = {}
@@ -501,7 +610,7 @@
     var _a
     return (_a = await getValue(storageKey)) != null ? _a : {}
   }
-  async function saveSattingsValue(key, value) {
+  async function saveSettingsValue(key, value) {
     const settings2 = await getSettings()
     settings2[key] =
       settingsTable[key] && settingsTable[key].defaultValue === value
@@ -527,7 +636,9 @@
   }
   var onDocumentClick = (event) => {
     const target = event.target
-    if (target == null ? void 0 : target.closest(`.${prefix}container`)) {
+    if (
+      target == null ? void 0 : target.closest(".".concat(prefix, "container"))
+    ) {
       return
     }
     closeModal()
@@ -552,7 +663,12 @@
         switch (type) {
           case "switch": {
             const checkbox = $(
-              `#${settingsElementId} .option_groups .switch_option[data-key="${key}"] input`
+              "#"
+                .concat(
+                  settingsElementId,
+                  ' .option_groups .switch_option[data-key="'
+                )
+                .concat(key, '"] input')
             )
             if (checkbox) {
               checkbox.checked = getSettingsValue(key)
@@ -561,7 +677,12 @@
           }
           case "textarea": {
             const textArea = $(
-              `#${settingsElementId} .option_groups textarea[data-key="${key}"]`
+              "#"
+                .concat(
+                  settingsElementId,
+                  ' .option_groups textarea[data-key="'
+                )
+                .concat(key, '"]')
             )
             if (textArea) {
               textArea.value = getSettingsValue(key)
@@ -580,7 +701,7 @@
     }
   }
   function getSettingsContainer() {
-    const container = $(`.${prefix}container`)
+    const container = $(".".concat(prefix, "container"))
     if (container) {
       const theVersion = parseInt10(container.dataset.besVersion, 0)
       if (theVersion < besVersion) {
@@ -591,7 +712,7 @@
     }
     return addElement2(doc.body, "div", {
       id: settingsContainerId,
-      class: `${prefix}container`,
+      class: "".concat(prefix, "container"),
       "data-bes-version": besVersion,
       style: "display: none;",
     })
@@ -599,9 +720,9 @@
   function getSettingsWrapper() {
     const container = getSettingsContainer()
     return (
-      $(`.${prefix}wrapper`, container) ||
+      $(".".concat(prefix, "wrapper"), container) ||
       addElement2(container, "div", {
-        class: `${prefix}wrapper`,
+        class: "".concat(prefix, "wrapper"),
       })
     )
   }
@@ -621,12 +742,12 @@
     let settingsMain = getSettingsElement()
     if (!settingsMain) {
       const wrapper = getSettingsWrapper()
-      for (const element of $$(`.${prefix}main`)) {
+      for (const element of $$(".".concat(prefix, "main"))) {
         element.remove()
       }
       settingsMain = addElement2(wrapper, "div", {
         id: settingsElementId,
-        class: `${prefix}main thin_scrollbar`,
+        class: "".concat(prefix, "main thin_scrollbar"),
       })
       addElement2(settingsMain, "a", {
         textContent: "Settings",
@@ -659,11 +780,11 @@
           const optionGroup = getOptionGroup(group)
           switch (type) {
             case "switch": {
-              const switchOption = createSwitchOption(item.title, {
+              const switchOption = createSwitchOption(item.icon, item.title, {
                 async onchange(event) {
                   const checkbox = event.target
                   if (checkbox) {
-                    await saveSattingsValue(key, checkbox.checked)
+                    await saveSettingsValue(key, checkbox.checked)
                   }
                 },
               })
@@ -673,7 +794,10 @@
             }
             case "textarea": {
               let timeoutId2
-              addElement2(optionGroup, "textarea", {
+              const div = addElement2(optionGroup, "div", {
+                class: "bes_textarea",
+              })
+              addElement2(div, "textarea", {
                 "data-key": key,
                 placeholder: item.placeholder || "",
                 onkeyup(event) {
@@ -684,7 +808,7 @@
                   }
                   timeoutId2 = setTimeout(async () => {
                     if (textArea) {
-                      await saveSattingsValue(key, textArea.value.trim())
+                      await saveSettingsValue(key, textArea.value.trim())
                     }
                   }, 100)
                 },
@@ -699,6 +823,17 @@
               })
               break
             }
+            case "externalLink": {
+              const div4 = addElement2(optionGroup, "div", {
+                class: "bes_external_link",
+              })
+              addElement2(div4, "a", {
+                textContent: item.title,
+                href: item.url,
+                target: "_blank",
+              })
+              break
+            }
             case "tip": {
               const tip = addElement2(optionGroup, "div", {
                 class: "bes_tip",
@@ -709,7 +844,7 @@
               })
               const tipContent = addElement2(tip, "div", {
                 class: "bes_tip_content",
-                innerHTML: item.tipContent,
+                innerHTML: createHTML(item.tipContent),
               })
               break
             }
@@ -718,13 +853,11 @@
       }
       if (settingsOptions.footer) {
         const footer = addElement2(settingsMain, "footer")
-        footer.innerHTML =
+        footer.innerHTML = createHTML(
           typeof settingsOptions.footer === "string"
             ? settingsOptions.footer
-            : `<p>Made with \u2764\uFE0F by
-      <a href="https://www.pipecraft.net/" target="_blank">
-        Pipecraft
-      </a></p>`
+            : '<p>Made with \u2764\uFE0F by\n      <a href="https://www.pipecraft.net/" target="_blank">\n        Pipecraft\n      </a></p>'
+        )
       }
     }
     return settingsMain
@@ -754,6 +887,7 @@
       onclick() {
         setTimeout(showSettings, 1)
       },
+      innerHTML: settingButton,
     })
   }
   function addCommonSettings(settingsTable3) {
@@ -803,7 +937,9 @@
       }
     })
     settings = await getSettings()
-    addStyle2(getSettingsStyle())
+    runWhenHeadExists(() => {
+      addStyle(getSettingsStyle())
+    })
     runWhenBodyExists(() => {
       initExtensionList()
       addSideMenu()
@@ -1014,7 +1150,10 @@
         endPos,
         replyTextArea.value.length
       )
-      replyTextArea.value = `${valueToStart}${text}${valueFromEnd}`
+      replyTextArea.value = ""
+        .concat(valueToStart)
+        .concat(text)
+        .concat(valueFromEnd)
       replyTextArea.focus()
       const newPos = startPos + text.length
       replyTextArea.selectionStart = newPos
@@ -1129,7 +1268,8 @@
     if (hideButton && !hasClass(hideButton, "icon_button")) {
       addAttribute(hideButton, "class", "icon_button")
       if (!$(".v2p-controls", replyElement)) {
-        hideButton.innerHTML = `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.3536 2.35355C13.5488 2.15829 13.5488 1.84171 13.3536 1.64645C13.1583 1.45118 12.8417 1.45118 12.6464 1.64645L10.6828 3.61012C9.70652 3.21671 8.63759 3 7.5 3C4.30786 3 1.65639 4.70638 0.0760002 7.23501C-0.0253338 7.39715 -0.0253334 7.60288 0.0760014 7.76501C0.902945 9.08812 2.02314 10.1861 3.36061 10.9323L1.64645 12.6464C1.45118 12.8417 1.45118 13.1583 1.64645 13.3536C1.84171 13.5488 2.15829 13.5488 2.35355 13.3536L4.31723 11.3899C5.29348 11.7833 6.36241 12 7.5 12C10.6921 12 13.3436 10.2936 14.924 7.76501C15.0253 7.60288 15.0253 7.39715 14.924 7.23501C14.0971 5.9119 12.9769 4.81391 11.6394 4.06771L13.3536 2.35355ZM9.90428 4.38861C9.15332 4.1361 8.34759 4 7.5 4C4.80285 4 2.52952 5.37816 1.09622 7.50001C1.87284 8.6497 2.89609 9.58106 4.09974 10.1931L9.90428 4.38861ZM5.09572 10.6114L10.9003 4.80685C12.1039 5.41894 13.1272 6.35031 13.9038 7.50001C12.4705 9.62183 10.1971 11 7.5 11C6.65241 11 5.84668 10.8639 5.09572 10.6114Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`
+        hideButton.innerHTML =
+          '<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.3536 2.35355C13.5488 2.15829 13.5488 1.84171 13.3536 1.64645C13.1583 1.45118 12.8417 1.45118 12.6464 1.64645L10.6828 3.61012C9.70652 3.21671 8.63759 3 7.5 3C4.30786 3 1.65639 4.70638 0.0760002 7.23501C-0.0253338 7.39715 -0.0253334 7.60288 0.0760014 7.76501C0.902945 9.08812 2.02314 10.1861 3.36061 10.9323L1.64645 12.6464C1.45118 12.8417 1.45118 13.1583 1.64645 13.3536C1.84171 13.5488 2.15829 13.5488 2.35355 13.3536L4.31723 11.3899C5.29348 11.7833 6.36241 12 7.5 12C10.6921 12 13.3436 10.2936 14.924 7.76501C15.0253 7.60288 15.0253 7.39715 14.924 7.23501C14.0971 5.9119 12.9769 4.81391 11.6394 4.06771L13.3536 2.35355ZM9.90428 4.38861C9.15332 4.1361 8.34759 4 7.5 4C4.80285 4 2.52952 5.37816 1.09622 7.50001C1.87284 8.6497 2.89609 9.58106 4.09974 10.1931L9.90428 4.38861ZM5.09572 10.6114L10.9003 4.80685C12.1039 5.41894 13.1272 6.35031 13.9038 7.50001C12.4705 9.62183 10.1971 11 7.5 11C6.65241 11 5.84668 10.8639 5.09572 10.6114Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>'
       }
       const nextSibling = hideButton.nextSibling
       if (nextSibling && nextSibling.nodeType === 3) {
@@ -1142,12 +1282,15 @@
     if (thankButton && !hasClass(thankButton, "icon_button")) {
       addAttribute(thankButton, "class", "icon_button")
       if (!$(".v2p-controls", replyElement)) {
-        thankButton.innerHTML = `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.89346 2.35248C3.49195 2.35248 2.35248 3.49359 2.35248 4.90532C2.35248 6.38164 3.20954 7.9168 4.37255 9.33522C5.39396 10.581 6.59464 11.6702 7.50002 12.4778C8.4054 11.6702 9.60608 10.581 10.6275 9.33522C11.7905 7.9168 12.6476 6.38164 12.6476 4.90532C12.6476 3.49359 11.5081 2.35248 10.1066 2.35248C9.27059 2.35248 8.81894 2.64323 8.5397 2.95843C8.27877 3.25295 8.14623 3.58566 8.02501 3.88993C8.00391 3.9429 7.98315 3.99501 7.96211 4.04591C7.88482 4.23294 7.7024 4.35494 7.50002 4.35494C7.29765 4.35494 7.11523 4.23295 7.03793 4.04592C7.01689 3.99501 6.99612 3.94289 6.97502 3.8899C6.8538 3.58564 6.72126 3.25294 6.46034 2.95843C6.18109 2.64323 5.72945 2.35248 4.89346 2.35248ZM1.35248 4.90532C1.35248 2.94498 2.936 1.35248 4.89346 1.35248C6.0084 1.35248 6.73504 1.76049 7.20884 2.2953C7.32062 2.42147 7.41686 2.55382 7.50002 2.68545C7.58318 2.55382 7.67941 2.42147 7.79119 2.2953C8.265 1.76049 8.99164 1.35248 10.1066 1.35248C12.064 1.35248 13.6476 2.94498 13.6476 4.90532C13.6476 6.74041 12.6013 8.50508 11.4008 9.96927C10.2636 11.3562 8.92194 12.5508 8.00601 13.3664C7.94645 13.4194 7.88869 13.4709 7.83291 13.5206C7.64324 13.6899 7.3568 13.6899 7.16713 13.5206C7.11135 13.4709 7.05359 13.4194 6.99403 13.3664C6.0781 12.5508 4.73641 11.3562 3.59926 9.96927C2.39872 8.50508 1.35248 6.74041 1.35248 4.90532Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>`
+        thankButton.innerHTML =
+          '<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4.89346 2.35248C3.49195 2.35248 2.35248 3.49359 2.35248 4.90532C2.35248 6.38164 3.20954 7.9168 4.37255 9.33522C5.39396 10.581 6.59464 11.6702 7.50002 12.4778C8.4054 11.6702 9.60608 10.581 10.6275 9.33522C11.7905 7.9168 12.6476 6.38164 12.6476 4.90532C12.6476 3.49359 11.5081 2.35248 10.1066 2.35248C9.27059 2.35248 8.81894 2.64323 8.5397 2.95843C8.27877 3.25295 8.14623 3.58566 8.02501 3.88993C8.00391 3.9429 7.98315 3.99501 7.96211 4.04591C7.88482 4.23294 7.7024 4.35494 7.50002 4.35494C7.29765 4.35494 7.11523 4.23295 7.03793 4.04592C7.01689 3.99501 6.99612 3.94289 6.97502 3.8899C6.8538 3.58564 6.72126 3.25294 6.46034 2.95843C6.18109 2.64323 5.72945 2.35248 4.89346 2.35248ZM1.35248 4.90532C1.35248 2.94498 2.936 1.35248 4.89346 1.35248C6.0084 1.35248 6.73504 1.76049 7.20884 2.2953C7.32062 2.42147 7.41686 2.55382 7.50002 2.68545C7.58318 2.55382 7.67941 2.42147 7.79119 2.2953C8.265 1.76049 8.99164 1.35248 10.1066 1.35248C12.064 1.35248 13.6476 2.94498 13.6476 4.90532C13.6476 6.74041 12.6013 8.50508 11.4008 9.96927C10.2636 11.3562 8.92194 12.5508 8.00601 13.3664C7.94645 13.4194 7.88869 13.4709 7.83291 13.5206C7.64324 13.6899 7.3568 13.6899 7.16713 13.5206C7.11135 13.4709 7.05359 13.4194 6.99403 13.3664C6.0781 12.5508 4.73641 11.3562 3.59926 9.96927C2.39872 8.50508 1.35248 6.74041 1.35248 4.90532Z" fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path></svg>'
       }
     }
   }
   var fetchOnce = async () => {
-    const url = `${location.protocol}//${location.host}/poll_once`
+    const url = ""
+      .concat(location.protocol, "//")
+      .concat(location.host, "/poll_once")
     const response = await fetch(url)
     try {
       if (response.status === 200) {
@@ -1164,17 +1307,24 @@
       if ($("#once")) {
         $("#once").value = once
       }
-      const links = $$(`a[href*="once="]`)
+      const links = $$('a[href*="once="]')
       for (const link of links) {
         const href = getAttribute(link, "href")
-        setAttribute(link, "href", href.replace(/once=\d+/, `once=${once}`))
+        setAttribute(
+          link,
+          "href",
+          href.replace(/once=\d+/, "once=".concat(once))
+        )
       }
     }
   }
   var storageKey2 = "dailyCheckIn"
   var retryCount = 0
   var fetchCheckInApi = async (once) => {
-    const url = `${location.protocol}//${location.host}/mission/daily/redeem?once=${once}`
+    const url = ""
+      .concat(location.protocol, "//")
+      .concat(location.host, "/mission/daily/redeem?once=")
+      .concat(once)
     try {
       const response = await fetch(url)
       if (response.status === 200) {
@@ -1191,6 +1341,9 @@
   }
   var dailyCheckIn = async () => {
     var _a
+    if ($('a[href*="/signin"]')) {
+      return
+    }
     const once = getOnce()
     if (!once) {
       return
@@ -1211,7 +1364,7 @@
     ) {
       console.info("[V2EX.REP] \u7B7E\u5230\u6210\u529F")
       await setValue(storageKey2, Date.now())
-      const checkInLink = $(`a[href^="/mission/daily"]`)
+      const checkInLink = $('a[href^="/mission/daily"]')
       if (checkInLink) {
         const box = checkInLink.closest(".box")
         if (box) {
@@ -1280,7 +1433,10 @@
     addElement2(tabs, "a", {
       class: type === "posted" ? "tab_current" : "tab",
       href: actionHref,
-      textContent: `\u4EC5 ${memberId} \u53D1\u8868\u7684\u56DE\u590D`,
+      textContent: "\u4EC5 ".concat(
+        memberId,
+        " \u53D1\u8868\u7684\u56DE\u590D"
+      ),
       onclick() {
         showRelatedReplies(referElement, memberId, "posted")
       },
@@ -1307,7 +1463,8 @@
     if (beforeCount === 0 && afterCount === 0) {
       addElement2(box, "div", {
         class: "cell",
-        innerHTML: `<span class="fade">\u672C\u9875\u9762\u6CA1\u6709\u5176\u4ED6\u56DE\u590D</span>`,
+        innerHTML:
+          '<span class="fade">\u672C\u9875\u9762\u6CA1\u6709\u5176\u4ED6\u56DE\u590D</span>',
       })
       if (!type || type === "all") {
         tabs.remove()
@@ -1326,13 +1483,21 @@
     if (beforeCount === 0 && afterCount > 0) {
       addElement2(box, "div", {
         class: "cell",
-        innerHTML: `<span class="fade">\u8FD9\u6761\u56DE\u590D\u540E\u9762\u8FD8\u6709 ${afterCount} \u6761\u56DE\u590D</span>`,
+        innerHTML:
+          '<span class="fade">\u8FD9\u6761\u56DE\u590D\u540E\u9762\u8FD8\u6709 '.concat(
+            afterCount,
+            " \u6761\u56DE\u590D</span>"
+          ),
       })
     }
     if (beforeCount > 0 && afterCount === 0) {
       addElement2(box2, "div", {
         class: "cell",
-        innerHTML: `<span class="fade">\u8FD9\u6761\u56DE\u590D\u524D\u9762\u8FD8\u6709 ${beforeCount} \u6761\u56DE\u590D</span>`,
+        innerHTML:
+          '<span class="fade">\u8FD9\u6761\u56DE\u590D\u524D\u9762\u8FD8\u6709 '.concat(
+            beforeCount,
+            " \u6761\u56DE\u590D</span>"
+          ),
       })
     }
     const width = main2.offsetWidth + "px"
@@ -1401,12 +1566,15 @@
     const replies = []
     const replyElements = getCachedReplyElements()
     for (const replyElement of replyElements) {
-      const memberLink = $(`a[href^="/member/${memberId}"]`, replyElement)
+      const memberLink = $(
+        'a[href^="/member/'.concat(memberId, '"]'),
+        replyElement
+      )
       if (!memberLink) {
         continue
       }
       let cloned = cloneReplyElement(replyElement, true)
-      const memberLink2 = $(`a[href^="/member/${memberId}"]`, cloned)
+      const memberLink2 = $('a[href^="/member/'.concat(memberId, '"]'), cloned)
       if (!memberLink2) {
         continue
       }
@@ -1536,11 +1704,11 @@
     if (cached) {
       return cached
     }
-    const url = `${location.protocol}//${
-      location.host
-    }/api/replies/show.json?topic_id=${topicId}${
-      replyCount ? "&replyCount=" + String(replyCount) : ""
-    }`
+    const url = ""
+      .concat(location.protocol, "//")
+      .concat(location.host, "/api/replies/show.json?topic_id=")
+      .concat(topicId)
+      .concat(replyCount ? "&replyCount=" + String(replyCount) : "")
     try {
       const response = await fetch(url)
       if (response.status === 200) {
@@ -1572,10 +1740,11 @@
   }
   var updateAllFloorNumberById = (id, newFloorNumber) => {
     for (const replyElement of $$(
-      `#r_${id},
-     #top_r_${id},
-     #related_r_${id},
-     #cited_r_${id}`
+      "#r_"
+        .concat(id, ",\n     #top_r_")
+        .concat(id, ",\n     #related_r_")
+        .concat(id, ",\n     #cited_r_")
+        .concat(id)
     )) {
       updateFloorNumber(replyElement, newFloorNumber)
     }
@@ -1583,7 +1752,10 @@
   var printHiddenReplies = (hiddenReplies) => {
     for (const reply of hiddenReplies) {
       console.group(
-        `[V2EX.REP] \u5C4F\u853D\u6216\u9690\u85CF\u7684\u56DE\u590D: #${reply.floorNumber}, \u7528\u6237 ID: ${reply.userId}, \u56DE\u590D ID: ${reply.replyId}, \u56DE\u590D\u5185\u5BB9: `
+        "[V2EX.REP] \u5C4F\u853D\u6216\u9690\u85CF\u7684\u56DE\u590D: #"
+          .concat(reply.floorNumber, ", \u7528\u6237 ID: ")
+          .concat(reply.userId, ", \u56DE\u590D ID: ")
+          .concat(reply.replyId, ", \u56DE\u590D\u5185\u5BB9: ")
       )
       console.info(reply.replyContent)
       console.groupEnd()
@@ -1638,9 +1810,10 @@
       }
     }
     console.info(
-      `[V2EX.REP] page: ${page}, floorNumberOffset: ${floorNumberOffset}, hiddenCount: ${
-        hiddenCount + hiddenCount2
-      }`
+      "[V2EX.REP] page: "
+        .concat(page, ", floorNumberOffset: ")
+        .concat(floorNumberOffset, ", hiddenCount: ")
+        .concat(hiddenCount + hiddenCount2)
     )
     if (floorNumberOffset > 0) {
       for (const element of replyElements) {
@@ -1780,14 +1953,18 @@
   }
   var retryCount3 = 0
   var getTopicPage = async (topicId, page = 1) => {
-    const url = `${location.protocol}//${location.host}/t/${topicId}?p=${page}`
+    const url = ""
+      .concat(location.protocol, "//")
+      .concat(location.host, "/t/")
+      .concat(topicId, "?p=")
+      .concat(page)
     try {
       const response = await fetch(url)
       if (response.status === 200) {
         return await response.text()
       }
     } catch (error) {
-      console.error(error, `page ${page}`)
+      console.error(error, "page ".concat(page))
       retryCount3++
       if (retryCount3 < 10) {
         await sleep(1e3)
@@ -1816,9 +1993,9 @@
     if (!page) {
       return
     }
-    history.pushState(null, null, `?p=${page}`)
+    history.pushState(null, null, "?p=".concat(page))
     const main2 = $("#Main") || $(".content")
-    const firstReply = $(`.cell[data-page="${page}"]`, main2)
+    const firstReply = $('.cell[data-page="'.concat(page, '"]'), main2)
     if (firstReply) {
       firstReply.scrollIntoView({ block: "start" })
       event.preventDefault()
@@ -1955,8 +2132,7 @@
       const totalPage = Math.ceil(repliesCount / 100)
       const orgReplyElements = getCachedReplyElements()
       const firstReply = orgReplyElements[0]
-      const pageElement =
-        orgReplyElements[orgReplyElements.length - 1].nextElementSibling
+      const pageElement = orgReplyElements.at(-1).nextElementSibling
       addClass(pageElement, "sticky_paging")
       updatePagingElements()
       for (const replyElement of orgReplyElements) {
@@ -2078,7 +2254,7 @@
     history.replaceState(null, "", newHref)
   }
   var getVisitedUrl = (href, replyCount) =>
-    href.replace(/[?#].*|$/, `#reply${replyCount}`)
+    href.replace(/[?#].*|$/, "#reply".concat(replyCount))
   var markAsVisited = (href, replyCount) => {
     for (
       let count = Math.max(replyCount - 10, 1);
@@ -2117,7 +2293,7 @@
           "onclick",
           onclick.replace(
             /replyOne\('(\w+)(?: .*)?'\)/,
-            `replyOne('$1 #${number}')`
+            "replyOne('$1 #".concat(number, "')")
           )
         )
         replyButton.outerHTML = replyButton.outerHTML
@@ -2256,7 +2432,8 @@
       const box = createElement("div", {
         class: "box",
         id: "top_replies",
-        innerHTML: `<div class="cell"><div class="fr"></div><span class="fade">\u5F53\u524D\u9875\u70ED\u95E8\u56DE\u590D</span></div>`,
+        innerHTML:
+          '<div class="cell"><div class="fr"></div><span class="fade">\u5F53\u524D\u9875\u70ED\u95E8\u56DE\u590D</span></div>',
       })
       for (const element of topReplies) {
         const cloned = cloneReplyElement(element, true)
@@ -2313,7 +2490,7 @@
     const clidenId = imgurClientIdPool[randomIndex]
     const response = await fetch("https://api.imgur.com/3/upload", {
       method: "POST",
-      headers: { Authorization: `Client-ID ${clidenId}` },
+      headers: { Authorization: "Client-ID ".concat(clidenId) },
       body: formData,
     })
     if (response.ok) {
@@ -2438,17 +2615,17 @@
         }
         const detail = event.detail
         const fileName = detail.file.name || "noname"
-        detail.placeholder = placeholder.replace(/]/, ` (${fileName})]`)
+        detail.placeholder = placeholder.replace(
+          /]/,
+          " (".concat(fileName, ")]")
+        )
         const replyTextArea2 = getReplyInputElement()
         if (replyTextArea2) {
           insertTextToReplyInput(
             replyTextArea2.value.trim().length > 0 &&
               replyTextArea2.selectionStart > 0
-              ? `
-${detail.placeholder}
-`
-              : `${detail.placeholder}
-`
+              ? "\n".concat(detail.placeholder, "\n")
+              : "".concat(detail.placeholder, "\n")
           )
         }
       },
@@ -2553,7 +2730,7 @@ ${detail.placeholder}
     },
     quickNavigation: {
       title: "\u53CC\u51FB\u7A7A\u767D\u5904\u5FEB\u901F\u5BFC\u822A",
-      defaultValue: true,
+      defaultValue: false,
     },
   }
   function registerMenuCommands() {
@@ -2627,30 +2804,18 @@ ${detail.placeholder}
     }
   }
   async function main() {
-    if (!document.body) {
-      setTimeout(main, 100)
-      return
-    }
     await initSettings({
       id: "v2ex.rep",
       title: "V2EX.REP",
-      footer: `
-    <p>\u66F4\u6539\u8BBE\u7F6E\u540E\uFF0C\u9700\u8981\u91CD\u65B0\u52A0\u8F7D\u9875\u9762</p>
-    <p>
-    <a href="https://github.com/v2hot/v2ex.rep/issues" target="_blank">
-    \u95EE\u9898\u53CD\u9988
-    </a></p>
-    <p>Made with \u2764\uFE0F by
-    <a href="https://www.pipecraft.net/" target="_blank">
-      Pipecraft
-    </a></p>`,
+      footer:
+        '\n    <p>\u66F4\u6539\u8BBE\u7F6E\u540E\uFF0C\u9700\u8981\u91CD\u65B0\u52A0\u8F7D\u9875\u9762</p>\n    <p>\n    <a href="https://github.com/v2hot/v2ex.rep/issues" target="_blank">\n    \u95EE\u9898\u53CD\u9988\n    </a></p>\n    <p>Made with \u2764\uFE0F by\n    <a href="https://www.pipecraft.net/" target="_blank">\n      Pipecraft\n    </a></p>',
       settingsTable: settingsTable2,
       async onValueChange() {
         await process3()
       },
     })
     registerMenuCommands()
-    addStyle2(content_default)
+    addStyle(content_default)
     const resetCachedReplyElementsThenProcess = async () => {
       resetCachedReplyElements()
       await process3()
@@ -2704,5 +2869,5 @@ ${detail.placeholder}
       subtree: true,
     })
   }
-  main()
+  runWhenBodyExists(main)
 })()
