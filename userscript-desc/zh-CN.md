@@ -77,9 +77,13 @@
 - [🏷️ 小鱼标签 (UTags) - 为链接添加用户标签，支持 V2EX](https://greasyfork.org/scripts/460718-utags-add-usertags-to-links)
 - [🔗 链接助手](https://greasyfork.org/scripts/464541-links-helper) - 支持所有网站在新标签页中打开第三方网站链接（外链），在新标签页中打开符合指定规则的本站链接，解析文本链接为超链接，微信公众号文本转可点击的超链接，图片链接转图片标签，解析 Markdown 格式链接与图片标签
 - [v2ex.min - V2EX 极简风格](https://greasyfork.org/scripts/463552-v2ex-min)
+- [赐你个头像吧](https://greasyfork.org/scripts/472616-replace-ugly-avatars) - 🔃 换掉别人的头像与昵称
 
 ## Release Notes
 
+- 1.5.0
+  - 添加引用回复的遮罩不透明度设置功能
+  - 修改引用回复的遮罩半透明实现方式，防止 Chrome, Edge 浏览器中文字变模糊
 - 1.4.7 2023.07.06
   - 格式化控制台里打印的屏蔽或隐藏的回复内容
   - 控制台里打印 utags 隐藏的回复
