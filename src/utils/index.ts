@@ -230,27 +230,6 @@ export const getPagingPreviousButtons = () =>
   )
 export const getPagingNextButtons = () => $$(".normal_page_right")
 
-const cacheStore = {}
-const makeKey = (key: string | any[]) =>
-  Array.isArray(key) ? key.join(":") : key
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const Cache = {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  get: (key: string | any[]) => cacheStore[makeKey(key)],
-  add(key: string | any[], value: any) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    cacheStore[makeKey(key)] = value
-  },
-}
-
-export const sleep = async (time: number) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(1)
-    }, time)
-  })
-}
-
 export const getReplyInputElement = () => {
   return $("#reply_content") as HTMLTextAreaElement | undefined
 }
@@ -326,12 +305,4 @@ export const getOnce = () => {
   const html = doc.body.innerHTML
   const once = (/once=(\d+)/.exec(html) || [])[1]
   return once
-}
-
-export const isVisible = (element: HTMLElement) => {
-  if (typeof element.checkVisibility === "function") {
-    return element.checkVisibility()
-  }
-
-  return element.offsetParent !== null
 }
