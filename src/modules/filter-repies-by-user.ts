@@ -7,6 +7,7 @@ import {
   addEventListener,
   doc,
   getOffsetPosition,
+  hasClass,
   isTouchScreen,
   removeEventListener,
   setStyle,
@@ -122,6 +123,7 @@ const showModalReplies = (
   if (beforeCount === 0 && afterCount === 0) {
     addElement(box, "div", {
       class: "cell",
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       innerHTML: `<span class="fade">本页面没有其他回复</span>`,
     })
     if (!type || type === "all") {
@@ -143,6 +145,7 @@ const showModalReplies = (
   if (beforeCount === 0 && afterCount > 0) {
     addElement(box, "div", {
       class: "cell",
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       innerHTML: `<span class="fade">这条回复后面还有 ${afterCount} 条回复</span>`,
     })
   }
@@ -150,6 +153,7 @@ const showModalReplies = (
   if (beforeCount > 0 && afterCount === 0) {
     addElement(box2, "div", {
       class: "cell",
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       innerHTML: `<span class="fade">这条回复前面还有 ${beforeCount} 条回复</span>`,
     })
   }
@@ -208,7 +212,10 @@ export const filterRepliesPostedByMember = (memberIds: string[]) => {
   const replies: HTMLElement[] = []
   const replyElements = getCachedReplyElements()
   for (const replyElement of replyElements) {
-    const memberLink = $('a[href^="/member/"]', replyElement)
+    const memberLink = $(
+      'a[href^="/member/"]',
+      replyElement
+    ) as HTMLAnchorElement
     if (!memberLink) {
       continue
     }
@@ -265,13 +272,13 @@ const showRelatedReplies = (
   showModalReplies(replies, memberLink, memberId, type)
 }
 
-const onMouseOver = (event) => {
+const onMouseOver = (event: Event) => {
   if (timeoutId) {
     clearTimeout(timeoutId)
     timeoutId = undefined
   }
 
-  const memberLink = event.target
+  const memberLink = event.target as HTMLAnchorElement
   timeoutId = setTimeout(() => {
     // console.log(memberLink)
     const memberId = (/member\/(\w+)/.exec(memberLink.href) || [])[1]
@@ -303,11 +310,24 @@ const closeModal = (closeLast = false) => {
   }
 }
 
-const onDocumentClick = (event) => {
-  const target = event.target
+const onDocumentClick = (event: Event) => {
+  const target = event.target as HTMLElement
+
+  if (target.closest(".utags_ul")) {
+    if (
+      hasClass(target, "utags_captain_tag") ||
+      hasClass(target, "utags_captain_tag2")
+    ) {
+      event.preventDefault()
+    }
+
+    return
+  }
 
   if (isTouchScreen1) {
-    const memberLink = target.closest('a[href^="/member/"]')
+    const memberLink = target.closest('a[href^="/member/"]') as
+      | HTMLElement
+      | undefined
     if (memberLink && !$("img", memberLink)) {
       event.preventDefault()
       event.stopPropagation()
