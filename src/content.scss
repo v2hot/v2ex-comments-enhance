@@ -155,7 +155,7 @@ a.no {
     bottom: 0;
     width: 100%;
     height: 100%;
-    opacity: 0.5;
+    opacity: 0.45;
     background-color: var(--box-background-color);
   }
   &:hover::after {
@@ -186,6 +186,16 @@ a.no {
       border-radius: 10px;
     }
   }
+}
+
+[data-vr-opaticy-of-cited-replies="0"] .reply_content .cell.cited_reply::after {
+  display: none;
+}
+[data-vr-opaticy-of-cited-replies="1"] .reply_content .cell.cited_reply::after {
+  opacity: 0.2;
+}
+[data-vr-opaticy-of-cited-replies="3"] .reply_content .cell.cited_reply::after {
+  opacity: 0.6;
 }
 
 /* v2ex polish */

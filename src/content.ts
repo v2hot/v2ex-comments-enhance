@@ -64,6 +64,18 @@ const settingsTable = {
     title: "显示被引用的回复",
     defaultValue: true,
   },
+  opaticyOfCitedReplies: {
+    title: "被引用的回复上面遮罩的不透明度",
+    type: "select",
+    // 默认值：中
+    defaultValue: "2",
+    options: {
+      无遮罩: "0",
+      低: "1",
+      中: "2",
+      高: "3",
+    },
+  },
   filterRepliesByUser: {
     title: "查看用户在当前主题下的所有回复与被提及的回复",
     description:
@@ -123,6 +135,13 @@ function registerMenuCommands() {
 let fixedReplyFloorNumbers = false
 
 async function process() {
+  const opaticyOfCitedReplies = getSettingsValue(
+    "opaticyOfCitedReplies"
+  ) as string
+  if (doc.documentElement) {
+    doc.documentElement.dataset.vrOpaticyOfCitedReplies = opaticyOfCitedReplies
+  }
+
   const domReady =
     doc.readyState === "interactive" || doc.readyState === "complete"
 
@@ -302,4 +321,7 @@ async function main() {
   })
 }
 
-runWhenBodyExists(main)
+if (!doc.v2ex_rep) {
+  runWhenBodyExists(main)
+  doc.v2ex_rep = true
+}
