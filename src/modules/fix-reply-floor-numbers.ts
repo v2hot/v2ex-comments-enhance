@@ -1,18 +1,22 @@
-import { $, $$, win as window } from "browser-extension-utils"
+import {
+  $,
+  $$,
+  cache,
+  isVisible,
+  sleep,
+  win as window,
+} from "browser-extension-utils"
 
 import {
-  Cache,
   getFloorNumberElement,
   getRepliesCount,
   getReplyId,
-  isVisible,
   parseUrl,
-  sleep,
 } from "../utils"
 
 let retryCount = 0
 const getTopicReplies = async (topicId: string, replyCount?: number) => {
-  const cached = Cache.get(["getTopicReplies", topicId, replyCount]) as
+  const cached = cache.get(["getTopicReplies", topicId, replyCount]) as
     | Record<string, unknown>
     | undefined
   if (cached) {
@@ -30,7 +34,7 @@ const getTopicReplies = async (topicId: string, replyCount?: number) => {
 
     if (response.status === 200) {
       const result = (await response.json()) as Record<string, unknown>
-      Cache.add(["getTopicReplies", topicId, replyCount], result)
+      cache.add(["getTopicReplies", topicId, replyCount], result)
       return result
     }
   } catch (error) {

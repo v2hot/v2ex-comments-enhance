@@ -8,6 +8,7 @@ import {
   hasClass,
   removeClass,
   runOnce,
+  sleep,
   win as window,
 } from "browser-extension-utils"
 
@@ -17,7 +18,6 @@ import {
   getPagingPreviousButtons,
   getRepliesCount,
   parseUrl,
-  sleep,
 } from "../utils"
 import { lazyLoadAvatars } from "./lazy-load-avatars"
 

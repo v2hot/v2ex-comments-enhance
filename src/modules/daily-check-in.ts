@@ -1,7 +1,7 @@
 import { getValue, setValue } from "browser-extension-storage"
-import { $ } from "browser-extension-utils"
+import { $, sleep } from "browser-extension-utils"
 
-import { getOnce, sleep } from "../utils"
+import { getOnce } from "../utils"
 import { updateOnce } from "./update-once"
 
 const storageKey = "dailyCheckIn"
