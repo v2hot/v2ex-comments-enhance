@@ -321,7 +321,9 @@ async function main() {
   })
 }
 
-if (!doc.v2ex_rep) {
-  runWhenBodyExists(main)
-  doc.v2ex_rep = true
-}
+runWhenBodyExists(async () => {
+  if (doc.documentElement.dataset.v2exRep === undefined) {
+    doc.documentElement.dataset.v2exRep = ""
+    await main()
+  }
+})
