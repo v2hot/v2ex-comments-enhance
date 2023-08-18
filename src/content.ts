@@ -30,6 +30,7 @@ import { quickHideReply } from "./modules/quick-hide-reply"
 import { quickNavigation } from "./modules/quick-navigation"
 import { quickSendThank } from "./modules/quick-send-thank"
 import { removeLocationHash } from "./modules/remove-location-hash"
+import { replaceFavicon } from "./modules/replace-favicon"
 import { replyWithFloorNumber } from "./modules/reply-with-floor-number"
 import { showCitedReplies } from "./modules/show-cited-replies"
 import { showTopReplies } from "./modules/show-top-replies"
@@ -126,6 +127,17 @@ const settingsTable = {
     title: "双击空白处快速导航",
     defaultValue: false,
   },
+  replaceFavicon: {
+    title: "更换 favicon 图标",
+    type: "select",
+    defaultValue: "default",
+    options: {
+      默认: "default",
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      GitHub: "github",
+      用户头像: "avatar",
+    },
+  },
 }
 
 function registerMenuCommands() {
@@ -152,6 +164,8 @@ async function process() {
       setTimeout(dailyCheckIn, 1000)
     })
   }
+
+  replaceFavicon(getSettingsValue("replaceFavicon") as string)
 
   if (/\/t\/\d+/.test(location.href)) {
     const replyElements = getReplyElements()
