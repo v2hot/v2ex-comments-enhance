@@ -1,14 +1,9 @@
-import {
-  getSettingsValue,
-  initSettings,
-  showSettings,
-} from "browser-extension-settings"
+import { getSettingsValue, initSettings } from "browser-extension-settings"
 import {
   $,
   addEventListener,
   addStyle,
   doc,
-  registerMenuCommand,
   runOnce,
   runWhenBodyExists,
   throttle,
@@ -140,10 +135,6 @@ const settingsTable = {
   },
 }
 
-function registerMenuCommands() {
-  registerMenuCommand("⚙️ 设置", showSettings, "o")
-}
-
 let fixedReplyFloorNumbers = false
 
 async function process() {
@@ -268,7 +259,6 @@ async function main() {
       await process()
     },
   })
-  registerMenuCommands()
 
   addStyle(styleText)
 
