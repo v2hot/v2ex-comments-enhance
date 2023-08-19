@@ -4,7 +4,7 @@
 // @namespace            https://github.com/v2hot/v2ex.rep
 // @homepageURL          https://github.com/v2hot/v2ex.rep#readme
 // @supportURL           https://github.com/v2hot/v2ex.rep/issues
-// @version              1.5.0
+// @version              1.5.1
 // @description          专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 自动预加载所有分页，支持解析显示跨页面引用；✅ 回复时上传图片；✅ 无感自动签到；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
 // @description:zh-CN    专注提升 V2EX 主题回复浏览体验的浏览器扩展/用户脚本。主要功能有 ✅ 修复有被 block 的用户时错位的楼层号；✅ 回复时自动带上楼层号；✅ 显示热门回复；✅ 显示被引用的回复；✅ 查看用户在当前主题下的所有回复与被提及的回复；✅ 自动预加载所有分页，支持解析显示跨页面引用；✅ 回复时上传图片；✅ 无感自动签到；✅ 懒加载用户头像图片；✅ 一直显示感谢按钮 🙏；✅ 一直显示隐藏回复按钮 🙈；✅ 快速发送感谢/快速隐藏回复（no confirm）等。
 // @icon                 https://www.v2ex.com/favicon.ico
@@ -48,9 +48,9 @@
     listeners[key].push(func)
     return () => {
       if (listeners[key] && listeners[key].length > 0) {
-        for (let i = listeners[key].length - 1; i >= 0; i--) {
-          if (listeners[key][i] === func) {
-            listeners[key].splice(i, 1)
+        for (let i2 = listeners[key].length - 1; i2 >= 0; i2--) {
+          if (listeners[key][i2] === func) {
+            listeners[key].splice(i2, 1)
           }
         }
       }
@@ -278,6 +278,7 @@
     const result = Number.parseInt(number, 10)
     return Number.isNaN(result) ? defaultValue : result
   }
+  var rootFuncArray = []
   var headFuncArray = []
   var bodyFuncArray = []
   var headBodyObserver
@@ -288,6 +289,12 @@
     headBodyObserver = new MutationObserver(() => {
       if (doc.head && doc.body) {
         headBodyObserver.disconnect()
+      }
+      if (doc.documentElement && rootFuncArray.length > 0) {
+        for (const func of rootFuncArray) {
+          func()
+        }
+        rootFuncArray.length = 0
       }
       if (doc.head && headFuncArray.length > 0) {
         for (const func of headFuncArray) {
@@ -432,46 +439,152 @@
     div.append(createSwitch(options))
     return div
   }
-  var besVersion = 40
+  var besVersion = 50
   var openButton =
     '<svg viewBox="0 0 60.2601318359375 84.8134765625" version="1.1" xmlns="http://www.w3.org/2000/svg" class=" glyph-box" style="height: 9.62969px; width: 6.84191px;"><g transform="matrix(1 0 0 1 -6.194965820312518 77.63671875)"><path d="M66.4551-35.2539C66.4551-36.4746 65.9668-37.5977 65.0391-38.4766L26.3672-76.3672C25.4883-77.1973 24.4141-77.6367 23.1445-77.6367C20.6543-77.6367 18.7012-75.7324 18.7012-73.1934C18.7012-71.9727 19.1895-70.8496 19.9707-70.0195L55.5176-35.2539L19.9707-0.488281C19.1895 0.341797 18.7012 1.41602 18.7012 2.68555C18.7012 5.22461 20.6543 7.12891 23.1445 7.12891C24.4141 7.12891 25.4883 6.68945 26.3672 5.81055L65.0391-32.0312C65.9668-32.959 66.4551-34.0332 66.4551-35.2539Z"></path></g></svg>'
   var openInNewTabButton =
     '<svg viewBox="0 0 72.127685546875 72.2177734375" version="1.1" xmlns="http://www.w3.org/2000/svg" class=" glyph-box" style="height: 8.19958px; width: 8.18935px;"><g transform="matrix(1 0 0 1 -12.451127929687573 71.3388671875)"><path d="M84.5703-17.334L84.5215-66.4551C84.5215-69.2383 82.7148-71.1914 79.7852-71.1914L30.6641-71.1914C27.9297-71.1914 26.0742-69.0918 26.0742-66.748C26.0742-64.4043 28.1738-62.4023 30.4688-62.4023L47.4609-62.4023L71.2891-63.1836L62.207-55.2246L13.8184-6.73828C12.9395-5.85938 12.4512-4.73633 12.4512-3.66211C12.4512-1.31836 14.5508 0.878906 16.9922 0.878906C18.1152 0.878906 19.1895 0.488281 20.0684-0.439453L68.5547-48.877L76.6113-58.0078L75.7324-35.2051L75.7324-17.1387C75.7324-14.8438 77.7344-12.6953 80.127-12.6953C82.4707-12.6953 84.5703-14.6973 84.5703-17.334Z"></path></g></svg>'
   var settingButton =
     '<svg viewBox="0 0 16 16" version="1.1">\n<path d="M8 0a8.2 8.2 0 0 1 .701.031C9.444.095 9.99.645 10.16 1.29l.288 1.107c.018.066.079.158.212.224.231.114.454.243.668.386.123.082.233.09.299.071l1.103-.303c.644-.176 1.392.021 1.82.63.27.385.506.792.704 1.218.315.675.111 1.422-.364 1.891l-.814.806c-.049.048-.098.147-.088.294.016.257.016.515 0 .772-.01.147.038.246.088.294l.814.806c.475.469.679 1.216.364 1.891a7.977 7.977 0 0 1-.704 1.217c-.428.61-1.176.807-1.82.63l-1.102-.302c-.067-.019-.177-.011-.3.071a5.909 5.909 0 0 1-.668.386c-.133.066-.194.158-.211.224l-.29 1.106c-.168.646-.715 1.196-1.458 1.26a8.006 8.006 0 0 1-1.402 0c-.743-.064-1.289-.614-1.458-1.26l-.289-1.106c-.018-.066-.079-.158-.212-.224a5.738 5.738 0 0 1-.668-.386c-.123-.082-.233-.09-.299-.071l-1.103.303c-.644.176-1.392-.021-1.82-.63a8.12 8.12 0 0 1-.704-1.218c-.315-.675-.111-1.422.363-1.891l.815-.806c.05-.048.098-.147.088-.294a6.214 6.214 0 0 1 0-.772c.01-.147-.038-.246-.088-.294l-.815-.806C.635 6.045.431 5.298.746 4.623a7.92 7.92 0 0 1 .704-1.217c.428-.61 1.176-.807 1.82-.63l1.102.302c.067.019.177.011.3-.071.214-.143.437-.272.668-.386.133-.066.194-.158.211-.224l.29-1.106C6.009.645 6.556.095 7.299.03 7.53.01 7.764 0 8 0Zm-.571 1.525c-.036.003-.108.036-.137.146l-.289 1.105c-.147.561-.549.967-.998 1.189-.173.086-.34.183-.5.29-.417.278-.97.423-1.529.27l-1.103-.303c-.109-.03-.175.016-.195.045-.22.312-.412.644-.573.99-.014.031-.021.11.059.19l.815.806c.411.406.562.957.53 1.456a4.709 4.709 0 0 0 0 .582c.032.499-.119 1.05-.53 1.456l-.815.806c-.081.08-.073.159-.059.19.162.346.353.677.573.989.02.03.085.076.195.046l1.102-.303c.56-.153 1.113-.008 1.53.27.161.107.328.204.501.29.447.222.85.629.997 1.189l.289 1.105c.029.109.101.143.137.146a6.6 6.6 0 0 0 1.142 0c.036-.003.108-.036.137-.146l.289-1.105c.147-.561.549-.967.998-1.189.173-.086.34-.183.5-.29.417-.278.97-.423 1.529-.27l1.103.303c.109.029.175-.016.195-.045.22-.313.411-.644.573-.99.014-.031.021-.11-.059-.19l-.815-.806c-.411-.406-.562-.957-.53-1.456a4.709 4.709 0 0 0 0-.582c-.032-.499.119-1.05.53-1.456l.815-.806c.081-.08.073-.159.059-.19a6.464 6.464 0 0 0-.573-.989c-.02-.03-.085-.076-.195-.046l-1.102.303c-.56.153-1.113.008-1.53-.27a4.44 4.44 0 0 0-.501-.29c-.447-.222-.85-.629-.997-1.189l-.289-1.105c-.029-.11-.101-.143-.137-.146a6.6 6.6 0 0 0-1.142 0ZM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM9.5 8a1.5 1.5 0 1 0-3.001.001A1.5 1.5 0 0 0 9.5 8Z"></path>\n</svg>'
+  function initI18n(messageMaps, language) {
+    language = (language || navigator.language).toLowerCase()
+    const language2 = language.slice(0, 2)
+    let messagesDefault
+    let messagesLocal
+    for (const entry of Object.entries(messageMaps)) {
+      const langs = new Set(
+        entry[0]
+          .toLowerCase()
+          .split(",")
+          .map((v) => v.trim())
+      )
+      const value = entry[1]
+      if (langs.has(language)) {
+        messagesLocal = value
+      }
+      if (langs.has(language2) && !messagesLocal) {
+        messagesLocal = value
+      }
+      if (langs.has("en")) {
+        messagesDefault = value
+      }
+      if (langs.has("en-us") && !messagesDefault) {
+        messagesDefault = value
+      }
+    }
+    if (!messagesLocal) {
+      messagesLocal = {}
+    }
+    if (!messagesDefault || messagesDefault === messagesLocal) {
+      messagesDefault = {}
+    }
+    return function (key, ...parameters) {
+      let text = messagesLocal[key] || messagesDefault[key] || key
+      if (parameters && parameters.length > 0 && text !== key) {
+        for (let i2 = 0; i2 < parameters.length; i2++) {
+          text = text.replaceAll(
+            new RegExp("\\{".concat(i2 + 1, "\\}"), "g"),
+            String(parameters[i2])
+          )
+        }
+      }
+      return text
+    }
+  }
+  var messages = {
+    "settings.displaySettingsButtonInSideMenu":
+      "Display Settings Button in Side Menu",
+    "settings.menu.settings": "\u2699\uFE0F Settings",
+    "settings.extensions.utags.title":
+      "\u{1F3F7}\uFE0F UTags - Add usertags to links",
+    "settings.extensions.links-helper.title": "\u{1F517} Links Helper",
+    "settings.extensions.v2ex.rep.title":
+      "V2EX.REP - \u4E13\u6CE8\u63D0\u5347 V2EX \u4E3B\u9898\u56DE\u590D\u6D4F\u89C8\u4F53\u9A8C",
+    "settings.extensions.v2ex.min.title":
+      "v2ex.min - V2EX Minimalist (\u6781\u7B80\u98CE\u683C)",
+    "settings.extensions.replace-ugly-avatars.title": "Replace Ugly Avatars",
+    "settings.extensions.more-by-pipecraft.title":
+      "Find more useful userscripts",
+  }
+  var en_default = messages
+  var messages2 = {
+    "settings.displaySettingsButtonInSideMenu":
+      "\u5728\u4FA7\u8FB9\u680F\u83DC\u5355\u4E2D\u663E\u793A\u8BBE\u7F6E\u6309\u94AE",
+    "settings.menu.settings": "\u2699\uFE0F \u8BBE\u7F6E",
+    "settings.extensions.utags.title":
+      "\u{1F3F7}\uFE0F \u5C0F\u9C7C\u6807\u7B7E (UTags) - \u4E3A\u94FE\u63A5\u6DFB\u52A0\u7528\u6237\u6807\u7B7E",
+    "settings.extensions.links-helper.title":
+      "\u{1F517} \u94FE\u63A5\u52A9\u624B",
+    "settings.extensions.v2ex.rep.title":
+      "V2EX.REP - \u4E13\u6CE8\u63D0\u5347 V2EX \u4E3B\u9898\u56DE\u590D\u6D4F\u89C8\u4F53\u9A8C",
+    "settings.extensions.v2ex.min.title":
+      "v2ex.min - V2EX \u6781\u7B80\u98CE\u683C",
+    "settings.extensions.replace-ugly-avatars.title":
+      "\u8D50\u4F60\u4E2A\u5934\u50CF\u5427",
+    "settings.extensions.more-by-pipecraft.title":
+      "\u66F4\u591A\u6709\u8DA3\u7684\u811A\u672C",
+  }
+  var zh_cn_default = messages2
+  var i = initI18n({
+    "en,en-US": en_default,
+    "zh,zh-CN": zh_cn_default,
+  })
+  var lang = navigator.language
+  var locale
+  if (lang === "zh-TW" || lang === "zh-HK") {
+    locale = "zh-TW"
+  } else if (lang.includes("zh")) {
+    locale = "zh-CN"
+  } else {
+    locale = "en"
+  }
   var relatedExtensions = [
     {
       id: "utags",
-      title: "\u{1F3F7}\uFE0F UTags - Add usertags to links",
-      url: "https://greasyfork.org/zh-CN/scripts/460718-utags-add-usertags-to-links",
+      title: i("settings.extensions.utags.title"),
+      url: "https://greasyfork.org/".concat(
+        locale,
+        "/scripts/460718-utags-add-usertags-to-links"
+      ),
     },
     {
       id: "links-helper",
-      title: "\u{1F517} \u94FE\u63A5\u52A9\u624B",
+      title: i("settings.extensions.links-helper.title"),
       description:
         "\u5728\u65B0\u6807\u7B7E\u9875\u4E2D\u6253\u5F00\u7B2C\u4E09\u65B9\u7F51\u7AD9\u94FE\u63A5\uFF0C\u56FE\u7247\u94FE\u63A5\u8F6C\u56FE\u7247\u6807\u7B7E\u7B49",
-      url: "https://greasyfork.org/zh-CN/scripts/464541-links-helper",
+      url: "https://greasyfork.org/".concat(
+        locale,
+        "/scripts/464541-links-helper"
+      ),
     },
     {
       id: "v2ex.rep",
-      title:
-        "V2EX.REP - \u4E13\u6CE8\u63D0\u5347 V2EX \u4E3B\u9898\u56DE\u590D\u6D4F\u89C8\u4F53\u9A8C",
-      url: "https://greasyfork.org/zh-CN/scripts/466589-v2ex-rep-%E4%B8%93%E6%B3%A8%E6%8F%90%E5%8D%87-v2ex-%E4%B8%BB%E9%A2%98%E5%9B%9E%E5%A4%8D%E6%B5%8F%E8%A7%88%E4%BD%93%E9%AA%8C",
+      title: i("settings.extensions.v2ex.rep.title"),
+      url: "https://greasyfork.org/".concat(
+        locale,
+        "/scripts/466589-v2ex-rep-%E4%B8%93%E6%B3%A8%E6%8F%90%E5%8D%87-v2ex-%E4%B8%BB%E9%A2%98%E5%9B%9E%E5%A4%8D%E6%B5%8F%E8%A7%88%E4%BD%93%E9%AA%8C"
+      ),
     },
     {
       id: "v2ex.min",
-      title: "v2ex.min - V2EX \u6781\u7B80\u98CE\u683C",
-      url: "https://greasyfork.org/zh-CN/scripts/463552-v2ex-min-v2ex-%E6%9E%81%E7%AE%80%E9%A3%8E%E6%A0%BC",
+      title: i("settings.extensions.v2ex.min.title"),
+      url: "https://greasyfork.org/".concat(
+        locale,
+        "/scripts/463552-v2ex-min-v2ex-%E6%9E%81%E7%AE%80%E9%A3%8E%E6%A0%BC"
+      ),
     },
     {
       id: "replace-ugly-avatars",
-      title: "\u8D50\u4F60\u4E2A\u5934\u50CF\u5427",
-      url: "https://greasyfork.org/zh-CN/scripts/472616-replace-ugly-avatars",
+      title: i("settings.extensions.replace-ugly-avatars.title"),
+      url: "https://greasyfork.org/".concat(
+        locale,
+        "/scripts/472616-replace-ugly-avatars"
+      ),
     },
     {
       id: "more-by-pipecraft",
-      title: "\u66F4\u591A\u6709\u8DA3\u7684\u811A\u672C",
-      url: "https://greasyfork.org/zh-CN/users/1030884-pipecraft",
+      title: i("settings.extensions.more-by-pipecraft.title"),
+      url: "https://greasyfork.org/".concat(locale, "/users/1030884-pipecraft"),
     },
   ]
   var getInstalledExtesionList = () => {
@@ -788,7 +901,7 @@
       const optionGroups = []
       const getOptionGroup = (index) => {
         if (index > optionGroups.length) {
-          for (let i = optionGroups.length; i < index; i++) {
+          for (let i2 = optionGroups.length; i2 < index; i2++) {
             optionGroups.push(
               addElement2(settingsMain, "div", {
                 class: "option_groups",
@@ -874,8 +987,7 @@
               })
               const select = addElement2(div, "select", {
                 class: "bes_select",
-                onchange: async () => {
-                  console.log(select.value)
+                async onchange() {
                   await saveSettingsValue(key, select.value)
                 },
               })
@@ -936,7 +1048,7 @@
     addElement2(menu, "button", {
       type: "button",
       "data-bes-version": besVersion,
-      title: "\u8BBE\u7F6E",
+      title: i("settings.menu.settings"),
       onclick() {
         setTimeout(showSettings, 1)
       },
@@ -955,7 +1067,7 @@
       }
     }
     settingsTable3.displaySettingsButtonInSideMenu = {
-      title: "Display Settings Button in Side Menu",
+      title: i("settings.displaySettingsButtonInSideMenu"),
       defaultValue: !(
         typeof GM === "object" && typeof GM.registerMenuCommand === "function"
       ),
@@ -997,6 +1109,7 @@
       initExtensionList()
       addSideMenu()
     })
+    registerMenuCommand(i("settings.menu.settings"), showSettings, "o")
     handleShowSettingsUrl()
   }
   var content_default =
@@ -1161,8 +1274,8 @@
     const reverse = floorNumber > length / 2
     let nearestReply
     let nearestReplyGap = 1e3
-    for (let i = 0; i < length; i++) {
-      const replyElement = replyElements[reverse ? length - i - 1 : i]
+    for (let i2 = 0; i2 < length; i2++) {
+      const replyElement = replyElements[reverse ? length - i2 - 1 : i2]
       const memberId2 = getReplyAuthorMemberId(replyElement)
       if (memberId2 !== memberId) {
         continue
@@ -1830,9 +1943,9 @@
     const dataOffSet = (page - 1) * 100
     const length = Math.min(replies.length - (page - 1) * 100, 100)
     const hiddenReplies = []
-    for (let i = 0; i < length; i++) {
-      const realFloorNumber = i + dataOffSet + 1
-      const reply = replies[i + dataOffSet]
+    for (let i2 = 0; i2 < length; i2++) {
+      const realFloorNumber = i2 + dataOffSet + 1
+      const reply = replies[i2 + dataOffSet]
       const id = reply.id
       const element = $("#r_" + id)
       const member = reply.member || {}
@@ -1940,8 +2053,8 @@
     if (replies) {
       const replyElementsPerPages = splitArrayPerPages(replyElements)
       if (replyElementsPerPages) {
-        for (let i = 0; i < replyElementsPerPages.length; i++) {
-          const replyElementsPerPage = replyElementsPerPages[i]
+        for (let i2 = 0; i2 < replyElementsPerPages.length; i2++) {
+          const replyElementsPerPage = replyElementsPerPages[i2]
           if (
             !replyElementsPerPage ||
             (replyElementsPerPage.length > 0 &&
@@ -1951,7 +2064,7 @@
           ) {
             continue
           }
-          updateReplyElements(replies, replyElementsPerPage, i + 1)
+          updateReplyElements(replies, replyElementsPerPage, i2 + 1)
         }
       } else {
         updateReplyElements(replies, replyElements, page)
@@ -2200,18 +2313,18 @@
       for (const replyElement of orgReplyElements) {
         replyElement.dataset.page = String(currentPage)
       }
-      for (let i = 1; i <= totalPage; i++) {
-        if (i === currentPage) {
+      for (let i2 = 1; i2 <= totalPage; i2++) {
+        if (i2 === currentPage) {
           continue
         }
-        console.info("[V2EX.REP] Fetching page", i)
-        const html = await getTopicPage(topicId, i)
+        console.info("[V2EX.REP] Fetching page", i2)
+        const html = await getTopicPage(topicId, i2)
         if (html) {
           const replyElements = getReplyElements2(html)
           insertReplyElementsToPage(
             replyElements,
-            i,
-            i < currentPage ? firstReply : pageElement
+            i2,
+            i2 < currentPage ? firstReply : pageElement
           )
           win.dispatchEvent(new Event("replyElementsLengthUpdated"))
         }
@@ -2338,6 +2451,62 @@
     } else if (replyCount) {
       markAsVisited(href, replyCount)
       replaceState(href)
+    }
+  }
+  function setFavition(url, type) {
+    const element = $('link[rel="shortcut icon"]')
+    if (element) {
+      setAttributes(element, {
+        href: url,
+        type: type || "image/png",
+      })
+    }
+  }
+  function replaceToGithub() {
+    setFavition(
+      "https://github.githubassets.com/favicons/favicon.svg",
+      "image/svg+xml"
+    )
+    if (doc.title.includes("V2EX")) {
+      doc.title =
+        "Issues \xB7 " +
+        (doc.title.replace(/( - V2EX|V2EX › |V2EX)/, "") || "github")
+    }
+  }
+  function replaceToAvatar() {
+    const main2 = $("#Main") || $(".content")
+    if (!main2) {
+      return
+    }
+    const avatar = $('.header img.avatar, td[width="73"] img.avatar', main2)
+    if (avatar) {
+      setFavition(avatar.src)
+    } else {
+      setFavition("https://www.v2ex.com/static/favicon.ico")
+    }
+  }
+  function replaceToDefault() {
+    const main2 = $("#Main") || $(".content")
+    if (!main2) {
+      return
+    }
+    const avatar = $('td[width="73"] img.avatar', main2)
+    if (avatar) {
+      const element = $('link[rel="shortcut icon"]')
+      if (element) {
+        setFavition(avatar.src)
+      }
+    } else {
+      setFavition("https://www.v2ex.com/static/favicon.ico")
+    }
+  }
+  function replaceFavicon(type) {
+    if (type === "github") {
+      replaceToGithub()
+    } else if (type === "avatar") {
+      replaceToAvatar()
+    } else {
+      replaceToDefault()
     }
   }
   var replyWithFloorNumber = (replyElement, forceUpdate = false) => {
@@ -2806,6 +2975,16 @@
       title: "\u53CC\u51FB\u7A7A\u767D\u5904\u5FEB\u901F\u5BFC\u822A",
       defaultValue: false,
     },
+    replaceFavicon: {
+      title: "\u66F4\u6362 favicon \u56FE\u6807",
+      type: "select",
+      defaultValue: "default",
+      options: {
+        默认: "default",
+        GitHub: "github",
+        用户头像: "avatar",
+      },
+    },
   }
   function registerMenuCommands() {
     registerMenuCommand("\u2699\uFE0F \u8BBE\u7F6E", showSettings, "o")
@@ -2824,6 +3003,7 @@
         setTimeout(dailyCheckIn, 1e3)
       })
     }
+    replaceFavicon(getSettingsValue("replaceFavicon"))
     if (/\/t\/\d+/.test(location.href)) {
       const replyElements = getReplyElements()
       for (const replyElement of replyElements) {
@@ -2948,8 +3128,10 @@
       subtree: true,
     })
   }
-  if (!doc.v2ex_rep) {
-    runWhenBodyExists(main)
-    doc.v2ex_rep = true
-  }
+  runWhenBodyExists(async () => {
+    if (doc.documentElement.dataset.v2exRep === void 0) {
+      doc.documentElement.dataset.v2exRep = ""
+      await main()
+    }
+  })
 })()
