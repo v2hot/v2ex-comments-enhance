@@ -30,33 +30,37 @@
 
 - 设置功能，每个功能可单独开或关
 
-![screenshots](https://raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-01.png)
+![screenshots](https://wsrv.nl/?url=raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-01.png)
 
 - 修复有被 block 的用户时错位的楼层号，控制台可看到被屏蔽的楼层与内容
 
-![screenshots](https://raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-02.png)
+![screenshots](https://wsrv.nl/?url=raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-02.png)
 
 - 回复时自动带上楼层号
 
-![screenshots](https://raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-03.png)
+![screenshots](https://wsrv.nl/?url=raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-03.png)
 
 - 显示热门回复，点击楼层数，可直达该回复
 
-![screenshots](https://raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-05.png)
+![screenshots](https://wsrv.nl/?url=raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-05.png)
 
 - 显示回复中被引用的回复，楼中楼的替代方案
 
-![screenshots](https://raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-08.png)
+![screenshots](https://wsrv.nl/?url=raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-08.png)
 
 - 鼠标移至用户名，查看该用户在当前主题下的所有回复
 
-![screenshots](https://raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-06.png)
+![screenshots](https://wsrv.nl/?url=raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-06.png)
 
-![screenshots](https://raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-07.png)
+![screenshots](https://wsrv.nl/?url=raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-07.png)
 
 - 一直显示感谢按钮/回复按钮
 
-![screenshots](https://raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-04.png)
+![screenshots](https://wsrv.nl/?url=raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-04.png)
+
+- 更换 favicon 图标为 GitHub 图标或用户头像
+
+![screenshots](https://wsrv.nl/?url=raw.githubusercontent.com/v2hot/v2ex.rep/main/assets/v2ex.rep-screenshots-09.png)
 
 ## 其他
 

@@ -57,6 +57,10 @@
 
 ![screenshots](assets/v2ex.rep-screenshots-04.png)
 
+- 更换 favicon 图标为 GitHub 图标或用户头像
+
+![screenshots](assets/v2ex.rep-screenshots-09.png)
+
 ## Installation
 
 - Chrome Extension: [Manual Installation](manual-installation.md)
