@@ -1,4 +1,9 @@
-import { $, doc, setAttributes } from "browser-extension-utils"
+import {
+  $,
+  addEventListener,
+  doc,
+  setAttributes,
+} from "browser-extension-utils"
 
 function setFavition(url: string, type?: string) {
   const element = $('link[rel="shortcut icon"]')
@@ -35,6 +40,12 @@ function replaceToAvatar() {
   ) as HTMLImageElement
   if (avatar) {
     setFavition(avatar.src)
+    if (!avatar.setFaviconHandler) {
+      avatar.setFaviconHandler = true
+      addEventListener(avatar, "load", () => {
+        setFavition(avatar.src)
+      })
+    }
   } else {
     setFavition("https://www.v2ex.com/static/favicon.ico")
   }
@@ -48,10 +59,7 @@ function replaceToDefault() {
 
   const avatar = $('td[width="73"] img.avatar', main) as HTMLImageElement
   if (avatar) {
-    const element = $('link[rel="shortcut icon"]')
-    if (element) {
-      setFavition(avatar.src)
-    }
+    setFavition(avatar.src)
   } else {
     setFavition("https://www.v2ex.com/static/favicon.ico")
   }

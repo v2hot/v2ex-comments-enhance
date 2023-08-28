@@ -314,6 +314,12 @@ async function main() {
     await process()
   }, 500)
 
+  addEventListener(doc, "visibilitychange", async () => {
+    if (!doc.hidden) {
+      await process()
+    }
+  })
+
   const observer = new MutationObserver((mutationsList) => {
     // console.error("mutation", Date.now(), mutationsList)
     scanNodes()
