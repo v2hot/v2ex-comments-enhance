@@ -9,6 +9,7 @@ import {
 
 export const showCitedReplies = (
   replyElement: HTMLElement,
+  showPreviousCitedReplies: string,
   forceUpdate = false
 ) => {
   // Don't show cited replies if v2ex plish extension is enabled
@@ -87,7 +88,8 @@ export const showCitedReplies = (
         // if (floorNumber - floorNumber2 <= 1 && !hasCitedReplies) {
         if (
           citedReplyElement.nextElementSibling === replyElement &&
-          !hasCitedReplies
+          !hasCitedReplies &&
+          showPreviousCitedReplies !== "1"
         ) {
           // 如果引用的是前一个回复，并且没有其他引用的回复，则不显示
           continue

@@ -72,6 +72,15 @@ const settingsTable = {
       高: "3",
     },
   },
+  showPreviousCitedReplies: {
+    title: "被引用的回复是前一个楼层时",
+    type: "select",
+    defaultValue: "0",
+    options: {
+      不显示: "0",
+      始终显示: "1",
+    },
+  },
   filterRepliesByUser: {
     title: "查看用户在当前主题下的所有回复与被提及的回复",
     description:
@@ -195,7 +204,10 @@ async function process() {
       addlinkToCitedFloorNumbers(replyElement)
 
       if (getSettingsValue("showCitedReplies")) {
-        showCitedReplies(replyElement)
+        showCitedReplies(
+          replyElement,
+          getSettingsValue("showPreviousCitedReplies") as string
+        )
       }
     }
 
@@ -281,7 +293,11 @@ async function main() {
           }
 
           if (getSettingsValue("showCitedReplies")) {
-            showCitedReplies(replyElement, true)
+            showCitedReplies(
+              replyElement,
+              getSettingsValue("showPreviousCitedReplies") as string,
+              true
+            )
           }
         }
       }
@@ -291,7 +307,11 @@ async function main() {
       const replyElements = getCachedReplyElements()
       for (const replyElement of replyElements) {
         if (getSettingsValue("showCitedReplies")) {
-          showCitedReplies(replyElement, true)
+          showCitedReplies(
+            replyElement,
+            getSettingsValue("showPreviousCitedReplies") as string,
+            true
+          )
         }
       }
 
